@@ -1,0 +1,136 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+/* Back Button */
+.back-btn {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 10px 22px;
+    background: #6c757d;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.95em;
+    font-weight: 500;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.back-btn:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+/* Orders Container */
+.orders-container {
+    max-width: 900px;
+    width: 100%;
+    margin: 20px auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 25px;
+    font-size: 2em;
+    font-weight: 600;
+}
+
+/* Order Card */
+.order-card {
+    background: #ffffff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    transition: box-shadow 0.2s ease-in-out, transform 0.1s;
+}
+
+.order-card:hover {
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+}
+
+/* Header */
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+.order-header span {
+    font-size: 1em;
+    color: #444;
+}
+
+.order-header strong {
+    color: #007bff;
+}
+
+/* Status Badges */
+.order-status {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: bold;
+    color: #fff;
+    text-transform: capitalize;
+}
+
+.order-status.pending { background-color: #ffc107; }     /* Yellow */
+.order-status.processing { background-color: #17a2b8; }  /* Blue */
+.order-status.delivered { background-color: #28a745; }   /* Green */
+.order-status.cancelled { background-color: #dc3545; }   /* Red */
+
+/* Body */
+.order-body p {
+    margin: 6px 0;
+    color: #555;
+    font-size: 0.95em;
+}
+
+/* Footer */
+.order-footer {
+    text-align: right;
+    margin-top: 15px;
+}
+
+/* View All Button (same design family as Back Button) */
+.view-all {
+    display: inline-block;
+    padding: 10px 22px;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.95em;
+    font-weight: 500;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.view-all:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+}
+
+/* No Orders */
+.no-orders {
+    text-align: center;
+    color: #888;
+    font-size: 1.1em;
+    padding: 20px;
+}

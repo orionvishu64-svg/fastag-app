@@ -1,0 +1,551 @@
+/* Products Page Hero Section */
+.products-header {
+  position: relative;
+  width: 100%;
+  min-height: 260px;
+  padding: 3rem 1rem;
+  background: url("https://acko-cms.ackoassets.com/replace_fastag_complete_process_cfd124699f.jpg") no-repeat center center;
+  background-size: cover;   /* ensures image fits */
+  color: #fff;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Dark overlay for text readability */
+.products-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* adjust opacity here */
+  z-index: 1;
+}
+
+.products-header h1,
+.products-header p {
+  position: relative;
+  z-index: 2; /* keeps text above overlay */
+}
+
+.products-header h1 {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.products-header p {
+  font-size: 1.1rem;
+}
+
+/* Mobile Fix */
+@media (max-width: 768px) {
+  .products-header {
+    min-height: 180px;
+    padding: 2rem 1rem;
+    background-position: top center;
+  }
+
+  .products-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .products-header p {
+    font-size: 0.95rem;
+  }
+}
+
+/* Filters Section */
+.filters-section {
+  padding: 0 0 40px;
+  background: #f9fafb;
+}
+
+.filters-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.search-filter {
+  position: relative;
+}
+
+.search-filter i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+.search-filter input {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.search-filter input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.bank-filter select,
+.category-filter select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.bank-filter select:focus,
+.category-filter select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Availability Notice */
+.availability-notice {
+  padding: 20px 0;
+  background: #f9fafb;
+}
+
+.notice-card {
+  background: #dbeafe;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.notice-card h3 {
+  color: #1e40af;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.availability-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.bank-availability {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bank-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+}
+
+.bank-badge.kotak {
+  background: #dc2626;
+}
+
+.bank-badge.sbi {
+  background: #1d4ed8;
+}
+
+.bank-badge.bajaj {
+  background: #0ea5e9;
+}
+
+.bank-badge.idfc {
+  background: #8b5cf6;
+}
+
+.availability-text {
+  color: #1e40af;
+  font-weight: 500;
+}
+
+/* Products Section */
+.products-section {
+  padding: 40px 0 80px;
+  background: #f9fafb;
+}
+
+.products-header-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.products-header-info h2 {
+  font-size: 2rem;
+  color: #111827;
+}
+
+.results-count {
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+.product-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.product-card.kotak {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.product-card.sbi {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.product-card.bajaj {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+}
+
+.product-card.idfc {
+  background: #faf5ff;
+  border-color: #e9d5ff;
+}
+
+.product-header {
+  padding: 1.5rem 1.5rem 1rem;
+}
+
+.product-bank-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.bank-logo-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bank-logo {
+  width: 40px;
+  height: 20px;
+  background: white;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #374151;
+}
+
+.bank-name {
+  padding: 4px 8px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.vehicle-category {
+  background: #e5e7eb;
+  color: #374151;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.product-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.product-description {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.product-content {
+  padding: 0 1.5rem;
+}
+
+.price-section {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.price {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #2563eb;
+  margin-bottom: 0.25rem;
+}
+
+.price-note {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.product-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.detail-row {
+  display: contents;
+}
+
+.detail-label {
+  color: #6b7280;
+}
+
+.detail-value {
+  color: #111827;
+  font-weight: 500;
+  text-align: right;
+}
+
+.product-footer {
+  padding: 0 1.5rem 1.5rem;
+}
+
+.add-to-cart-btn {
+  width: 100%;
+  padding: 12px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.add-to-cart-btn:hover {
+  background: #1d4ed8;
+}
+
+.add-to-cart-btn:active {
+  transform: translateY(1px);
+}
+
+/* No Results */
+.no-results {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #6b7280;
+}
+
+.no-results i {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  color: #d1d5db;
+}
+
+.no-results h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #374151;
+}
+
+.no-results p {
+  margin-bottom: 2rem;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Special Notice */
+.special-notice {
+  padding: 40px 0;
+  background: white;
+}
+
+.notice-card.warning {
+  background: #fef3c7;
+  border-color: #fcd34d;
+}
+
+.notice-card.warning h3 {
+  color: #92400e;
+}
+
+.notice-card.warning p {
+  color: #92400e;
+  margin: 0;
+}
+
+/* Loading State */
+.loading-products {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+.product-skeleton {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-line {
+  height: 1rem;
+  background: #e5e7eb;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.skeleton-line.short {
+  width: 60%;
+}
+
+.skeleton-line.medium {
+  width: 80%;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Active Navigation Link */
+.nav-link.active {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .products-header {
+    padding: 100px 0 40px;
+  }
+
+  .products-header h1 {
+    font-size: 2.5rem;
+  }
+
+  .filters-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .products-header-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .products-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .availability-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-details {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .detail-value {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .products-header h1 {
+    font-size: 2rem;
+  }
+
+  .filters-card {
+    padding: 1rem;
+  }
+
+  .product-card {
+    margin: 0 -10px;
+  }
+
+  .products-section {
+    padding: 20px 0 60px;
+  }
+
+  .availability-notice,
+  .special-notice {
+    padding: 20px 0;
+  }
+}
+
+/* Filter Animation */
+.filter-transition {
+  transition: all 0.3s ease;
+}
+
+.filter-transition.hiding {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.filter-transition.showing {
+  opacity: 1;
+  transform: scale(1);
+}

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us - Apna Payment Services</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="contact.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+   <nav class="navbar">
+  <div class="nav-container">
+    <div class="nav-logo">
+      <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png">
+    </div>
+
+    <div class="nav-right">
+      <!-- Desktop main nav -->
+      <ul class="nav-menu desktop-only">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="products.html" class="nav-link">Products</a></li>
+        <li><a href="about.html" class="nav-link">About Us</a></li>
+        <li><a href="blog.html" class="nav-link">Blog</a></li>
+      </ul>
+
+      <!-- Icons (always visible) -->
+      <div class="nav-actions">
+        <a href="cart.php" class="cart-btn">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count">0</span>
+        </a>
+        <a href="login.html" class="login-btn">
+          <i class="fas fa-user"></i> Login
+        </a>
+      </div>
+
+      <!-- Hamburger (always visible) -->
+      <div class="hamburger">
+        <i class="fas fa-bars"></i>
+      </div>
+
+      <!-- Hamburger dropdown -->
+      <div class="hamburger-menu">
+        <ul>
+          <!-- Mobile: show all links -->
+          <li class="mobile-only"><a href="index.html">Home</a></li>
+          <li class="mobile-only"><a href="profile.html">Profile</a></li>
+          <li class="mobile-only"><a href="cart.php">Cart</a></li>
+          <li class="mobile-only"><a href="products.html">Products</a></li>
+          <!-- Always inside hamburger -->
+          <li><a href="track_orders.php">Track Order</a></li>
+          <li><a href="#" id="nav-logout">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+
+    <!-- Header -->
+    <section class="contact-header">
+        <div class="container">
+            <h1>We're here to help</h1>
+            <p>Have questions about FASTag? Need help with your order? We're here to help you 24/7.</p>
+        </div>
+    </section>
+
+    <!-- Contact Content -->
+    <section class="contact-content">
+        <div class="container">
+            <div class="contact-grid">
+                <!-- Contact Information -->
+                <div class="contact-info">
+                    <div class="info-card">
+                        <h2>Get in Touch</h2>
+                        <p>Reach out to us through any of these channels</p>
+                        
+                        <div class="contact-methods">
+                            <div class="contact-method">
+                                <div class="method-icon">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <div class="method-details">
+                                    <h3>Phone Support</h3>
+                                    <p>+91 9509807591</p>
+                                    <span>Mon-Sun: 10:00 AM - 9:00 PM</span>
+                                </div>
+                            </div>
+                            
+                            <div class="contact-method">
+                                <div class="method-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="method-details">
+                                    <h3>Email Support</h3>
+                                    <p>admin@apnapayment.com</p>
+                                    <span>Response within 2 hours</span>
+                                </div>
+                            </div>
+                            
+                            <div class="contact-method">
+                                <div class="method-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="method-details">
+                                    <h3>Office Address</h3>
+                                    <p>Apna Payment Services Pvt Ltd,<br>
+                                    A-40, KARDHANI, GOVINDPURA,<br>
+          JAIPUR, RAJASTHAN, 302012,<br>
+          KARDHANI, Rajasthan, PIN: 302012</p>
+                                </div>
+                            </div>
+                            
+                            <div class="contact-method">
+                                <div class="method-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="method-details">
+                                    <h3>Working Hours</h3>
+                                    <p>Mon - sun : 10AM-10PM
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Help -->
+                    <div class="quick-help">
+                        <h3>Quick Help</h3>
+                        <div class="help-buttons">
+                            <button class="help-btn">
+                                <i class="fas fa-question-circle"></i>
+                                How to install FASTag?
+                            </button>
+                            <button class="help-btn">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                FASTag not working?
+                            </button>
+                            <button class="help-btn">
+                                <i class="fas fa-credit-card"></i>
+                                Recharge your FASTag
+                            </button>
+                            <button class="help-btn">
+                                <i class="fas fa-truck"></i>
+                                Track your order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+        <!-- Contact Form -->
+        <div class="contact-form-section">
+          <div class="form-card">
+            <h2>Send us a Message</h2>
+            <p>Fill out the form below and we'll get back to you as soon as possible</p>
+
+            <form class="contact-form" id="contactForm">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="firstName">First Name *</label>
+                  <input type="text" id="firstName" name="firstName" required>
+                </div>
+                <div class="form-group">
+                  <label for="lastName">Last Name *</label>
+                  <input type="text" id="lastName" name="lastName" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="email">Email Address *</label>
+                  <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                  <label for="phone">Phone Number *</label>
+                  <input type="tel" id="phone" name="phone" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="subject">Subject *</label>
+                <select id="subject" name="subject" required>
+                  <option value="">Select a subject</option>
+                  <option value="general">General Inquiry</option>
+                  <option value="order">Order Related</option>
+                  <option value="billing">Billing Question</option>
+                  <option value="complaint">Complaint</option>
+                  <option value="feedback">Feedback</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="orderNumber">Order Number (if applicable)</label>
+                <input type="text" id="orderNumber" name="orderNumber" placeholder="Enter your order number">
+              </div>
+              <div class="form-group">
+                <label for="message">Message *</label>
+                <textarea id="message" name="message" rows="5" placeholder="Please describe your inquiry in detail..." required></textarea>
+              </div>
+              <button type="submit" class="submit-btn">
+                <i class="fas fa-paper-plane"></i> Send Message
+              </button>
+              <div id="successMessage" style="display:none; margin-top:20px; color: #22c55e; font-weight:600;">
+                ✅ Your ticket has been submitted! Ticket ID: <span id="ticketRef"></span>
+              </div>
+            </form>
+
+            <div style="margin-top:20px; text-align:center;">
+              <button onclick="window.location.href='conversation.html'">
+                🗨️ View All Conversations
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+ <!-- Footer -->
+     <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png" alt="Apna Payment Logo" style="max-width: 180px; margin-bottom: 1rem;">
+                    </div>
+                    <p>Apna Payment Services Private Limited -  A-40, KARDHANI, GOVINDPURA,<br>
+          JAIPUR, RAJASTHAN, 302012,<br>
+          KARDHANI, Rajasthan, PIN: 302012<br>
+          GSTIN : 08AAVCA0650L1ZA<br></p>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/apnapayment/"><i class="fab fa-facebook"></i></a>
+                        <a href="https://www.youtube.com/@ApnaPayment"><i class="fab fa-youtube"></i></a>
+                        <a href="https://www.instagram.com/apnapayment/"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="https://play.google.com/store/apps/details?id=com.aps.agent">GV Partner</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="terms-conditions.html">Terms &amp;condition</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="refund-cancel.html">Refund Policy</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Services</h3>
+                    <ul>
+                        <li>Kotak FASTag</li>
+                        <li>SBI FASTag</li>
+                        <li>Bajaj FASTag</li>
+                        <li>IDFC FASTag</li>
+                        <li>FASTag recharge</li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Contact Info</h3>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span>+91 9509807591</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>admin@apnapayment.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Jaipur, Rajasthan, India</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2020-2025 Apna payments services pvt.ltd.. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="contact_form.js"></script>
+   <script src="script.js"></script>
+</body>
+</html>

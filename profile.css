@@ -1,0 +1,84 @@
+/* Profile container */
+.profile-container {
+  background-color: #fff;
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.profile-container h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 8px;
+}
+
+/* Form groups */
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d5d9d9;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus {
+  border-color: #007185;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 113, 133, 0.2);
+}
+
+input[readonly] {
+  background-color: #f3f3f3;
+}
+
+/* Button styles */
+button {
+  width: 100%;
+  background-color: #ffd814;
+  color: #111;
+  padding: 12px;
+  border: 1px solid #fcd200;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+button:hover {
+  background-color: #f7ca00;
+}
+
+/* Status message */
+#status-message {
+  margin-top: 15px;
+  text-align: center;
+  font-weight: 500;
+  color: #007600;
+}
+
+/* Responsive layout */
+@media (max-width: 600px) {
+  .profile-container {
+    margin: 20px;
+    padding: 20px;
+  }
+}

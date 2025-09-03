@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UPI Payment</title>
+</head>
+<body>
+
+  <h2>Redirecting to UPI...</h2>
+  <p>If you are not redirected, <a id="upi-link" href="#">click here</a>.</p>
+  <p id="statusMsg"></p>
+
+  <script>
+    // Read params from ?amount=&address_id=&order_id=
+    const params = new URLSearchParams(location.search);
+    const rawAmount = params.get("amount") || "";
+    const addressId = params.get("address_id") || "";
+    const orderId   = params.get("order_id") || "";
+
+    // Merchant UPI details
+    const upiId = "8905078169@hdfcbank";
+    const name  = "Vishwas Barnwal";
+
+    // Validate amount
+    const amountNum = Number(rawAmount);
+    const validAmount = !isNaN(amountNum) && amountNum > 0 ? amountNum.toFixed(2) : null;
+    if (!validAmount) {
+      alert("Invalid amount for UPI payment.");
+    }
+
+    // Generate txn ref
+    const txnRef = "TXN" + Date.now();
+
+    // Build UPI URL
+    const tn = `Order Payment`.slice(0, 40);
+    const upiUrl =
+      `upi://pay` +
+      `?pa=${encodeURIComponent(upiId)}` +
+      `&pn=${encodeURIComponent(name)}` +
+      `&tr=${encodeURIComponent(txnRef)}` +
+      `&tn=${encodeURIComponent(tn)}` +
+      `&am=${encodeURIComponent(validAmount)}` +
+      `&cu=INR`;
+
+    // Manual link
+    document.getElementById("upi-link").href = upiUrl;
+
+    // Auto redirect to UPI app
+    setTimeout(() => {
+      try { window.location.href = upiUrl; } catch (e) {}
+    }, 300);
+
+    function confirmPayment(success = true) {
+      if (success) {
+        fetch("verify_payment.php?order_id=" + orderId)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              try { localStorage.removeItem("cart"); } catch(_) {}
+              if (data.redirect) {
+                window.location.href = data.redirect + "?order_id=" + orderId;
+              } else {
+                document.getElementById("statusMsg").textContent =
+                  "Payment successful, but no redirect URL.";
+              }
+            } else {
+              document.getElementById("statusMsg").textContent =
+                "Verification failed: " + data.message;
+            }
+          })
+          .catch(() => {
+            document.getElementById("statusMsg").textContent =
+              "Error verifying payment. Please try again.";
+          });
+      } else {
+        document.getElementById("statusMsg").textContent =
+          "Payment failed or cancelled. Your cart is safe.";
+      }
+    }
+  </script>
+</body>
+</html>

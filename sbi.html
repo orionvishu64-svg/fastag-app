@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBI FASTag - Vehicle Categories | Apna Payment Services</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="bank-pages.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navigation -->
+   <nav class="navbar">
+  <div class="nav-container">
+    <div class="nav-logo">
+      <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png">
+    </div>
+
+    <div class="nav-right">
+      <!-- Desktop main nav -->
+      <ul class="nav-menu desktop-only">
+        <li><a href="index.htmlz" class="nav-link">Home</a></li>
+        <li><a href="products.html" class="nav-link">Products</a></li>
+        <li><a href="about.html" class="nav-link">About Us</a></li>
+        <li><a href="blog.html" class="nav-link">Blog</a></li>
+        <li><a href="contact.html" class="nav-link">Contact Us</a></li>
+      </ul>
+
+      <!-- Icons (always visible) -->
+      <div class="nav-actions">
+        <a href="cart.php" class="cart-btn">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count">0</span>
+        </a>
+        <a href="login.html" class="login-btn">
+          <i class="fas fa-user"></i> Login
+        </a>
+      </div>
+
+      <!-- Hamburger (always visible) -->
+      <div class="hamburger">
+        <i class="fas fa-bars"></i>
+      </div>
+
+      <!-- Hamburger dropdown -->
+      <div class="hamburger-menu">
+        <ul>
+          <!-- Mobile: show all links -->
+          <li class="mobile-only"><a href="index.html">Home</a></li>
+          <li class="mobile-only"><a href="profile.html">Profile</a></li>
+          <li class="mobile-only"><a href="cart.php">Cart</a></li>
+          <li class="mobile-only"><a href="products.html">Products</a></li>
+          <li class="mobile-only"><a href="contact.html">Contact Us</a></li>
+
+          <!-- Always inside hamburger -->
+          <li><a href="track_orders.php">Track Order</a></li>
+          <li><a href="#" id="nav-logout">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+
+    <!-- Bank Header -->
+    <section class="bank-header sbi-theme">
+        <div class="container">
+            <div class="bank-header-content">
+                <div class="bank-logo-large">
+                    <img src="https://images.goodreturns.in/webp/common_dynamic/images/social_share/fastag_32.jpg" alt="SBI Bank">
+                </div>
+                <div class="bank-info">
+                    <h1>SBI FASTag</h1>
+                    <p>Choose your vehicle category for State Bank of India FASTag. India's largest bank with nationwide acceptance.</p>
+                    <div class="bank-features">
+                        <div class="feature-item">
+                            <i class="fas fa-clock"></i>
+                            <span>24-hour activation</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Secure payments</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span>YONO app integration</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Vehicle Categories -->
+    <section class="categories-section">
+        <div class="container">
+            <h2>Select Your Vehicle Category</h2>
+            <p class="section-subtitle">SBI FASTag is available for all vehicle categories</p>
+            
+            <div class="categories-grid">
+                <!-- VC4 - Available -->
+                <div class="category-card available" data-category="VC4">
+                    <div class="category-icon">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <div class="category-info">
+                        <h3>VC4 - Car/Jeep/Van</h3>
+                        <p>Private cars, jeeps, and vans</p>
+                        <div class="price">₹400</div>
+                        <div class="features-list">
+                           <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
+                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
+                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
+                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
+                        </div>
+                    </div>
+                    <button class="category-btn select-btn" data-product-id="sbi-vc4" onclick="selectCategory('sbi', 'VC4', 'Car/Jeep/Van', 400, this)">
+                        <i class="fas fa-shopping-cart"></i>
+                        Add to Cart
+                    </button>
+                </div>
+
+                <!-- VC5 - Available -->
+                <div class="category-card available" data-category="VC5">
+                    <div class="category-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <div class="category-info">
+                        <h3>VC5 - LCV</h3>
+                        <p>Light Commercial Vehicle</p>
+                        <div class="price">₹400</div>
+                        <div class="features-list">
+                           <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
+                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
+                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
+                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
+                        </div>
+                    </div>
+                    <button class="category-btn select-btn" data-product-id="sbi-vc5" onclick="selectCategory('sbi', 'VC5', 'LCV', 400, this)">
+                        <i class="fas fa-shopping-cart"></i>
+                        Add to Cart
+                    </button>
+                </div>
+
+                <!-- VC6 - Available -->
+                <div class="category-card available" data-category="VC6">
+                    <div class="category-icon">
+                        <i class="fas fa-bus"></i>
+                    </div>
+                    <div class="category-info">
+                        <h3>VC6 - Bus/Truck</h3>
+                        <p>For buses and trucks (2 axle)</p>
+                        <div class="price">₹400</div>
+                        <div class="features-list">
+                            <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
+                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
+                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
+                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
+                        </div>
+                    </div>
+                    <button class="category-btn select-btn" data-product-id="sbi-vc6" onclick="selectCategory('sbi', 'VC6', 'Bus/Truck', 400, this)">
+                        <i class="fas fa-shopping-cart"></i>
+                        Add to Cart
+                    </button>
+                </div>
+
+                <!-- VC7 - Available -->
+                <div class="category-card available" data-category="VC7">
+                    <div class="category-icon">
+                        <i class="fas fa-truck-moving"></i>
+                    </div>
+                    <div class="category-info">
+                        <h3>VC7 - Heavy Vehicle</h3>
+                        <p>Heavy Commercial Vehicle (3 axle)</p>
+                        <div class="price">₹400</div>
+                        <div class="features-list">
+                            <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
+                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
+                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
+                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
+                        </div>
+                    </div>
+                    <button class="category-btn select-btn" data-product-id="sbi-vc7" onclick="selectCategory('sbi', 'VC7', 'Heavy Vehicle', 400, this)">
+                        <i class="fas fa-shopping-cart"></i>
+                        Add to Cart
+                    </button>
+                </div>
+
+                <!-- VC8 - Available -->
+                <div class="category-card available" data-category="VC8">
+                    <div class="category-icon">
+                        <i class="fas fa-hard-hat"></i>
+                    </div>
+                    <div class="category-info">
+                        <h3>VC8 - Construction Vehicle</h3>
+                        <p>Construction equipment vehicle</p>
+                        <div class="price">₹400</div>
+                        <div class="features-list">
+                            <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
+                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
+                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
+                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
+                        </div>
+                    </div>
+                    <button class="category-btn select-btn" data-product-id="sbi-vc8" onclick="selectCategory('sbi', 'VC8', 'Construction Vehicle', 400, this)">
+                        <i class="fas fa-shopping-cart"></i>
+                        Add to Cart
+                    </button>
+                </div>
+
+                <!-- VC12 - Available -->
+                <div class="category-card available" data-category="VC12">
+                    <div class="category-icon">
+                        <i class="fas fa-shuttle-van"></i>
+                    </div>
+                    <div class="category-info">
+                        <h3>VC12 - Mini Bus</h3>
+                        <p>Mini bus and small commercial vehicles</p>
+                        <div class="price">₹400</div>
+                        <div class="features-list">
+                            <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
+                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
+                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
+                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
+                        </div>
+                    </div>
+                    <button class="category-btn select-btn" data-product-id="sbi-vc12" onclick="selectCategory('sbi', 'VC12', 'Mini Bus', 400, this)">
+                        <i class="fas fa-shopping-cart"></i>
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bank Benefits -->
+    <section class="benefits-section sbi-theme">
+        <div class="container">
+            <h2>Why Choose SBI FASTag?</h2>
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <i class="fas fa-university"></i>
+                    <h3>India's Largest Bank</h3>
+                    <p>State Bank of India is the country's largest public sector bank</p>
+                </div>
+                <div class="benefit-card">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h3>YONO Integration</h3>
+                    <p>Seamless integration with SBI's YONO app for easy management</p>
+                </div>
+                <div class="benefit-card">
+                    <i class="fas fa-network-wired"></i>
+                    <h3>Nationwide Network</h3>
+                    <p>Extensive branch and ATM network across India</p>
+                </div>
+                <div class="benefit-card">
+                    <i class="fas fa-award"></i>
+                    <h3>Trusted Brand</h3>
+                    <p>Over 200 years of banking excellence and customer trust</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+   <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png" alt="Apna Payment Logo" style="max-width: 180px; margin-bottom: 1rem;">
+                    </div>
+                    <p>Apna Payment Services Private Limited -  A-40, KARDHANI, GOVINDPURA,<br>
+          JAIPUR, RAJASTHAN, 302012,<br>
+          KARDHANI, Rajasthan, PIN: 302012<br>
+          GSTIN : 08AAVCA0650L1ZA<br></p>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/apnapayment/"><i class="fab fa-facebook"></i></a>
+                        <a href="https://www.youtube.com/@ApnaPayment"><i class="fab fa-youtube"></i></a>
+                        <a href="https://www.instagram.com/apnapayment/"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="https://play.google.com/store/apps/details?id=com.aps.agent">GV Partner</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="terms-conditions.html">Terms &amp;condition</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                         <li><a href="refund-cancel.html">Refund Policy</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Services</h3>
+                    <ul>
+                        <li>Kotak FASTag</li>
+                        <li>SBI FASTag</li>
+                        <li>Bajaj FASTag</li>
+                        <li>IDFC FASTag</li>
+                        <li>FASTag recharge</li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Contact Info</h3>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span>+91 9509807591</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>admin@apnapayment.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Jaipur, Rajasthan, India</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2020-2025 Apna payments services pvt.ltd.. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="bank-pages.js"></script>
+</body>
+</html>

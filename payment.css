@@ -1,0 +1,322 @@
+/* =======================
+   General Body and Layout
+   ======================= */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+.payment-container {
+    width: 100%;
+    max-width: 700px;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* =======================
+   Headings
+   ======================= */
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 25px;
+    font-size: 2em;
+    font-weight: 600;
+}
+
+h3 {
+    color: #555;
+    border-bottom: 2px solid #eef;
+    padding-bottom: 10px;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    font-size: 1.3em;
+    font-weight: 500;
+}
+
+h3.deliver_address {
+    text-align: center;
+    color: #333;
+    margin-bottom: 25px;
+    font-size: 2em;
+    font-weight: 600;
+}
+
+/* =======================
+   Sections
+   ======================= */
+.order-summary,
+.address-section,
+.payment-methods {
+    margin-bottom: 30px;
+}
+
+/* =======================
+   Order Summary
+   ======================= */
+#order-items {
+    font-size: 1em;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.order-summary p {
+    font-weight: bold;
+    font-size: 1.4em;
+    color: #2c3e50;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 15px;
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* =======================
+   Address & Saved Addresses
+   ======================= */
+#saved-addresses {
+    display: grid;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.address-box {
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 15px 20px;
+    background: #fafafa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 1em;
+    color: #444;
+    position: relative;
+}
+
+.address-box:hover {
+    border-color: #007bff;
+    background: #f1f9ff;
+    box-shadow: 0 3px 8px rgba(0, 123, 255, 0.2);
+}
+
+.address-box.selected {
+    border-color: #007bff;
+    background: #eaf5ff;
+    box-shadow: 0 3px 8px rgba(0, 123, 255, 0.3);
+}
+
+/* Remove Address Icon */
+.address-box .remove-address {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 1.1em;
+    color: #dc3545;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+.address-box .remove-address:hover {
+    transform: scale(1.2);
+}
+
+/* Add Address Button */
+#add-address-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 1em;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 100%;
+    margin-top: 15px;
+}
+#add-address-btn:hover {
+    background-color: #218838;
+}
+
+/* New Address Form */
+#new-address-form {
+    display: none; /* Hidden until Add Address is clicked */
+    border: 1px solid #e0e0e0;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+    background-color: #f8f9fa;
+}
+
+/* =======================
+   Form Inputs
+   ======================= */
+input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 1em;
+    transition: border-color 0.2s;
+}
+
+input[type="text"]:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Save Address Button */
+#save-address {
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+#save-address:hover {
+    background-color: #0056b3;
+}
+
+/* =======================
+   Payment Methods
+   ======================= */
+.payment-option {
+    display: flex;
+    align-items: center;
+    margin: 12px 0;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    background: #fafafa;
+}
+
+.payment-option:hover {
+    border-color: #007bff;
+    background: #f1f9ff;
+}
+
+.payment-option input[type="radio"] {
+    accent-color: #007bff;
+    margin-right: 10px;
+    transform: scale(1.3);
+}
+
+#agent-id-box {
+  display: none;
+  margin-top: 10px;
+}
+
+#agent-id-box .apply-btn {
+  margin-left: 8px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #6c63ff;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+#agent-id-box .apply-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(108,99,255,0.28);
+  background: #7b74ff;
+}
+
+#agent-id-box .apply-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(108,99,255,0.24);
+}
+
+/* Align input and button horizontally when both present */
+#agent-id-box {
+  display: none;
+}
+
+#agent-id-box.inline {
+  display: flex !important;
+  align-items: center;
+}
+
+#agent-id-box.inline #agentid {
+  flex: 1;
+}
+
+/* Proceed Button 
+.proceed-btn {
+    margin-top: 20px;
+    width: 100%;
+    padding: 14px;
+    font-size: 1.1em;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    font-weight: 500;
+}
+.proceed-btn:hover {
+    background: #0056b3;
+}
+*/
+/* Proceed pill button with hover lift */
+.payment-section #proceed-btn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px 18px;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #0d6efd 0%, #2b8cff 100%);
+  border: none;
+  border-radius: 999px; /* circular rectangle */
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(13,110,253,0.28), inset 0 -2px 0 rgba(255,255,255,0.15);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  letter-spacing: 0.2px;
+}
+
+.payment-section #proceed-btn:hover {
+  background: linear-gradient(135deg, #2b8cff 0%, #4aa3ff 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(13,110,253,0.34), inset 0 -2px 0 rgba(255,255,255,0.2);
+}
+
+.payment-section #proceed-btn:active {
+  transform: translateY(0);
+  background: linear-gradient(135deg, #0c5ee0 0%, #2b82f0 100%);
+  box-shadow: 0 6px 14px rgba(13,110,253,0.28), inset 0 2px 0 rgba(0,0,0,0.08);
+}
+
+.payment-section #proceed-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(13,110,253,0.18), 0 8px 20px rgba(13,110,253,0.32);
+}
+
+.payment-section #proceed-btn::after {
+  content: '→';
+  display: inline-block;
+  margin-left: 8px;
+  transition: transform 0.18s ease;
+}
+
+.payment-section #proceed-btn:hover::after {
+  transform: translateX(2px);
+}

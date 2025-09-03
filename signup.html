@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up - Apna Payment Services</title>
+  <link rel="stylesheet" href="signup.css"/>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="form-box">
+      <h2>Create an Account</h2>
+      <form id="signup-form">
+        <input type="text" id="signup-name" placeholder="Full Name" required />
+        <input type="email" id="signup-email" placeholder="Email Address" required />
+        <div class="password-wrapper" style="position:relative;">
+  <input type="password" id="signup-password" placeholder="Create Password" required />
+  <span id="toggle-signup-password" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer;">
+    👁️
+  </span>
+</div>
+        <input type="tel" id="signup-phone" placeholder="Enter your mobile number" required>
+        <button type="submit">Sign Up</button>
+      </form>
+
+      <div class="divider">or</div>
+
+      <div id="google-signup" class="google-btn" data-type="signup"></div>
+
+      <p class="switch-link">
+        Already have an account? <a href="login.html">Sign In</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="google-auth.js"></script>
+</body>
+</html>

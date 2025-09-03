@@ -1,0 +1,35 @@
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #f9f9f9;
+}
+
+.order-success {
+  text-align: center;
+  background: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.order-success img {
+  width: 150px;
+  margin-bottom: 20px;
+}
+
+.order-success h2 {
+  color: #28a745;
+}
+
+.order-success .btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #28a745;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 8px;
+}
