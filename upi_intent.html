@@ -29,6 +29,7 @@
       alert("Invalid amount for UPI payment.");
     }
 
+    
     // Generate txn ref
     const txnRef = "TXN" + Date.now();
 
@@ -50,7 +51,6 @@
     setTimeout(() => {
       try { window.location.href = upiUrl; } catch (e) {}
     }, 300);
-    
 
     function confirmPayment(success = true) {
       if (success) {
