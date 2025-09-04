@@ -18,6 +18,24 @@
       <p><strong>Total:</strong> ₹<span id="order-total">0</span></p>
     </div>
 
+    <!-- Phone number block (shown only if user has no phone) -->
+    <div id="phone-container" style="display:none; margin-top: 16px;">
+      <h3>Add Your Phone Number</h3>
+      <p>We need your number to contact you about your order.</p>
+        <div class="input-group">
+          <input
+            type="tel"
+            id="payment-user-phone"
+            placeholder="10-digit phone number"
+            maxlength="10"
+            pattern="[6-9][0-9]{9}"
+            title="Enter a valid 10-digit Indian number starting 6-9"
+            required
+          />
+          <button id="save-phone-btn" class="btn">Save</button>
+        </div>
+    </div>
+  
     <!-- Delivery Address Section -->
     <div class="address-section">
       <h3 class="deliver_address">Select Delivery Address</h3>

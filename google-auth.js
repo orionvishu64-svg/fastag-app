@@ -39,7 +39,7 @@ async function handleGoogleResponse(response) {
     const isSignup = !!document.getElementById("google-signup");
     const endpoint = isSignup ? "register.php" : "login.php";
 
-    const res = await fetch(endpoint, {
+    const res = await safeFetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

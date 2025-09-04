@@ -2,7 +2,7 @@
 class CartManager {
   constructor() {
     this.cart = this.loadCart()
-    this.freeShippingThreshold = 1000
+    this.freeShippingThreshold = 500
     this.shippingCost = 50
 
     this.init()
@@ -12,7 +12,6 @@ class CartManager {
     this.renderCart()
     this.setupEventListeners()
     this.updateCartCount()
-    this.loadRecommendedProducts()
   }
 
   loadCart() {
@@ -36,19 +35,6 @@ class CartManager {
     const checkoutBtn = document.getElementById("checkoutBtn")
     if (checkoutBtn) {
       checkoutBtn.addEventListener("click", () => this.proceedToCheckout())
-    }
-
-    // Delivery check
-    const checkDeliveryBtn = document.getElementById("checkDeliveryBtn")
-    const pincodeInput = document.getElementById("pincode")
-
-    if (checkDeliveryBtn && pincodeInput) {
-      checkDeliveryBtn.addEventListener("click", () => this.checkDelivery())
-      pincodeInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
-          this.checkDelivery()
-        }
-      })
     }
   }
 
@@ -93,7 +79,6 @@ class CartManager {
 
     // Unique ID for the datalist
     const datalistId = `quantity-options-${item.id}-${index}`;
-
     const itemDiv = document.createElement("div")
     itemDiv.className = "cart-item"
     itemDiv.innerHTML = `
@@ -390,153 +375,30 @@ class CartManager {
     }
   }
 
-
-  checkDelivery() {
-    const pincodeInput = document.getElementById("pincode")
-    const pincode = pincodeInput.value.trim()
-
-    if (!pincode || pincode.length !== 6) {
-      this.showNotification("Please enter a valid 6-digit pincode", "error")
-      return
-    }
-
-    // Simulate delivery check
-    const checkDeliveryBtn = document.getElementById("checkDeliveryBtn")
-    const originalText = checkDeliveryBtn.textContent
-
-    checkDeliveryBtn.textContent = "Checking..."
-    checkDeliveryBtn.disabled = true
-
-    setTimeout(() => {
-      // Simulate different delivery options based on pincode
-      const deliveryAvailable = !["000000", "999999"].includes(pincode)
-
-      if (deliveryAvailable) {
-        this.showNotification(`Delivery available to ${pincode}`, "success")
-
-        // Show delivery options
-        const deliveryOptions = document.getElementById("deliveryOptions")
-        deliveryOptions.style.display = "block"
-      } else {
-        this.showNotification(`Sorry, delivery not available to ${pincode}`, "error")
-      }
-
-      checkDeliveryBtn.textContent = originalText
-      checkDeliveryBtn.disabled = false
-    }, 1500)
-  }
-
   proceedToCheckout() {
-    if (this.cart.length === 0) {
-      this.showNotification("Your cart is empty", "error")
-      return
-    }
-
-    // Simulate checkout process
-    const checkoutBtn = document.getElementById("checkoutBtn")
-    const originalText = checkoutBtn.innerHTML
-
-    checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'
-    checkoutBtn.disabled = true
-
-    setTimeout(() => {
-      this.showNotification("Redirecting to payment gateway...", "success")
-
-      // In a real application, you would redirect to payment page
-      window.location.href = 'payment.html';
-
-      checkoutBtn.innerHTML = originalText
-      checkoutBtn.disabled = false
-    }, 2000)
+if (this.cart.length === 0) {
+    this.showNotification("Your cart is empty", "error");
+    return;
   }
 
-  loadRecommendedProducts() {
-    const recommendedGrid = document.getElementById("recommendedGrid")
-    const recommendedSection = document.getElementById("recommendedSection")
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+   const checkoutBtn = document.getElementById("checkoutBtn");
+   if (checkoutBtn) {
+     checkoutBtn.disabled = true;
+     checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+   }
 
-    if (!recommendedGrid || this.cart.length === 0) {
-      if (recommendedSection) {
-        recommendedSection.style.display = "flex"
-      }
-      return
-    }
-
-    // Sample recommended products
-    const recommendations = [{
-      name: "Bajaj FASTag - VC6",
-      price: 400,
-      category: "VC6",
-      bank: "Bajaj"
-    }, {
-      name: "IDFC FASTag - VC12",
-      price: 400,
-      category: "VC12",
-      bank: "IDFC"
-    }, ]
-
-    recommendedGrid.innerHTML = ""
-    recommendations.forEach((product, index) => {
-      const productElement = this.createRecommendedProductElement(product, index)
-      recommendedGrid.appendChild(productElement)
-    })
+   if (user) {
+     // Logged in → go to payment
+     window.location.href = "payment.html";
+   } else {
+     // Not logged in → go to login
+     window.location.href = "login.html";
+   }
   }
-
-  createRecommendedProductElement(product, index) {
-    const productDiv = document.createElement("div")
-    productDiv.className = "recommended-item"
-    productDiv.innerHTML = `
-            <div class="recommended-item-image">
-                ${product.bank}
-            </div>
-            <h3>${product.name}</h3>
-            <span class="category">${product.category}</span>
-            <div class="price">₹${product.price.toLocaleString()}</div>
-            <button class="add-recommended-btn" onclick="cartManager.addRecommendedToCart(${index})">
-                Add to Cart
-            </button>
-        `
-    return productDiv
-  }
-
-  addRecommendedToCart(index) {
-    const recommendations = [{
-      id: "bajaj-vc6",
-      name: "Bus/Truck",
-      price: 400,
-      category: "VC6",
-      bank: "Bajaj",
-      description: "For buses and trucks (2 axle)",
-    }, {
-      id: "idfc-vc12",
-      name: "Mini Bus",
-      price: 500,
-      category: "VC12",
-      bank: "IDFC",
-      description: "Mini bus and small commercial vehicles",
-    }, ]
-
-    const product = recommendations[index]
-
-    // Check if product already exists in cart
-    const existingItem = this.cart.find((item) => item.id === product.id)
-
-    if (existingItem) {
-      existingItem.quantity += 1
-    } else {
-      this.cart.push({
-        ...product,
-        quantity: 1,
-        addedAt: new Date().toISOString(),
-      })
-    }
-
-    this.saveCart()
-    this.renderCart()
-    this.showNotification(`${product.name} added to cart!`, "success")
-  }
-
+  // update cart count
   updateCartCount() {
-    const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0)
+    const totalItems = this.cart.reduce((sum, item) => sum + Math.max(1, parseInt(item.quantity || 1, 10)), 0)
     const cartCountElement = document.querySelector(".cart-count")
 
     if (cartCountElement) {
@@ -590,99 +452,6 @@ class CartManager {
   }
 }
 
-// --- Phone number prompt logic ---
 document.addEventListener("DOMContentLoaded", function () {
-  const user = JSON.parse(localStorage.getItem("user"));
-
-  if (user && (!user.phone || user.phone === "")) {
-    const phoneContainer = document.getElementById("phone-container");
-    if (phoneContainer) phoneContainer.style.display = "block";
-
-    const saveBtn = document.getElementById("save-phone-btn");
-    if (saveBtn) {
-      saveBtn.addEventListener("click", function () {
-        const phoneInput = document.getElementById("cart-user-phone");
-        const phone = phoneInput.value.trim();
-
-        if (!/^\d{10}$/.test(phone)) {
-          // Replaced alert with custom alert
-          window.cartManager.showCustomAlert("Please enter a valid 10-digit phone number.");
-          return;
-        }
-
-        fetch("save_phone.php", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: user.email,
-              phone: phone,
-            }),
-          })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.success) {
-              // Replaced alert with custom alert
-              window.cartManager.showCustomAlert("Phone number saved!");
-              user.phone = phone;
-              localStorage.setItem("user", JSON.stringify(user));
-              phoneContainer.style.display = "none";
-            } else {
-              // Replaced alert with custom alert
-              window.cartManager.showCustomAlert(data.message || "Failed to save phone.");
-            }
-          })
-          .catch((err) => {
-            console.error("Error saving phone:", err);
-            // Replaced alert with custom alert
-            window.cartManager.showCustomAlert("Something went wrong.");
-          });
-      });
-    }
-  }
-
-  // Initialize cart manager
-  let cartManager
   window.cartManager = new CartManager();
-
-  // Inside DOMContentLoaded or your existing logic
-const checkoutBtn = document.getElementById("checkoutBtn");
-
-if (checkoutBtn) {
-  checkoutBtn.addEventListener("click", () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-
-    if (!user) {
-      // Remove old message if exists
-      let oldMsg = document.getElementById("loginMessage");
-      if (oldMsg) oldMsg.remove();
-
-      // Create a new login message dynamically
-      const loginMessage = document.createElement("div");
-      loginMessage.id = "loginMessage";
-      loginMessage.textContent = "⚠️ Please log in before proceeding to checkout.";
-      loginMessage.style.cssText = `
-        color: red;
-        margin-top: 10px;
-        font-weight: bold;
-      `;
-
-      // Insert below the checkout button
-      checkoutBtn.insertAdjacentElement("afterend", loginMessage);
-
-      // ⏳ Auto-hide after 4 seconds
-      setTimeout(() => {
-        if (loginMessage && loginMessage.parentNode) {
-          loginMessage.remove();
-        }
-      }, 4000);
-
-    } else {
-      // ✅ User is logged in → go to checkout page
-      window.location.href = "payment.html"; // change this if your checkout page has a different name
-    }
-  });
-}
-
 });

@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   socket.on("errorResponse", (msg) => alert("Error: " + msg));
 
   // Prefill user details
-  fetch("http://15.207.50.101/get_user.php", { credentials: "include" })
+  safeFetch("http://15.207.50.101/get_user.php", { credentials: "include" })
     .then(res => res.json())
     .then(data => {
       if (data.success && data.user) {

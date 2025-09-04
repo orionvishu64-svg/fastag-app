@@ -120,10 +120,6 @@ if (!isset($_SESSION['user_id'])) {
                                     <span>Shipping</span>
                                     <span id="shipping">₹0</span>
                                 </div>
-                                <div class="summary-row discount-row" id="discountRow" style="display: none;">
-                                    <span>Discount</span>
-                                    <span id="discount">-₹0</span>
-                                </div>
                                 <div class="summary-divider"></div>
                                 <div class="summary-row total-row">
                                     <span>Total</span>
@@ -155,11 +151,6 @@ if (!isset($_SESSION['user_id'])) {
                         <!-- Delivery Information -->
                         <div class="delivery-card">
                             <h3>Delivery Information</h3>
-                            <div id="phone-container" style="display: none;">
-                                <h3>Phone Number:</h3>
-                                    <input type="tel" name="phone" id="cart-user-phone" class="cart-quantity-input" placeholder="Enter 10-digit number">
-                                    <button id="save-phone-btn" class="cart-save-btn">Save</button>
-                            </div>
                             <div class="delivery-options" id="deliveryOptions">
                                 <div class="delivery-option">
                                     <i class="fas fa-shipping-fast"></i>

@@ -1,3 +1,21 @@
+// drop-in replacement
+function safeFetch(...args) {
+  return fetch(...args)
+    .then(response => {
+      if (!response.ok) {
+        const err = new Error("HTTP " + response.status);
+        err.response = response;
+        throw err;
+      }
+      return response;
+    })
+    .catch(err => {
+      try { console.error("Network error:", err); } catch (e) {}
+      try { if (typeof alert !== 'undefined') alert("Network error. Please try again."); } catch (e) {}
+      throw err;
+    });
+}
+
 // Mobile Navigation Toggle
 document.addEventListener("DOMContentLoaded", () => {
   const hamburger = document.querySelector(".hamburger")
@@ -303,7 +321,7 @@ function wireGlobalLogout() {
       localStorage.removeItem("user")
       localStorage.removeItem("userEmail")
       // Invalidate server session
-      await fetch("logout.php", { credentials: "include" })
+      await safeFetch("logout.php", { credentials: "include" })
     } catch (_) {}
 
     // Redirect to a safe page
@@ -327,7 +345,7 @@ function wireProfileLogoutButton() {
     try {
       localStorage.removeItem("user")
       localStorage.removeItem("userEmail")
-      await fetch("logout.php", { credentials: "include" })
+      await safeFetch("logout.php", { credentials: "include" })
     } catch (_) {}
     if (window.top) {
       window.top.location.href = "index.html"

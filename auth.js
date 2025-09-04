@@ -1,3 +1,21 @@
+// drop-in replacement
+function safeFetch(...args) {
+  return fetch(...args)
+    .then(response => {
+      if (!response.ok) {
+        const err = new Error("HTTP " + response.status);
+        err.response = response;
+        throw err;
+      }
+      return response;
+    })
+    .catch(err => {
+      try { console.error("Network error:", err); } catch (e) {}
+      try { if (typeof alert !== 'undefined') alert("Network error. Please try again."); } catch (e) {}
+      throw err;
+    });
+}
+
 // ----- SIGN UP PASSWORD TOGGLE -----
 const signuppasswordInput = document.getElementById('signup-password');
 const togglesignupPassword = document.getElementById('toggle-signup-password');
@@ -27,7 +45,7 @@ if (signupForm) {
       return;
     }
     try { 
-      const res = await fetch('register.php', {
+      const res = await safeFetch('register.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password, phone, login_type: 'manual' }),
@@ -69,7 +87,7 @@ if (loginForm) {
     }
 
     try {
-      const res = await fetch('login.php', {
+      const res = await safeFetch('login.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -106,7 +124,7 @@ if (otpRequestForm) {
     }
 
     try {
-      const res = await fetch('send_otp.php', {
+      const res = await safeFetch('send_otp.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email }),
@@ -146,7 +164,7 @@ if (resetFormEl) {
     }
 
     try {
-       let res = await fetch('verify_otp.php', {
+       let res = await safeFetch('verify_otp.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp }),
@@ -159,7 +177,7 @@ if (resetFormEl) {
         return;
       }
 
-      res = await fetch('reset_password.php', {        method: 'POST',
+      res = await safeFetch('reset_password.php', {        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
          body: JSON.stringify({ email, password: newPassword }),
          credentials: 'include',

@@ -1,23 +1,22 @@
 <?php
+session_start();
 require 'db.php';
 header('Content-Type: application/json');
 
-$data = json_decode(file_get_contents("php://input"), true);
-
-$email = $data['email'] ?? '';
-$phone = $data['phone'] ?? '';
-
-if (!$email || !$phone) {
-    echo json_encode(["success" => false, "message" => "Missing email or phone."]);
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(["success" => false, "message" => "Not logged in"]);
     exit;
 }
 
-$stmt = $pdo->prepare("UPDATE users SET phone = ? WHERE email = ?");
-$success = $stmt->execute([$phone, $email]);
+$input = json_decode(file_get_contents("php://input"), true);
+$phone = isset($input['phone']) ? trim($input['phone']) : '';
 
-if ($success) {
-    echo json_encode(["success" => true]);
-} else {
-    echo json_encode(["success" => false, "message" => "Failed to save phone."]);
+if (!preg_match('/^[6-9]\d{9}$/', $phone)) {
+    echo json_encode(["success" => false, "message" => "Invalid phone format"]);
+    exit;
 }
-?>
+
+$stmt = $pdo->prepare("UPDATE users SET phone = ? WHERE id = ?");
+$ok = $stmt->execute([$phone, $_SESSION['user_id']]);
+
+echo json_encode(["success" => (bool)$ok]);

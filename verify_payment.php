@@ -34,8 +34,12 @@ try {
 
     if ($ok) {
         // ✅ Clear cart for that user
+        try {
         $stmt = $pdo->prepare("DELETE FROM cart WHERE user_id = ?");
         $stmt->execute([$order['user_id']]);
+    } catch (Exception $ignored) {
+        // Ignore if cart table doesn't exist
+    }
 
         // ✅ Success response
         echo json_encode([
