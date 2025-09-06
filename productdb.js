@@ -1,6 +1,6 @@
 // Products data
 const productsData = [
-  // SBI Products
+  /* SBI Products
   {
     id: "sbi-vc4",
     bank: "SBI",
@@ -46,9 +46,9 @@ const productsData = [
     name: "Mini Bus",
     price: 400,
     description: "Mini bus and small commercial vehicles",
-  },
+  },  */
 
-  // Bajaj Products
+  /* Bajaj Products
   {
     id: "bajaj-vc4",
     bank: "Bajaj",
@@ -94,9 +94,9 @@ const productsData = [
     name: "Mini Bus",
     price: 400,
     description: "Mini bus and small commercial vehicles",
-  },
+  },  */
 
-  // IDFC Products
+  /* IDFC Products
   {
     id: "idfc-vc4",
     bank: "IDFC",
@@ -150,9 +150,9 @@ const productsData = [
     name: "Mini Bus",
     price: 400,
     description: "Mini bus and small commercial vehicles",
-  },
+  },  */
 
-  // Kotak Products (excluding VC4)
+  /* Kotak Products (excluding VC4)
   { id: "kotak-vc5", 
     bank: "Kotak", 
     category: "VC5", 
@@ -190,9 +190,9 @@ const productsData = [
     name: "Mini Bus",
     price: 400,
     description: "Mini bus and small commercial vehicles",
-  },
+  },  */
 ]
-
+   
 // Global variables
 let filteredProducts = [...productsData]
 let currentFilters = {
