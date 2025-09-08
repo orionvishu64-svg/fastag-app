@@ -1,4 +1,5 @@
 <?php
+require_once 'common_start.php';
 require 'db.php';
 
 // Check if order_id is passed

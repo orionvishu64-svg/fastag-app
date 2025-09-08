@@ -1,6 +1,6 @@
 <?php
 // get_conversation.php
-session_start();
+require_once 'common_start.php';
 require_once __DIR__ . "/db.php";
 header("Content-Type: application/json");
 

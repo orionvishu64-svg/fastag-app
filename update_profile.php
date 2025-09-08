@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once 'common_start.php';
 require 'db.php';
 
 if (!isset($_SESSION['user_id'])) {

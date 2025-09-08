@@ -1,6 +1,5 @@
 <?php
-session_start();
-
+require_once 'common_start.php';
 /* file_put_contents("debug.txt", json_encode($_data));
 $raw = file_get_contents("php://input");
 file_put_contents("debug.txt", $raw); // Log the raw JSON input

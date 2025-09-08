@@ -1,32 +1,47 @@
 <?php
+// common_start.php — place this at the top of every PHP file (before any output)
 
-$cookie_lifetime =24 * 3600;
-$cookie_path   = '/';
-$cookie_domain = ''; // set to '.example.com' if needed
-$secure        = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
-$httponly      = true;
-$samesite      = 'Lax';
+$cookie_lifetime = 24 * 3600;  // 24 hours
+$idle_timeout    = 30 * 60;    // 30 minutes idle (optional)
+$absolute_limit  = 24 * 3600;  // server-side absolute (same as cookie)
 
-// Set session cookie params before starting session
+$secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+$httponly = true;
+$samesite = 'Lax';
+
+// set cookie params BEFORE session_start()
 if (PHP_VERSION_ID >= 70300) {
     session_set_cookie_params([
         'lifetime' => $cookie_lifetime,
-        'path'     => $cookie_path,
-        'domain'   => $cookie_domain,
+        'path'     => '/',
+        'domain'   => '',
         'secure'   => $secure,
         'httponly' => $httponly,
         'samesite' => $samesite
     ]);
 } else {
-    session_set_cookie_params($cookie_lifetime, $cookie_path, $cookie_domain, $secure, $httponly);
+    session_set_cookie_params($cookie_lifetime, '/', '', $secure, $httponly);
 }
 
-// Ensure PHP's GC keeps session data for the same duration
-@ini_set('session.gc_maxlifetime', (string)$cookie_lifetime);
+@ini_set('session.gc_maxlifetime', (string)$absolute_limit);
 
-// Start session if not started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Idle timeout
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $idle_timeout)) {
+    session_unset();
+    session_destroy();
+    $_SESSION = [];
+}
+// absolute creation time
+if (!isset($_SESSION['created_at'])) {
+    $_SESSION['created_at'] = time();
+} elseif (time() - $_SESSION['created_at'] > $absolute_limit) {
+    session_unset();
+    session_destroy();
+    $_SESSION = [];
+}
+$_SESSION['last_activity'] = time();
 ?>

@@ -1,8 +1,6 @@
 <?php
-
-session_start();
-header('Access-Control-Allow-Origin: *'); // (adjust domain if needed)
 require_once 'common_start.php';
+header('Access-Control-Allow-Origin: *'); // (adjust domain if needed)
 require 'db.php';
 
 // Read JSON input

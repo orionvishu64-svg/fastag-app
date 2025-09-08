@@ -1,4 +1,5 @@
 <?php
+require_once 'common_start.php';
 // fastag_website/get_products.php
 header('Content-Type: application/json');
 require_once __DIR__ . '/db.php';

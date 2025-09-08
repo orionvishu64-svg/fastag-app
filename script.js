@@ -26,19 +26,27 @@ document.addEventListener("DOMContentLoaded", () => {
     });
    }
 });
-  // Smooth scrolling for anchor links
-  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-    anchor.addEventListener("click", function (e) {
-      e.preventDefault()
-      const target = document.querySelector(this.getAttribute("href"))
-      if (target) {
-        target.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        })
-      }
-    })
+
+// Smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+  anchor.addEventListener("click", function (e) {
+    const href = this.getAttribute("href")
+
+    // Skip empty "#" links (like Logout or JS handlers)
+    if (!href || href === "#") {
+      return
+    }
+
+    e.preventDefault()
+    const target = document.querySelector(href)
+    if (target) {
+      target.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      })
+    }
   })
+})
 
   // Fade in animation on scroll
   const observerOptions = {
@@ -356,46 +364,3 @@ function wireProfileLogoutButton() {
 }
 
 document.addEventListener("DOMContentLoaded", wireProfileLogoutButton)
-
-/* Loader controls
-(function () {
-  const loader = document.getElementById('page-loader');
-
-  function showLoader() { if (loader) loader.classList.remove('hidden'); }
-  function hideLoader() { if (loader) loader.classList.add('hidden'); }
-
-  // Show immediately on initial parse (loader is visible by default in HTML)
-  // Hide after full load
-  window.addEventListener('load', () => {
-    // Small delay so very fast loads don’t flash
-    setTimeout(hideLoader, 200);
-  });
-
-  // Optional: show on link navigation
-  document.addEventListener('click', (e) => {
-    const a = e.target.closest('a');
-    if (!a) return;
-    const href = a.getAttribute('href') || '';
-    // Ignore hash, JS-only, mailto, tel
-    if (href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
-    // For same-tab navigations, show loader
-    if (a.target !== '_blank' && !e.metaKey && !e.ctrlKey) {
-      showLoader();
-    }
-  });
-
-  // Wrap fetch to show loader during API calls (optional but useful)
-  const originalFetch = window.fetch.bind(window);
-  window.fetch = function (...args) {
-    showLoader();
-    return originalFetch(...args)
-      .finally(() => {
-        // Slight delay to avoid flicker on rapid calls
-        setTimeout(hideLoader, 150);
-      });
-  };
-
-  // Expose for manual control if needed
-  window.AppLoader = { show: showLoader, hide: hideLoader };
-})();
-*/

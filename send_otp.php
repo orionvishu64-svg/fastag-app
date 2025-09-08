@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once 'common_start.php';
 
 header('Content-Type: application/json');
 
