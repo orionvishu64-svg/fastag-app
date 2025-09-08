@@ -6,9 +6,10 @@
     <title>Bajaj FASTag - Vehicle Categories | Apna Payment Services</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="bank-pages.css">
+    <link rel="stylesheet" href="products.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body>
+<body data-bank="Bajaj">
 
     <!-- Navigation -->
    <nav class="navbar">
@@ -92,145 +93,22 @@
     </section>
 
     <!-- Vehicle Categories -->
-    <section class="categories-section">
-        <div class="container">
-            <h2>Select Your Vehicle Category</h2>
-            <p class="section-subtitle">Bajaj FASTag is available for all vehicle categories with digital-first approach</p>
-            
-            <div class="categories-grid">
-                <!-- VC4 - Available -->
-                <div class="category-card available" data-category="VC4">
-                    <div class="category-icon">
-                        <i class="fas fa-car"></i>
-                    </div>
-                    <div class="category-info">
-                        <h3>VC4 - Car/Jeep/Van</h3>
-                        <p>Private cars, jeeps, and vans</p>
-                        <div class="price">₹400</div>
-                        <div class="features-list">
-                            <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
-                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
-                        </div>
-                    </div>
-                    <button class="category-btn select-btn" data-product-id="bajaj-vc4" onclick="selectCategory('bajaj', 'VC4', 'Car/Jeep/Van', 400, this)">
-                        <i class="fas fa-shopping-cart"></i>
-                        Add to Cart
-                    </button>
-                </div>
+    <section class="products-section">
+      <div class="container">
+        <div class="products-header-info">
+          <h2>Select Your Vehicle Category</h2>
+          </div>
 
-                <!-- VC5 - Available -->
-                <div class="category-card available" data-category="VC5">
-                    <div class="category-icon">
-                        <i class="fas fa-truck"></i>
-                    </div>
-                    <div class="category-info">
-                        <h3>VC5 - LCV</h3>
-                        <p>Light Commercial Vehicle</p>
-                        <div class="price">₹400</div>
-                        <div class="features-list">
-                             <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
-                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
-                        </div>
-                    </div>
-                    <button class="category-btn select-btn" data-product-id="bajaj-vc5" onclick="selectCategory('bajaj', 'VC5', 'LCV', 400, this)">
-                        <i class="fas fa-shopping-cart"></i>
-                        Add to Cart
-                    </button>
-                </div>
+        <!-- renderer inserts cards here -->
+        <div id="products-container" class="products-grid" aria-live="polite"></div>
 
-                <!-- VC6 - Available -->
-                <div class="category-card available" data-category="VC6">
-                    <div class="category-icon">
-                        <i class="fas fa-bus"></i>
-                    </div>
-                    <div class="category-info">
-                        <h3>VC6 - Bus/Truck</h3>
-                        <p>For buses and trucks (2 axle)</p>
-                        <div class="price">₹400</div>
-                        <div class="features-list">
-                           <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
-                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
-                        </div>
-                    </div>
-                    <button class="category-btn select-btn" data-product-id="bajaj-vc6" onclick="selectCategory('bajaj', 'VC6', 'Bus/Truck', 400, this)">
-                        <i class="fas fa-shopping-cart"></i>
-                        Add to Cart
-                    </button>
-                </div>
-
-                <!-- VC7 - Available -->
-                <div class="category-card available" data-category="VC7">
-                    <div class="category-icon">
-                        <i class="fas fa-truck-moving"></i>
-                    </div>
-                    <div class="category-info">
-                        <h3>VC7 - Heavy Vehicle</h3>
-                        <p>Heavy Commercial Vehicle (3 axle)</p>
-                        <div class="price">₹400</div>
-                        <div class="features-list">
-                            <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
-                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
-                        </div>
-                    </div>
-                    <button class="category-btn select-btn" data-product-id="bajaj-vc7" onclick="selectCategory('bajaj', 'VC7', 'Heavy Vehicle', 400, this)">
-                        <i class="fas fa-shopping-cart"></i>
-                        Add to Cart
-                    </button>
-                </div>
-
-                <!-- VC8 - Available -->
-                <div class="category-card available" data-category="VC8">
-                    <div class="category-icon">
-                        <i class="fas fa-hard-hat"></i>
-                    </div>
-                    <div class="category-info">
-                        <h3>VC8 - Construction Vehicle</h3>
-                        <p>Construction equipment vehicle</p>
-                        <div class="price">₹400</div>
-                        <div class="features-list">
-                            <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
-                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
-                        </div>
-                    </div>
-                    <button class="category-btn select-btn" data-product-id="bajaj-vc8" onclick="selectCategory('bajaj', 'VC8', 'Construction Vehicle', 400, this)">
-                        <i class="fas fa-shopping-cart"></i>
-                        Add to Cart
-                    </button>
-                </div>
-
-                <!-- VC12 - Available -->
-                <div class="category-card available" data-category="VC12">
-                    <div class="category-icon">
-                        <i class="fas fa-shuttle-van"></i>
-                    </div>
-                    <div class="category-info">
-                        <h3>VC12 - Mini Bus</h3>
-                        <p>Mini bus and small commercial vehicles</p>
-                        <div class="price">₹400</div>
-                        <div class="features-list">
-                            <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
-                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
-                        </div>
-                    </div>
-                    <button class="category-btn select-btn" data-product-id="bajaj-vc12" onclick="selectCategory('bajaj', 'VC12', 'Mini Bus', 400, this)">
-                        <i class="fas fa-shopping-cart"></i>
-                        Add to Cart
-                    </button>
-                </div>
-            </div>
+        <div class="no-results" id="noResults" style="display:none;">
+          <i class="fas fa-search"></i>
+          <h3>No products found</h3>
+          <p>No products match your current filters. Try adjusting your search criteria.</p>
+          <button class="btn btn-primary" onclick="clearAllFilters()">Clear All Filters</button>
         </div>
+      </div>
     </section>
 
     <!-- Bank Benefits -->
@@ -329,7 +207,10 @@
         </div>
     </footer>
     
-    <script src="script.js"></script> 
-    <script src="bank-pages.js"></script>
+    <script src="productdb.js"></script>
+<script src="products.js"></script>
+<script src="bank-pages.js"></script>   <!-- if bank page needs it -->
+<script src="script.js"></script>       <!-- global utilities -->
+
 </body>
 </html>

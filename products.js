@@ -1,506 +1,305 @@
-// Products data
-const productsData = [
-  /* SBI Products
-  {
-    id: "sbi-vc4",
-    bank: "SBI",
-    category: "VC4",
-    name: "Car/Jeep/Van",
-    price: 400,
-    description: "For private cars, jeeps, and vans",
-  },
-  { id: "sbi-vc5", 
-    bank: "SBI", 
-    category: "VC5", 
-    name: "LCV", 
-    price: 400, 
-    description: "Light Commercial Vehicle" },
-  {
-    id: "sbi-vc6",
-    bank: "SBI",
-    category: "VC6",
-    name: "Bus/Truck",
-    price: 400,
-    description: "For buses and trucks (2 axle)",
-  },
-  {
-    id: "sbi-vc7",
-    bank: "SBI",
-    category: "VC7",
-    name: "Heavy Vehicle",
-    price: 400,
-    description: "Heavy Commercial Vehicle (3 axle)",
-  },
-  {
-    id: "sbi-vc8",
-    bank: "SBI",
-    category: "VC8",
-    name: "Construction Vehicle",
-    price: 400,
-    description: "Construction equipment vehicle",
-  },
-  {
-    id: "sbi-vc12",
-    bank: "SBI",
-    category: "VC12",
-    name: "Mini Bus",
-    price: 400,
-    description: "Mini bus and small commercial vehicles",
-  },  */
+/* products.js (merged)
+ *
+ * Combined renderer + UI glue:
+ * - Renders product cards into #products-container using ProductDB
+ * - Exposes window.reloadProducts({ bank, category, q, limit })
+ * - Wires searchInput, bankFilter, categoryFilter, resultsCount, noResults and Clear All Filters
+ *
+ * Requirements:
+ * - productdb.js must be loaded before this file (provides ProductDB)
+ * - If you have a global addToCart(product) function, this file will call it; otherwise it falls back to localStorage.
+ */
 
-  /* Bajaj Products
-  {
-    id: "bajaj-vc4",
-    bank: "Bajaj",
-    category: "VC4",
-    name: "Car/Jeep/Van",
-    price: 400,
-    description: "For private cars, jeeps, and vans",
-  },
-  { id: "bajaj-vc5",
-    bank: "Bajaj", 
-    category: "VC5", 
-    name: "LCV", 
-    price: 400, 
-    description: "Light Commercial Vehicle" },
-  {
-    id: "bajaj-vc6",
-    bank: "Bajaj",
-    category: "VC6",
-    name: "Bus/Truck",
-    price: 400,
-    description: "For buses and trucks (2 axle)",
-  },
-  {
-    id: "bajaj-vc7",
-    bank: "Bajaj",
-    category: "VC7",
-    name: "Heavy Vehicle",
-    price: 400,
-    description: "Heavy Commercial Vehicle (3 axle)",
-  },
-  {
-    id: "bajaj-vc8",
-    bank: "Bajaj",
-    category: "VC8",
-    name: "Construction Vehicle",
-    price: 400,
-    description: "Construction equipment vehicle",
-  },
-  {
-    id: "bajaj-vc12",
-    bank: "Bajaj",
-    category: "VC12",
-    name: "Mini Bus",
-    price: 400,
-    description: "Mini bus and small commercial vehicles",
-  },  */
+/* =========================
+   Renderer / product card
+   ========================= */
 
-  /* IDFC Products
-  {
-    id: "idfc-vc4",
-    bank: "IDFC",
-    category: "VC4",
-    name: "Car/Jeep/Van",
-    price: 400,
-    description: "For private cars, jeeps, and vans",
-  },
-  {
-    id: "idfc-vc4max",
-    bank: "IDFC",
-    category: "VC4 max",
-    name: "Car/Jeep/Van",
-    price: 500,
-    description: "For private cars, jeeps, and vans",
-  },
-  { id: "idfc-vc5", 
-    bank: "IDFC", 
-    category: "VC5", 
-    name: "LCV", 
-    price: 400, 
-    description: "Light Commercial Vehicle" },
-  {
-    id: "idfc-vc6",
-    bank: "IDFC",
-    category: "VC6",
-    name: "Bus/Truck",
-    price: 400,
-    description: "For buses and trucks (2 axle)",
-  },
-  {
-    id: "idfc-vc7",
-    bank: "IDFC",
-    category: "VC7",
-    name: "Heavy Vehicle",
-    price: 400,
-    description: "Heavy Commercial Vehicle (3 axle)",
-  },
-  {
-    id: "idfc-vc8",
-    bank: "IDFC",
-    category: "VC8",
-    name: "Construction Vehicle",
-    price: 400,
-    description: "Construction equipment vehicle",
-  },
-  {
-    id: "idfc-vc12",
-    bank: "IDFC",
-    category: "VC12",
-    name: "Mini Bus",
-    price: 400,
-    description: "Mini bus and small commercial vehicles",
-  },  */
+(function () {
+  if (!window.ProductDB) {
+    console.error('ProductDB missing — include productdb.js before products.js');
+    return;
+  }
 
-  /* Kotak Products (excluding VC4)
-  { id: "kotak-vc5", 
-    bank: "Kotak", 
-    category: "VC5", 
-    name: "LCV", 
-    price: 400, 
-    description: "Light Commercial Vehicle" },
-  {
-    id: "kotak-vc6",
-    bank: "Kotak",
-    category: "VC6",
-    name: "Bus/Truck",
-    price: 400,
-    description: "For buses and trucks (2 axle)",
-  },
-  {
-    id: "kotak-vc7",
-    bank: "Kotak",
-    category: "VC7",
-    name: "Heavy Vehicle",
-    price: 400,
-    description: "Heavy Commercial Vehicle (3 axle)",
-  },
-  {
-    id: "kotak-vc8",
-    bank: "Kotak",
-    category: "VC8",
-    name: "Construction Vehicle",
-    price: 400,
-    description: "Construction equipment vehicle",
-  },
-  {
-    id: "kotak-vc12",
-    bank: "Kotak",
-    category: "VC12",
-    name: "Mini Bus",
-    price: 400,
-    description: "Mini bus and small commercial vehicles",
-  },  */
-]
-   
-// Global variables
-let filteredProducts = [...productsData]
-let currentFilters = {
-  search: "",
-  bank: "all",
-  category: "all",
-}
+  // Safe fetch wrapper (reused)
+  async function safeFetchJson(url, opts = {}) {
+    const res = await fetch(url, Object.assign({ credentials: 'include' }, opts));
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
 
-// DOM elements
-const searchInput = document.getElementById("searchInput")
-const bankFilter = document.getElementById("bankFilter")
-const categoryFilter = document.getElementById("categoryFilter")
-const productsGrid = document.getElementById("productsGrid")
-const resultsCount = document.getElementById("resultsCount")
-const noResults = document.getElementById("noResults")
-
-// Initialize products page
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM fully loaded"); // Debug point
-  renderProducts();
-  setupEventListeners();
-  updateCartCount(); // Ensure cart count is updated on load
-  syncAddToCartButtons(); // Synchronize button states on load
-});
-
-// Setup event listeners
-function setupEventListeners() {
-  // Search input with debounce
-  let searchTimeout
-  searchInput.addEventListener("input", function () {
-    clearTimeout(searchTimeout)
-    searchTimeout = setTimeout(() => {
-      currentFilters.search = this.value.toLowerCase()
-      filterProducts()
-    }, 300)
-  })
-
-  // Bank filter
-  bankFilter.addEventListener("change", function () {
-    currentFilters.bank = this.value
-    filterProducts()
-  })
-
-  // Category filter
-  categoryFilter.addEventListener("change", function () {
-    currentFilters.category = this.value
-    filterProducts()
-  })
-
-  // Listen for changes in localStorage 'cart' key to update button states across tabs/windows
-  window.addEventListener('storage', (event) => {
-    if (event.key === 'cart') {
-      updateCartCount(); // Update cart count in navbar
-      syncAddToCartButtons(); // Synchronize product button states
+  // DOM helpers
+  function $(sel, root = document) {
+    try {
+      return root.querySelector(sel);
+    } catch (e) {
+      return null;
     }
-  });
-}
-
-// Filter products based on current filters
-function filterProducts() {
-  filteredProducts = productsData.filter((product) => {
-    const matchesSearch =
-      currentFilters.search === "" ||
-      product.name.toLowerCase().includes(currentFilters.search) ||
-      product.description.toLowerCase().includes(currentFilters.search) ||
-      product.bank.toLowerCase().includes(currentFilters.search)
-
-    const matchesBank =
-      currentFilters.bank === "all" ||
-      product.bank.toLowerCase() === currentFilters.bank.toLowerCase();
-
-    const matchesCategory =
-      currentFilters.category === "all" ||
-      product.category.toLowerCase() === currentFilters.category.toLowerCase();
-
-    return matchesSearch && matchesBank && matchesCategory
-  })
-console.log("Filtered products:", filteredProducts); // Debug point
-  renderProducts()
-}
-
-// Render products
-function renderProducts() {
-  // Update results count
-  resultsCount.textContent = filteredProducts.length
-
-  // Show/hide no results message
-  if (filteredProducts.length === 0) {
-    productsGrid.style.display = "none"
-    noResults.style.display = "block"
-    return
-  } else {
-    productsGrid.style.display = "grid"
-    noResults.style.display = "none"
   }
-
-  // Clear existing products
-  productsGrid.innerHTML = ""
-
-  // Render each product
-  filteredProducts.forEach((product) => {
-    const productCard = createProductCard(product)
-    productsGrid.appendChild(productCard)
-  })
-
-  // Add fade-in animation
-  const productCards = productsGrid.querySelectorAll(".product-card")
-  productCards.forEach((card, index) => {
-    card.style.opacity = "0"
-    card.style.transform = "translateY(20px)"
-    setTimeout(() => {
-      card.style.transition = "all 0.3s ease"
-      card.style.opacity = "1"
-      card.style.transform = "translateY(0)"
-    }, index * 50)
-  })
-
-  // After rendering, ensure button states are correct
-  syncAddToCartButtons();
-}
-
-// Create product card HTML
-function createProductCard(product) {
-  const card = document.createElement("div")
-  card.className = `product-card ${product.bank.toLowerCase()}`
-
-  card.innerHTML = `
-    <div class="product-header">
-      <div class="product-bank-info">
-        <div class="bank-logo-section">
-          <div class="bank-logo">${product.bank}</div>
-          <span class="bank-name">${product.bank}</span>
-        </div>
-        <span class="vehicle-category">${product.category}</span>
-      </div>
-      <h3 class="product-title">${product.name}</h3>
-      <p class="product-description">${product.description}</p>
-    </div>
-    
-    <div class="product-content">
-      <div class="price-section">
-        <div class="price">₹${product.price.toLocaleString()}</div>
-        <div class="price-note">Inclusive of all charges</div>
-      </div>
-      
-      <div class="product-details">
-        <div class="detail-row">
-          <span class="detail-label">Bank:</span>
-          <span class="detail-value">${product.bank}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Activation:</span>
-          <span class="detail-value">Within 24 hours</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Validity:</span>
-          <span class="detail-value">5 years</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Recharge:</span>
-          <span class="detail-value">Online/Offline</span>
-        </div>
-      </div>
-    </div>
-    
-    <div class="product-footer">
-      <button class="add-to-cart-btn" data-product-id="${product.id}" onclick="addToCart('${product.id}')">
-        <i class="fas fa-shopping-cart"></i>
-        Add to Cart
-      </button>
-    </div>
-  `;
-
-  // Attach the product ID to the button for easy lookup
-  const addToCartBtn = card.querySelector('.add-to-cart-btn');
-  addToCartBtn.dataset.productId = product.id;
-
-  return card;
-}
-
-// Function to synchronize the state of "Add to Cart" buttons
-function syncAddToCartButtons() {
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  const cartProductIds = new Set(cart.map(item => item.id));
-
-  document.querySelectorAll(".add-to-cart-btn").forEach(button => {
-    const productId = button.dataset.productId;
-    if (cartProductIds.has(productId)) {
-      button.innerHTML = '<i class="fas fa-check"></i> Added!';
-      button.style.background = "#10b981"; // Green color
-      button.disabled = true;
-    } else {
-      button.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
-      button.style.background = ""; // Reset to default
-      button.disabled = false;
+  function $all(sel, root = document) {
+    try {
+      return Array.from(root.querySelectorAll(sel));
+    } catch (e) {
+      return [];
     }
-  });
-}
-
-
-// Add to cart function
-function addToCart(productId) {
-  const product = productsData.find((p) => p.id === productId)
-  if (!product) return
-
-  // Get current cart from localStorage or initialize empty array
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]")
-
-  // Check if product already exists in cart
-  const existingItem = cart.find((item) => item.id === productId)
-
-  if (existingItem) {
-    existingItem.quantity += 1
-  } else {
-    cart.push({
-      ...product,
-      quantity: 1,
-      bank: product.bank,
-      addedAt: new Date().toISOString(),
-    })
   }
 
-  // Save to localStorage
-  localStorage.setItem("cart", JSON.stringify(cart))
-
-  // Update cart count in navbar
-  updateCartCount()
-
-  // Show success notification
-  showNotification(`${product.bank} FASTag - ${product.name} added to cart!`, "success")
-
-  // Update the button state immediately and persistently
-  syncAddToCartButtons();
-}
-
-// Update cart count
-function updateCartCount() {
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]")
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0)
-
-  const cartCountElement = document.querySelector(".cart-count")
-  if (cartCountElement) {
-    cartCountElement.textContent = totalItems
-    cartCountElement.style.display = totalItems > 0 ? "flex" : "none"
-  }
-}
-
-// Clear all filters
-function clearAllFilters() {
-  currentFilters = {
-    search: "",
-    bank: "all",
-    category: "all",
+  // Escape text for HTML (small utility)
+  function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
-  searchInput.value = ""
-  bankFilter.value = "all"
-  categoryFilter.value = "all"
+  // Detect bank from body data attribute or path
+  function detectBankFromPage() {
+    const b = document.body && document.body.dataset && document.body.dataset.bank;
+    if (b) return b;
+    const path = location.pathname.split('/').pop().toLowerCase();
+    if (path.includes('bajaj')) return 'Bajaj';
+    if (path.includes('sbi')) return 'SBI';
+    if (path.includes('kotak')) return 'Kotak';
+    if (path.includes('idfc')) return 'IDFC';
+    return null;
+  }
 
-  filterProducts()
-}
+  // Default container selectors (update if your HTML uses other containers)
+  const containerSelectors = ['#products-container', '.products-grid', '.products-list'];
+  function findContainer() {
+    for (const sel of containerSelectors) {
+      const el = $(sel);
+      if (el) return el;
+    }
+    // fallback create container under main
+    const fallback = document.createElement('div');
+    fallback.className = 'products-grid';
+    (document.querySelector('main') || document.body).appendChild(fallback);
+    return fallback;
+  }
 
-// Show notification function
-function showNotification(message, type = "info") {
-  const notification = document.createElement("div")
-  notification.className = `notification ${type}`
-  notification.innerHTML = `
-    <i class="fas fa-${type === "success" ? "check-circle" : "info-circle"}"></i>
-    <span>${message}</span>
-  `
+  // Build the product card — adapt classes/structure to your CSS if needed.
+  function createProductCard(product) {
+    const card = document.createElement('div');
+    card.className = 'product-card';
 
-  notification.style.cssText = `
-    position: fixed;
-    top: 100px;
-    right: 20px;
-    background: ${type === "success" ? "#10b981" : "#3b82f6"};
-    color: white;
-    padding: 16px 24px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 1000;
-    transform: translateX(100%);
-    transition: transform 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    max-width: 300px;
-  `
+    // store dataset keys used by cart
+    card.dataset.dbId = product.id;
+    card.dataset.productId = product.product_id || '';
+    card.dataset.bank = product.bank || '';
+    card.dataset.category = product.category || '';
 
-  document.body.appendChild(notification)
+    // Top badges or chips (bank & category)
+    const top = document.createElement('div');
+    top.className = 'product-card-top';
+    top.innerHTML = `
+      <div class="chip bank-chip">${escapeHtml(product.bank || '')}</div>
+      <div class="chip cat-chip">${escapeHtml(product.category || '')}</div>
+    `;
 
-  // Animate in
-  setTimeout(() => {
-    notification.style.transform = "translateX(0)"
-  }, 100)
+    // Body content (title, description, price)
+    const body = document.createElement('div');
+    body.className = 'product-card-body';
+    body.innerHTML = `
+      <h3 class="product-title">${escapeHtml(product.name)}</h3>
+      <p class="product-desc">${escapeHtml(product.description || '')}</p>
+      <div class="product-price">₹${Number(product.price).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</div>
+      <div class="product-subtext">Inclusive of all charges</div>
 
-  // Remove after 4 seconds
-  setTimeout(() => {
-    notification.style.transform = "translateX(100%)"
-    setTimeout(() => {
-      if (document.body.contains(notification)) {
-        document.body.removeChild(notification)
+      <div class="product-meta">
+        <div><small><strong>Bank:</strong> ${escapeHtml(product.bank || '')}</small></div>
+        <div><small><strong>Activation:</strong> ${escapeHtml((product.activation) || '')}${product.activation ? '&#8377;' : ''}</small></div>
+        <div><small><strong>Security:</strong> ${escapeHtml((product.security) || '')}${product.security ? '&#8377;' : ''}</small></div>
+        <div><small><strong>Tag-cost:</strong> ${escapeHtml((product.tagcost) || '')}${product.tagcost ? '&#8377;' : ''}</small></div>
+        <div><small><strong>Payout:</strong> ${escapeHtml(String(product.payout) || '')}</small></div>
+      </div>
+    `;
+
+    // Footer & Add-to-cart button
+    const footer = document.createElement('div');
+    footer.className = 'product-card-footer';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'add-to-cart-btn';
+    btn.textContent = 'Add to Cart';
+    // Preserve data attributes used by earlier cart code:
+    btn.dataset.productId = product.product_id || '';
+    btn.dataset.dbId = product.id;
+    btn.dataset.price = product.price;
+    btn.dataset.name = product.name;
+
+    btn.addEventListener('click', function (e) {
+      // prefer an existing global addToCart function if present
+      const prodPayload = {
+        id: product.id,
+        product_id: product.product_id,
+        name: product.name,
+        price: product.price,
+        bank: product.bank,
+        category: product.category
+      };
+      if (typeof window.addToCart === 'function') {
+        window.addToCart(prodPayload);
+      } else {
+        // fallback cart behavior: simple localStorage push + update cart count
+        try {
+          let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+          cart.push(prodPayload);
+          localStorage.setItem('cart', JSON.stringify(cart));
+          if (typeof window.updateCartCount === 'function') window.updateCartCount();
+        } catch (err) {
+          console.error('add-to-cart fallback error', err);
+        }
       }
-    }, 300)
-  }, 4000)
-}
+    });
 
-// Export functions for global access
-window.addToCart = addToCart
-window.clearAllFilters = clearAllFilters
-window.updateCartCount = updateCartCount;
+    footer.appendChild(btn);
+
+    // assemble
+    card.appendChild(top);
+    card.appendChild(body);
+    card.appendChild(footer);
+
+    return card;
+  }
+
+  // Render a list of products into container
+  async function renderProductsList(products, container) {
+    container = container || findContainer();
+    container.innerHTML = '';
+    if (!products || products.length === 0) {
+      container.innerHTML = '<div class="notice-card">No products found.</div>';
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    for (const p of products) {
+      const card = createProductCard(p);
+      frag.appendChild(card);
+    }
+    container.appendChild(frag);
+  }
+
+  // Public loader that fetches and renders (supports opts: { bank, category, q, limit, container })
+  async function loadAndRender(opts = {}) {
+    const bank = opts.bank === undefined ? detectBankFromPage() : opts.bank;
+    const category = opts.category || null;
+    const q = opts.q || null;
+    const limit = opts.limit || 0;
+    const container = opts.container ? document.querySelector(opts.container) : findContainer();
+
+    try {
+      container.innerHTML = '<div class="notice-card">Loading products…</div>';
+      const products = await ProductDB.getAll({ force: false, bank, category, q, limit });
+      await renderProductsList(products, container);
+    } catch (err) {
+      console.error('Failed to load products', err);
+      container.innerHTML = `<div class="notice-card">Failed to load products.</div>`;
+    }
+  }
+
+  // make reload available globally
+  window.reloadProducts = (opts) => loadAndRender(opts);
+
+  // Auto load on DOM ready (but the UI glue below will also kick off a load via reloadAndUpdateUI)
+  document.addEventListener('DOMContentLoaded', () => {
+    // do not auto call loadAndRender here to avoid double-loading — UI glue controls initial load
+    // loadAndRender();
+  });
+
+  /* =========================
+     UI glue (merged from products-ui.js)
+     ========================= */
+
+  // Map UI control values -> ProductDB params
+  function uiToParams() {
+    const bankVal = document.getElementById('bankFilter')?.value || 'all';
+    const categoryVal = document.getElementById('categoryFilter')?.value || 'all';
+    const q = document.getElementById('searchInput')?.value?.trim() || '';
+    return {
+      bank: bankVal === 'all' ? null : bankVal,
+      category: categoryVal === 'all' ? null : categoryVal,
+      q: q || null
+    };
+  }
+
+  function showNoResults(show) {
+    const el = document.getElementById('noResults');
+    if (!el) return;
+    el.style.display = show ? '' : 'none';
+  }
+
+  function updateResultsCount(n) {
+    const el = document.getElementById('resultsCount');
+    if (!el) return;
+    el.textContent = String(n);
+  }
+
+  function clearAllFilters() {
+    const s = document.getElementById('searchInput');
+    const b = document.getElementById('bankFilter');
+    const c = document.getElementById('categoryFilter');
+    if (s) s.value = '';
+    if (b) b.value = 'all';
+    if (c) c.value = 'all';
+    reloadAndUpdateUI();
+  }
+
+  // Expose globally for HTML button onclick
+  window.clearAllFilters = clearAllFilters;
+
+  // Core: fetch products (count) then render and update UI
+  async function reloadAndUpdateUI() {
+    const params = uiToParams();
+    try {
+      // Get matching products (force server fetch to ensure count reflects filters)
+      const products = await ProductDB.getAll({ force: true, bank: params.bank, category: params.category, q: params.q });
+      updateResultsCount(products.length);
+      showNoResults(products.length === 0);
+
+      // Render cards (products.js provides reloadProducts)
+      window.reloadProducts({ bank: params.bank, category: params.category, q: params.q });
+    } catch (err) {
+      console.error('reloadAndUpdateUI error', err);
+      updateResultsCount(0);
+      showNoResults(true);
+      // still attempt to render so the renderer can show an error notice if needed
+      window.reloadProducts({ bank: params.bank, category: params.category, q: params.q });
+    }
+  }
+
+  // Debounce helper
+  function debounce(fn, wait = 300) {
+    let t = null;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), wait);
+    };
+  }
+
+  // Wire controls on DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', function () {
+    // initial load via UI glue (counts + render)
+    reloadAndUpdateUI();
+
+    // search input (debounced)
+    const search = document.getElementById('searchInput');
+    if (search) {
+      search.addEventListener('input', debounce(() => reloadAndUpdateUI(), 350));
+    }
+
+    // bank filter
+    const bankSel = document.getElementById('bankFilter');
+    if (bankSel) {
+      bankSel.addEventListener('change', () => reloadAndUpdateUI());
+    }
+
+    // category filter
+    const catSel = document.getElementById('categoryFilter');
+    if (catSel) {
+      catSel.addEventListener('change', () => reloadAndUpdateUI());
+    }
+  });
+
+})();

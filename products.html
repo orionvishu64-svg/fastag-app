@@ -58,101 +58,71 @@
     </div>
   </div>
 </nav>
-
-    <!-- Header -->
-    <section class="products-header">
-        <div class="container">
-            <h1>FASTag Products</h1>
-            <p><b>Choose from our wide range of FASTags available across different banks and vehicle categories</b></p>
-        </div>
+ 
+<!--products now will be inserted here with dtabase-->
+    <main class="container page-products">
+    <section class="page-header">
+      <h1>FASTag Products</h1>
+      <p><b>Choose from our FASTag products across banks & vehicle categories</b></p>
     </section>
 
-    <!-- Filters -->
     <section class="filters-section">
-        <div class="container">
-            <div class="filters-card">
-                <div class="filters-grid">
-                    <div class="search-filter">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="searchInput" placeholder="Search products...">
-                    </div>
-                    <div class="bank-filter">
-                        <select id="bankFilter">
-                            <option value="all">All Banks</option>
-                            <option value="Kotak">Kotak</option>
-                            <option value="SBI">SBI</option>
-                            <option value="Bajaj">Bajaj</option>
-                            <option value="IDFC">IDFC</option>
-                        </select>
-                    </div>
-                    <div class="category-filter">
-                        <select id="categoryFilter">
-                            <option value="all">All Categories</option>
-                            <option value="VC4">VC4 - Car/Jeep/Van</option>
-                            <option value="VC4max">VC4max - Car/Jeep/Van</option>
-                            <option value="VC5">VC5 - LCV</option>
-                            <option value="VC6">VC6 - Bus/Truck</option>
-                            <option value="VC7">VC7 - Heavy Vehicle</option>
-                            <option value="VC8">VC8 - Construction Vehicle</option>
-                            <option value="VC12">VC12 - Mini Bus</option>
-                        </select>
-                    </div>
-                </div>
+      <div class="container">
+        <div class="filters-card">
+          <div class="filters-grid">
+            <div class="search-filter">
+              <i class="fas fa-search"></i>
+              <input type="text" id="searchInput" placeholder="Search products...">
             </div>
+
+            <div class="bank-filter">
+              <select id="bankFilter">
+                <option value="all">All Banks</option>
+                <option value="Kotak">Kotak</option>
+                <option value="SBI">SBI</option>
+                <option value="Bajaj">Bajaj</option>
+                <option value="IDFC">IDFC</option>
+              </select>
+            </div>
+
+            <div class="category-filter">
+              <select id="categoryFilter">
+                <option value="all">All Categories</option>
+                <option value="VC4">VC4 - Car/Jeep/Van</option>
+                <option value="VC4max">VC4max - Car/Jeep/Van</option>
+                <option value="VC5">VC5 - LCV</option>
+                <option value="VC6">VC6 - Bus/Truck</option>
+                <option value="VC7">VC7 - Heavy Vehicle</option>
+                <option value="VC8">VC8 - Construction Vehicle</option>
+                <option value="VC12">VC12 - Mini Bus</option>
+              </select>
+            </div>
+          </div>
         </div>
+      </div>
     </section>
 
-    <!-- Bank Availability Notice -->
-    <section class="availability-notice">
-        <div class="container">
-            <div class="notice-card">
-                <h3><i class="fas fa-info-circle"></i> Bank Availability Notice:</h3>
-                <div class="availability-grid">
-                    <div class="bank-availability">
-                        <span class="bank-badge kotak">Kotak</span>
-                        <span class="availability-text">VC5-VC12</span>
-                    </div>
-                    <div class="bank-availability">
-                        <span class="bank-badge sbi">SBI</span>
-                        <span class="availability-text">All Categories</span>
-                    </div>
-                    <div class="bank-availability">
-                        <span class="bank-badge bajaj">Bajaj</span>
-                        <span class="availability-text">All Categories</span>
-                    </div>
-                    <div class="bank-availability">
-                        <span class="bank-badge idfc">IDFC</span>
-                        <span class="availability-text">All Categories</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Products Grid -->
     <section class="products-section">
-        <div class="container">
-            <div class="products-header-info">
-                <h2>Available Products</h2>
-                <div class="results-count">
-                    <span id="resultsCount">25</span> products found
-                </div>
-            </div>
-            
-            <div class="products-grid" id="productsGrid">
-                <!-- Products will be dynamically inserted here -->
-            </div>
-
-            <!-- No Results Message -->
-            <div class="no-results" id="noResults" style="display: none;">
-                <i class="fas fa-search"></i>
-                <h3>No products found</h3>
-                <p>No products match your current filters. Try adjusting your search criteria.</p>
-                <button class="btn btn-primary" onclick="clearAllFilters()">Clear All Filters</button>
-            </div>
+      <div class="container">
+        <div class="products-header-info">
+          <h2>Available Products</h2>
+          <div class="results-count">
+            <span id="resultsCount">0</span> products found
+          </div>
         </div>
-    </section>
 
+        <!-- renderer inserts cards here -->
+        <div id="products-container" class="products-grid" aria-live="polite"></div>
+
+        <div class="no-results" id="noResults" style="display:none;">
+          <i class="fas fa-search"></i>
+          <h3>No products found</h3>
+          <p>No products match your current filters. Try adjusting your search criteria.</p>
+          <button class="btn btn-primary" onclick="clearAllFilters()">Clear All Filters</button>
+        </div>
+      </div>
+    </section>
+  
     <!-- Special Notice about kotak vc4 fastag -->
     <section class="special-notice">
         <div class="container">
@@ -162,7 +132,7 @@
             </div>
         </div>
     </section>
-
+</main>
     <!-- Footer -->
      <footer class="footer">
         <div class="container">
@@ -231,6 +201,7 @@
     </footer>
 
     <script src="script.js"></script>
+    <script src="productdb.js"></script>
     <script src="products.js"></script>
 </body>
 </html>

@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kotak FASTag - Vehicle Categories | Apna Payment Services</title>
+    <title>KOTAK FASTag - Vehicle Categories | Apna Payment Services</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="bank-pages.css">
+    <link rel="stylesheet" href="products.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body>
-
+<body data-bank="Kotak">
     <!-- Navigation -->
    <nav class="navbar">
   <div class="nav-container">
@@ -67,11 +67,11 @@
         <div class="container">
             <div class="bank-header-content">
                 <div class="bank-logo-large">
-                    <img src="https://acko-cms.ackoassets.com/kotak_bank_fastag_fee_online_recharge_48ba24c440.jpg" alt="Kotak Bank">
+                    <img src="https://images.goodreturns.in/webp/common_dynamic/images/social_share/fastag_18.jpg" alt="Kotak Bank">
                 </div>
                 <div class="bank-info">
-                    <h1>Kotak FASTag</h1>
-                    <p>Choose your vehicle category for Kotak Bank FASTag. Get instant activation and seamless toll payments.</p>
+                    <h1>KOTAK FIRST FASTag</h1>
+                    <p>Choose your vehicle category for KOTAK FIRST Bank FASTag. Modern banking with customer-first approach.</p>
                     <div class="bank-features">
                         <div class="feature-item">
                             <i class="fas fa-clock"></i>
@@ -79,11 +79,11 @@
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-shield-alt"></i>
-                            <span>Secure payments</span>
+                            <span>Advanced security</span>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-mobile-alt"></i>
-                            <span>Mobile recharge</span>
+                            <span>FIRST Mobile app</span>
                         </div>
                     </div>
                 </div>
@@ -92,169 +92,48 @@
     </section>
 
     <!-- Vehicle Categories -->
-    <section class="categories-section">
-        <div class="container">
-            <h2>Select Your Vehicle Category</h2>
-            <p class="section-subtitle">Choose the appropriate category for your vehicle to get the right FASTag</p>
-            
-            <div class="categories-grid">
-                <!-- VC4 - Not Available -->
-                <div class="category-card unavailable">
-                    <div class="category-icon">
-                        <i class="fas fa-car"></i>
-                    </div>
-                    <div class="category-info">
-                        <h3>VC4 - Car/Jeep/Van</h3>
-                        <p>Private cars, jeeps, and vans</p>
-                        <div class="price">Not Available</div>
-                        <div class="unavailable-reason">
-                            <i class="fas fa-times-circle"></i>
-                            <span>Not offered by Kotak Bank</span>
-                        </div>
-                    </div>
-                    <button class="category-btn unavailable-btn" disabled>
-                        <i class="fas fa-ban"></i>
-                        Not Available
-                    </button>
-                </div>
+    <section class="products-section">
+      <div class="container">
+        <div class="products-header-info">
+          <h2>Select Your Vehicle Category</h2>
+          </div>
 
-                <!-- VC5 - Available -->
-                <div class="category-card available" data-category="VC5">
-                    <div class="category-icon">
-                        <i class="fas fa-truck"></i>
-                    </div>
-                    <div class="category-info">
-                        <h3>VC5 - LCV</h3>
-                        <p>Light Commercial Vehicle</p>
-                        <div class="price">₹400</div>
-                        <div class="features-list">
-                            <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
-                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
-                        </div>
-                    </div>
-                    <button class="category-btn select-btn" data-product-id="kotak-vc5" onclick="selectCategory('kotak', 'VC5', 'LCV', 400, this)">
-                        <i class="fas fa-shopping-cart"></i>
-                        Add to Cart
-                    </button>
-                </div>
+        <!-- renderer inserts cards here -->
+        <div id="products-container" class="products-grid" aria-live="polite"></div>
 
-                <!-- VC6 - Available -->
-                <div class="category-card available" data-category="VC6">
-                    <div class="category-icon">
-                        <i class="fas fa-bus"></i>
-                    </div>
-                    <div class="category-info">
-                        <h3>VC6 - Bus/Truck</h3>
-                        <p>For buses and trucks (2 axle)</p>
-                        <div class="price">₹400</div>
-                        <div class="features-list">
-                            <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
-                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
-                        </div>
-                    </div>
-                    <button class="category-btn select-btn" data-product-id="kotak-vc6" onclick="selectCategory('kotak', 'VC6', 'Bus/Truck', 400, this)">
-                        <i class="fas fa-shopping-cart"></i>
-                        Add to Cart
-                    </button>
-                </div>
-
-                <!-- VC7 - Available -->
-                <div class="category-card available" data-category="VC7">
-                    <div class="category-icon">
-                        <i class="fas fa-truck-moving"></i>
-                    </div>
-                    <div class="category-info">
-                        <h3>VC7 - Heavy Vehicle</h3>
-                        <p>Heavy Commercial Vehicle (3 axle)</p>
-                        <div class="price">₹400</div>
-                        <div class="features-list">
-                           <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
-                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
-                        </div>
-                    </div>
-                    <button class="category-btn select-btn" data-product-id="kotak-vc7" onclick="selectCategory('kotak', 'VC7', 'Heavy Vehicle', 400, this)">
-                        <i class="fas fa-shopping-cart"></i>
-                        Add to Cart
-                    </button>
-                </div>
-
-                <!-- VC8 - Available -->
-                <div class="category-card available" data-category="VC8">
-                    <div class="category-icon">
-                        <i class="fas fa-hard-hat"></i>
-                    </div>
-                    <div class="category-info">
-                        <h3>VC8 - Construction Vehicle</h3>
-                        <p>Construction equipment vehicle</p>
-                        <div class="price">₹400</div>
-                        <div class="features-list">
-                          <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
-                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
-                        </div>
-                    </div>
-                    <button class="category-btn select-btn" data-product-id="kotak-vc8" onclick="selectCategory('kotak', 'VC8', 'Construction Vehicle', 400, this)">
-                        <i class="fas fa-shopping-cart"></i>
-                        Add to Cart
-                    </button>
-                </div>
-
-                <!-- VC12 - Available -->
-                <div class="category-card available" data-category="VC12">
-                    <div class="category-icon">
-                        <i class="fas fa-shuttle-van"></i>
-                    </div>
-                    <div class="category-info">
-                        <h3>VC12 - Mini Bus</h3>
-                        <p>Mini bus and small commercial vehicles</p>
-                        <div class="price">₹400</div>
-                        <div class="features-list">
-                          <div class="feature"><i class="fas fa-check"></i> 200 - Activation</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Security</div>
-                            <div class="feature"><i class="fas fa-check"></i> 100 - Tagcost</div>
-                            <div class="feature"><i class="fas fa-check"></i> Instant 110 Payout</div>
-                        </div>
-                    </div>
-                    <button class="category-btn select-btn" data-product-id="kotak-vc12" onclick="selectCategory('kotak', 'VC12', 'Mini Bus', 400, this)">
-                        <i class="fas fa-shopping-cart"></i>
-                        Add to Cart
-                    </button>
-                </div>
-            </div>
+        <div class="no-results" id="noResults" style="display:none;">
+          <i class="fas fa-search"></i>
+          <h3>No products found</h3>
+          <p>No products match your current filters. Try adjusting your search criteria.</p>
+          <button class="btn btn-primary" onclick="clearAllFilters()">Clear All Filters</button>
         </div>
+      </div>
     </section>
 
     <!-- Bank Benefits -->
     <section class="benefits-section kotak-theme">
         <div class="container">
-            <h2>Why Choose Kotak FASTag?</h2>
+            <h2>Why Choose KOTAK FIRST FASTag?</h2>
             <div class="benefits-grid">
                 <div class="benefit-card">
-                    <i class="fas fa-university"></i>
-                    <h3>Trusted Bank</h3>
-                    <p>Kotak Mahindra Bank is one of India's leading private sector banks</p>
+                    <i class="fas fa-users"></i>
+                    <h3>Customer First</h3>
+                    <p>Customer-first approach with personalized banking solutions</p>
                 </div>
                 <div class="benefit-card">
                     <i class="fas fa-mobile-alt"></i>
-                    <h3>Easy Recharge</h3>
-                    <p>Recharge your FASTag anytime through mobile app or online banking</p>
+                    <h3>FIRST Mobile</h3>
+                    <p>Advanced mobile banking app with comprehensive FASTag management</p>
+                </div>
+                <div class="benefit-card">
+                    <i class="fas fa-cog"></i>
+                    <h3>Modern Technology</h3>
+                    <p>Latest technology stack for seamless digital experience</p>
                 </div>
                 <div class="benefit-card">
                     <i class="fas fa-headset"></i>
                     <h3>24/7 Support</h3>
-                    <p>Round-the-clock customer support for all your FASTag queries</p>
-                </div>
-                <div class="benefit-card">
-                    <i class="fas fa-chart-line"></i>
-                    <h3>Transaction History</h3>
-                    <p>Detailed transaction history and SMS alerts for every toll payment</p>
+                    <p>Round-the-clock customer support with quick resolution</p>
                 </div>
             </div>
         </div>
@@ -327,7 +206,10 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
-    <script src="bank-pages.js"></script>
+    <script src="productdb.js"></script>
+<script src="products.js"></script>
+<script src="bank-pages.js"></script>   <!-- if bank page needs it -->
+<script src="script.js"></script>       <!-- global utilities -->
+
 </body>
 </html>
