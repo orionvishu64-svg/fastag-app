@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/db.php';
-
+require_once 'common_start.php';
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['user_id'])) {

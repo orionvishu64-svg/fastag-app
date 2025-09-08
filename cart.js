@@ -375,27 +375,49 @@ class CartManager {
     }
   }
 
-  proceedToCheckout() {
-if (this.cart.length === 0) {
+// replace proceedToCheckout() in cart.js with this:
+proceedToCheckout() {
+  if (this.cart.length === 0) {
     this.showNotification("Your cart is empty", "error");
     return;
   }
 
-  const user = JSON.parse(localStorage.getItem("user") || "null");
-   const checkoutBtn = document.getElementById("checkoutBtn");
-   if (checkoutBtn) {
-     checkoutBtn.disabled = true;
-     checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
-   }
-
-   if (user) {
-     // Logged in → go to payment
-     window.location.href = "payment.html";
-   } else {
-     // Not logged in → go to login
-     window.location.href = "login.html";
-   }
+  const checkoutBtn = document.getElementById("checkoutBtn");
+  if (checkoutBtn) {
+    checkoutBtn.disabled = true;
+    checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
   }
+
+  // Check server-side session to verify login (more reliable than localStorage)
+  fetch('get_user.php', { credentials: 'same-origin' })
+    .then(r => r.json())
+    .then(data => {
+      if (checkoutBtn) {
+        checkoutBtn.disabled = false;
+        checkoutBtn.innerHTML = 'Proceed to Checkout';
+      }
+
+      if (data && data.success) {
+        // Logged in → go to payment
+        window.location.href = "payment.html";
+      } else {
+        // Not logged in → redirect to login, preserve return path
+        const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = `login.html?return=${returnUrl}`;
+      }
+    })
+    .catch(err => {
+      console.error('Session check failed', err);
+      if (checkoutBtn) {
+        checkoutBtn.disabled = false;
+        checkoutBtn.innerHTML = 'Proceed to Checkout';
+      }
+      // Safe fallback: send user to login page
+      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = `login.html?return=${returnUrl}`;
+    });
+}
+
   // update cart count
   updateCartCount() {
     const totalItems = this.cart.reduce((sum, item) => sum + Math.max(1, parseInt(item.quantity || 1, 10)), 0)

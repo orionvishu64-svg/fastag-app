@@ -1,6 +1,6 @@
 <?php
 session_start();
-
+require_once 'common_start.php';
 // Destroy all session variables
 $_SESSION = [];
 

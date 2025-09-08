@@ -12,7 +12,7 @@ function safeFetch(...args) {
     .catch(err => {
       try { console.error("Network error:", err); } catch (e) {}
       try { if (typeof alert !== 'undefined') alert("Network error. Please try again."); } catch (e) {}
-      throw err;
+      throw err;z
     });
 }
 

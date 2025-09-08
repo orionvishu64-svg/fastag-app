@@ -1,7 +1,6 @@
 <?php
 session_start();
 require 'db.php';
-
 header('Content-Type: application/json');
 
 // ✅ Check login
