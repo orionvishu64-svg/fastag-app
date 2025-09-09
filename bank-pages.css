@@ -81,7 +81,7 @@
 }
 
 .sbi-theme {
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  background: linear-gradient(135deg, #eff6ff 0%, #d1e5ff 100%);
 }
 
 .sbi-theme .feature-item i {
@@ -89,7 +89,7 @@
 }
 
 .bajaj-theme {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  background: linear-gradient(135deg, #f0f9ff 0%, #b1cada 100%);
 }
 
 .bajaj-theme .feature-item i {
@@ -97,7 +97,7 @@
 }
 
 .idfc-theme {
-  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+  background: linear-gradient(135deg, #faf5ff 0%, #d5c5e7 100%);
 }
 
 .idfc-theme .feature-item i {

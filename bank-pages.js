@@ -9,9 +9,9 @@
  *  - Category buttons/cards should have data-category attribute (e.g. data-category="VC4")
  *  - body may include data-bank="SBI" to explicitly set bank for page
  *  - product grid container same as products.js (no change)
- *
  * Usage:
- *  - Include after productdb.js and products.js.
+ *  - Always include after productdb.js and products.js
+ *  - Customize pending with the specific bank pages
  */
 
 (function () {
@@ -91,7 +91,7 @@
   // Initial load and wiring
   document.addEventListener('DOMContentLoaded', () => {
     const bank = detectBankFromPage();
-    // Load all products for this bank initially
+    // Bank pages should explicitly load only that bank's products
     window.reloadProducts({ bank });
 
     // Wire categories, search (if present)

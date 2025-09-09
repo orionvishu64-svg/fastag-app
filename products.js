@@ -17,7 +17,7 @@
 (function () {
   if (!window.ProductDB) {
     console.error('ProductDB missing — include productdb.js before products.js');
-    return;
+    return null;
   }
 
   // Safe fetch wrapper (reused)
@@ -81,57 +81,86 @@
   }
 
   // Build the product card — adapt classes/structure to your CSS if needed.
-  function createProductCard(product) {
-    const card = document.createElement('div');
-    card.className = 'product-card';
+  
+function createProductCard(product) {
+    const card = document.createElement('article');
+    // add bank class if present (normalized)
+    const bankClass = (product.bank || '').toString().trim();
+    card.className = 'product-card' + (bankClass ? ' ' + bankClass.toLowerCase() : '');
+    card.setAttribute('data-bank', product.bank || '');
 
-    // store dataset keys used by cart
-    card.dataset.dbId = product.id;
-    card.dataset.productId = product.product_id || '';
-    card.dataset.bank = product.bank || '';
-    card.dataset.category = product.category || '';
+    // header (bank + badges)
+    const header = document.createElement('div');
+    header.className = 'product-header';
 
-    // Top badges or chips (bank & category)
-    const top = document.createElement('div');
-    top.className = 'product-card-top';
-    top.innerHTML = `
-      <div class="chip bank-chip">${escapeHtml(product.bank || '')}</div>
-      <div class="chip cat-chip">${escapeHtml(product.category || '')}</div>
+    const bankInfo = document.createElement('div');
+    bankInfo.className = 'product-bank-info';
+
+    const bankLogo = document.createElement('div');
+    bankLogo.className = 'bank-logo-section';
+    // if product has a logo URL use img, else show bank short text
+    if (product.logo) {
+      const img = document.createElement('img');
+      img.src = product.logo;
+      img.alt = product.bank || '';
+      img.style.maxHeight = '44px';
+      bankLogo.appendChild(img);
+    } else {
+      bankLogo.innerHTML = `<div class="chip bank-chip">${escapeHtml(product.bank || '')}</div>`;
+    }
+
+    const rightHeader = document.createElement('div');
+    rightHeader.className = 'product-header-right';
+    rightHeader.innerHTML = `<div class="chip cat-chip">${escapeHtml(product.category || '')}</div>`;
+
+    bankInfo.appendChild(bankLogo);
+    bankInfo.appendChild(rightHeader);
+    header.appendChild(bankInfo);
+
+    // content
+    const content = document.createElement('div');
+    content.className = 'product-content';
+
+    const title = document.createElement('h3');
+    title.className = 'product-title';
+    title.textContent = product.name || '';
+
+    const desc = document.createElement('p');
+    desc.className = 'product-description';
+    desc.textContent = product.description || '';
+
+    // price section
+    const priceSection = document.createElement('div');
+    priceSection.className = 'price-section';
+    const priceEl = document.createElement('div');
+    priceEl.className = 'price';
+    priceEl.textContent = (product.price != null) ? '₹' + Number(product.price).toLocaleString() : '₹0';
+    priceSection.appendChild(priceEl);
+
+    const subtext = document.createElement('div');
+    subtext.className = 'product-subtext';
+    subtext.textContent = 'Inclusive of all charges';
+
+    // meta row
+    const meta = document.createElement('div');
+    meta.className = 'product-meta';
+    meta.innerHTML = `
+      <div><small><strong>Activation:</strong> ${escapeHtml(product.activation || '')}${product.activation ? '&#8377;' : ''}</small></div>
+      <div><small><strong>Security:</strong> ${escapeHtml(product.security || '')}${product.security ? '&#8377;' : ''}</small></div>
     `;
 
-    // Body content (title, description, price)
-    const body = document.createElement('div');
-    body.className = 'product-card-body';
-    body.innerHTML = `
-      <h3 class="product-title">${escapeHtml(product.name)}</h3>
-      <p class="product-desc">${escapeHtml(product.description || '')}</p>
-      <div class="product-price">₹${Number(product.price).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</div>
-      <div class="product-subtext">Inclusive of all charges</div>
-
-      <div class="product-meta">
-        <div><small><strong>Bank:</strong> ${escapeHtml(product.bank || '')}</small></div>
-        <div><small><strong>Activation:</strong> ${escapeHtml((product.activation) || '')}${product.activation ? '&#8377;' : ''}</small></div>
-        <div><small><strong>Security:</strong> ${escapeHtml((product.security) || '')}${product.security ? '&#8377;' : ''}</small></div>
-        <div><small><strong>Tag-cost:</strong> ${escapeHtml((product.tagcost) || '')}${product.tagcost ? '&#8377;' : ''}</small></div>
-        <div><small><strong>Payout:</strong> ${escapeHtml(String(product.payout) || '')}</small></div>
-      </div>
-    `;
-
-    // Footer & Add-to-cart button
+    // footer / actions
     const footer = document.createElement('div');
     footer.className = 'product-card-footer';
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'add-to-cart-btn';
-    btn.textContent = 'Add to Cart';
-    // Preserve data attributes used by earlier cart code:
+    btn.textContent = 'Add To Cart';
+    // data attributes for existing cart integration
     btn.dataset.productId = product.product_id || '';
-    btn.dataset.dbId = product.id;
-    btn.dataset.price = product.price;
-    btn.dataset.name = product.name;
-
-    btn.addEventListener('click', function (e) {
-      // prefer an existing global addToCart function if present
+    btn.dataset.dbId = product.id || '';
+    btn.dataset.price = product.price || 0;
+    btn.addEventListener('click', function () {
       const prodPayload = {
         id: product.id,
         product_id: product.product_id,
@@ -143,35 +172,38 @@
       if (typeof window.addToCart === 'function') {
         window.addToCart(prodPayload);
       } else {
-        // fallback cart behavior: simple localStorage push + update cart count
         try {
           let cart = JSON.parse(localStorage.getItem('cart') || '[]');
           cart.push(prodPayload);
           localStorage.setItem('cart', JSON.stringify(cart));
-          if (typeof window.updateCartCount === 'function') window.updateCartCount();
-        } catch (err) {
-          console.error('add-to-cart fallback error', err);
-        }
+          // update cart count if present
+          const cc = document.querySelector('.cart-count');
+          if (cc) cc.textContent = cart.length;
+        } catch (e) { console.error('add to cart error', e); }
       }
     });
 
     footer.appendChild(btn);
 
-    // assemble
-    card.appendChild(top);
-    card.appendChild(body);
-    card.appendChild(footer);
+    // assemble content
+    content.appendChild(title);
+    content.appendChild(desc);
+    content.appendChild(priceSection);
+    content.appendChild(subtext);
+    content.appendChild(meta);
+    content.appendChild(footer);
+
+    card.appendChild(header);
+    card.appendChild(content);
 
     return card;
   }
-
-  // Render a list of products into container
-  async function renderProductsList(products, container) {
+function renderProductsList(products, container) {
     container = container || findContainer();
     container.innerHTML = '';
     if (!products || products.length === 0) {
       container.innerHTML = '<div class="notice-card">No products found.</div>';
-      return;
+      return null;
     }
     const frag = document.createDocumentFragment();
     for (const p of products) {
@@ -214,14 +246,18 @@
 
   // Map UI control values -> ProductDB params
   function uiToParams() {
-    const bankVal = document.getElementById('bankFilter')?.value || 'all';
-    const categoryVal = document.getElementById('categoryFilter')?.value || 'all';
+    const bankValRaw = document.getElementById('bankFilter')?.value || '';
+    const categoryValRaw = document.getElementById('categoryFilter')?.value || '';
     const q = document.getElementById('searchInput')?.value?.trim() || '';
+    const bank = (bankValRaw && bankValRaw !== 'all') ? bankValRaw : null;
+    const category = (categoryValRaw && categoryValRaw !== 'all') ? categoryValRaw : null;
     return {
-      bank: bankVal === 'all' ? null : bankVal,
-      category: categoryVal === 'all' ? null : categoryVal,
+      bank: bank,
+      category: category,
       q: q || null
-    };
+    }
+
+
   }
 
   function showNoResults(show) {
@@ -250,7 +286,8 @@
   window.clearAllFilters = clearAllFilters;
 
   // Core: fetch products (count) then render and update UI
-  async function reloadAndUpdateUI() {
+  
+async function reloadAndUpdateUI() {
     const params = uiToParams();
     try {
       // Get matching products (force server fetch to ensure count reflects filters)
@@ -258,16 +295,18 @@
       updateResultsCount(products.length);
       showNoResults(products.length === 0);
 
-      // Render cards (products.js provides reloadProducts)
-      window.reloadProducts({ bank: params.bank, category: params.category, q: params.q });
+      // Render cards using already fetched products to avoid duplicate fetch
+      const container = findContainer();
+      renderProductsList(products, container);
     } catch (err) {
       console.error('reloadAndUpdateUI error', err);
       updateResultsCount(0);
       showNoResults(true);
-      // still attempt to render so the renderer can show an error notice if needed
-      window.reloadProducts({ bank: params.bank, category: params.category, q: params.q });
+      // render an empty set so renderer shows no products
+      const container = findContainer();
+      renderProductsList([], container);
     }
-  }
+  };
 
   // Debounce helper
   function debounce(fn, wait = 300) {
@@ -280,13 +319,28 @@
 
   // Wire controls on DOMContentLoaded
   document.addEventListener('DOMContentLoaded', function () {
+    const isProductsPage = document.body && document.body.dataset && document.body.dataset.page === 'products';
+    if (!isProductsPage) {
+      // don't auto-load products or wire products-page specific UI on bank pages
+      return null;
+    }
+
     // initial load via UI glue (counts + render)
     reloadAndUpdateUI();
 
     // search input (debounced)
     const search = document.getElementById('searchInput');
     if (search) {
-      search.addEventListener('input', debounce(() => reloadAndUpdateUI(), 350));
+      search.addEventListener('input', debounce(() => reloadAndUpdateUI(), 300));
+    }
+
+    // clear filters button
+    const clearBtn = document.querySelector('.clear-filters');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        clearAllFilters();
+        reloadAndUpdateUI();
+      });
     }
 
     // bank filter

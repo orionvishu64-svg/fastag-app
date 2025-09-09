@@ -231,23 +231,23 @@
 }
 
 .product-card.kotak {
-  background: #fef2f2;
-  border-color: #fecaca;
+  background: #ffffff;
+  border-color: #dc2626;
 }
 
 .product-card.sbi {
-  background: #eff6ff;
-  border-color: #bfdbfe;
+  background: #ffffff;
+  border-color: #1d4ed8;
 }
 
 .product-card.bajaj {
-  background: #f0f9ff;
-  border-color: #bae6fd;
+  background: #ffffff;
+  border-color: #0ea5e9;
 }
 
 .product-card.idfc {
-  background: #faf5ff;
-  border-color: #e9d5ff;
+  background: #ffffff;
+  border-color: #8b5cf6;
 }
 
 .product-header {

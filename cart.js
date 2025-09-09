@@ -74,7 +74,7 @@ class CartManager {
     const standardQuantities = [1, 5, 10, 20, 25, 50, 100];
     // Ensure the current item's quantity is among the options, and selected
     const optionsHtml = standardQuantities.map(qty => `
-      <option value="${qty}">${qty}</option>
+      <option value="${Number(qty) || 1}">${qty}</option>
     `).join('');
 
     // Unique ID for the datalist
