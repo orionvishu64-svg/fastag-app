@@ -16,12 +16,45 @@ function safeFetch(...args) {
     });
 }
 
-(() => {
-  const path = location.pathname
-  document.querySelectorAll(".sidebar a").forEach((a) => {
-    if (a.getAttribute("href") === path) a.classList.add("active")
-  })
-})()
+// SIDEBAR TOGGLE (append to fastag_website/script.js)
+(function () {
+  const toggle = document.getElementById('sidebarToggle');
+  const body = document.body;
+  const sidebar = document.querySelector('.sidebar');
+
+  if (!toggle || !sidebar) return;
+
+  function setAria(open) {
+    toggle.setAttribute('aria-expanded', String(open));
+    sidebar.setAttribute('aria-hidden', String(!open));
+    toggle.setAttribute('aria-label', open ? 'Close sidebar' : 'Open sidebar');
+  }
+
+  // initial
+  setAria(false);
+
+  toggle.addEventListener('click', function (e) {
+    const open = !body.classList.contains('sidebar-open');
+    body.classList.toggle('sidebar-open', open);
+    setAria(open);
+  });
+
+  // Escape to close
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && body.classList.contains('sidebar-open')) {
+      body.classList.remove('sidebar-open');
+      setAria(false);
+    }
+  });
+
+  // Click outside to close (optional; will close if the click wasn't on sidebar or toggle)
+  document.addEventListener('click', function (e) {
+    if (!body.classList.contains('sidebar-open')) return;
+    if (sidebar.contains(e.target) || toggle.contains(e.target)) return;
+    body.classList.remove('sidebar-open');
+    setAria(false);
+  });
+})();
 
 // Smooth scrolling for anchor links
 document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
@@ -309,7 +342,7 @@ function updateLoginButton() {
     loginButton.setAttribute("href", "login.html")
     loginButton.innerHTML = `<i class="far fa-user-circle"></i>`
   }
-}
+} 
 
 document.addEventListener("DOMContentLoaded", updateLoginButton)
 

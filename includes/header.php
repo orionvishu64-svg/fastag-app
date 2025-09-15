@@ -10,7 +10,7 @@
              alt="ApnaPayment" class="preloader-logo" />
       </div>
     </div>
-    <h3 class="head" style="color: #000000">Get Your Fastag</h3>
+    <h3 class="head" style="color: #222222ff">Get Your Fastag</h3>
     <p class="preloader-fact"></p>
   </div>
 </div>
@@ -22,6 +22,12 @@
     </div>
       </div>
 </nav>
+<button id="sidebarToggle" aria-label="Open sidebar" aria-expanded="false" class="sidebar-toggle">
+  <span class="hamburger" aria-hidden="true">
+    <span></span><span></span><span></span>
+  </span>
+</button>
+<!-- sidebar render -->
 <?php include __DIR__ . '/sidebar.php'; ?>
 <script>
 /* Robust preloader + header offset fix

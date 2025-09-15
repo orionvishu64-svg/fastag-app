@@ -1,6 +1,7 @@
 <?php
 require_once 'common_start.php';
 require 'db.php';
+require 'delhivery.php';
 header('Content-Type: application/json');
 
 // ✅ Check login
@@ -8,7 +9,6 @@ if (!isset($_SESSION['user_id'])) {
     echo json_encode(["status" => "error", "message" => "Please log in to place an order"]);
     exit;
 }
-
 $user_id = $_SESSION['user_id'];
 
 // ✅ Get POST data
@@ -21,11 +21,10 @@ if (!isset($data['address_id'], $data['payment_method'], $data['amount'])) {
 }
 
 $address_id     = intval($data['address_id']);
-$payment_method = strtolower(trim($data['payment_method']));
-$amount         = floatval($data['amount']);
+$payment_method = strtolower(trim($data['payment_method'])); // upi or agent-id
+$amount         = floatval($data['amount']);                 // base product cost
 $transaction_id = isset($data['transaction_id']) ? trim($data['transaction_id']) : null;
 
-// ✅ Allowed payment methods
 $allowed_methods = ['agent-id', 'upi'];
 if (!in_array($payment_method, $allowed_methods)) {
     echo json_encode(["status" => "error", "message" => "Invalid payment method"]);
@@ -35,30 +34,52 @@ if (!in_array($payment_method, $allowed_methods)) {
 try {
     $pdo->beginTransaction();
 
+    // ✅ Fetch address + user name
+    $addrStmt = $pdo->prepare("
+        SELECT a.*, u.name, u.phone as user_phone
+        FROM addresses a
+        JOIN users u ON a.user_id = u.id
+        WHERE a.id=? AND a.user_id=?");
+    $addrStmt->execute([$address_id, $user_id]);
+    $address = $addrStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$address || empty($address['pincode'])) {
+        throw new Exception("Invalid address or pincode not found");
+    }
+
+    if (empty($address['phone']) && !empty($address['user_phone'])) {
+        $address['phone'] = $address['user_phone'];
+    }
+
+    // ✅ Calculate shipping cost
+    $shipping_amount = delhivery_calculate_shipping($address['pincode']);
+    $total_amount = $amount + $shipping_amount;
+
+    // ✅ Insert order
     if ($payment_method === 'agent-id') {
-        // ✅ Agent Order → Paid immediately
         $stmt = $pdo->prepare("
-            INSERT INTO orders (user_id, address_id, payment_method, transaction_id, amount, status, payment_status)
-            VALUES (:user_id, :address_id, :payment_method, :transaction_id, :amount, 'placed', 'paid')
+            INSERT INTO orders (user_id, address_id, payment_method, transaction_id, amount, shipping_amount, status, payment_status)
+            VALUES (:user_id, :address_id, :payment_method, :transaction_id, :amount, :shipping_amount, 'placed', 'paid')
         ");
         $stmt->execute([
-            ':user_id'        => $user_id,
-            ':address_id'     => $address_id,
+            ':user_id' => $user_id,
+            ':address_id' => $address_id,
             ':payment_method' => $payment_method,
             ':transaction_id' => $transaction_id,
-            ':amount'         => $amount
+            ':amount' => $amount,
+            ':shipping_amount' => $shipping_amount
         ]);
-    } elseif ($payment_method === 'upi') {
-        // ✅ UPI → Insert order but mark as unpaid (will be updated after verification)
+    } else { // upi
         $stmt = $pdo->prepare("
-            INSERT INTO orders (user_id, address_id, payment_method, amount, status, payment_status)
-            VALUES (:user_id, :address_id, :payment_method, :amount, 'placed', 'unpaid')
+            INSERT INTO orders (user_id, address_id, payment_method, amount, shipping_amount, status, payment_status)
+            VALUES (:user_id, :address_id, :payment_method, :amount, :shipping_amount, 'placed', 'unpaid')
         ");
         $stmt->execute([
-            ':user_id'        => $user_id,
-            ':address_id'     => $address_id,
+            ':user_id' => $user_id,
+            ':address_id' => $address_id,
             ':payment_method' => $payment_method,
-            ':amount'         => $amount
+            ':amount' => $amount,
+            ':shipping_amount' => $shipping_amount
         ]);
     }
 
@@ -71,10 +92,9 @@ try {
             INSERT INTO order_items (order_id, bank, product_name, quantity, price)
             VALUES (:order_id, :bank, :product_name, :quantity, :price)
         ");
-
         foreach ($items as $item) {
-            if (isset($item['product_id'])) {
-                $bankStmt = $pdo->prepare("SELECT bank FROM products WHERE id = ?");
+            if (!empty($item['product_id'])) {
+                $bankStmt = $pdo->prepare("SELECT bank FROM products WHERE id=?");
                 $bankStmt->execute([$item['product_id']]);
                 $bank = $bankStmt->fetchColumn();
             } else {
@@ -97,19 +117,35 @@ try {
 
     $pdo->commit();
 
-    // ✅ Response
+    // ✅ Shipment Creation for Agent-ID (immediate)
+    if ($payment_method === 'agent-id') {
+        $itemStmt = $pdo->prepare("SELECT product_name, quantity, price FROM order_items WHERE order_id=?");
+        $itemStmt->execute([$order_id]);
+        $order_items = $itemStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $shipment = delhivery_create_shipment($order_id, $address, $order_items, $total_amount);
+
+        if (!empty($shipment['packages'][0]['waybill'])) {
+            $awb = $shipment['packages'][0]['waybill'];
+            $upd = $pdo->prepare("UPDATE orders SET awb=?, delhivery_status=? WHERE id=?");
+            $upd->execute([$awb, "Created", $order_id]);
+        } else {
+            error_log("Delhivery Agent-ID shipment failed for order {$order_id}: " . json_encode($shipment));
+        }
+    }
+
     echo json_encode([
-        "status"  => "success",
-        "message" => $payment_method === 'upi' ? "Proceed with UPI payment" : "Order placed successfully",
-        "order_id" => $order_id
+        "status"          => "success",
+        "message"         => $payment_method === 'upi' ? "Proceed with UPI payment" : "Order placed successfully",
+        "order_id"        => $order_id,
+        "shipping_amount" => $shipping_amount,
+        "total_amount"    => $total_amount
     ]);
 
 } catch (Exception $e) {
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    echo json_encode([
-        "status" => "error",
-        "message" => "Database error: " . $e->getMessage()
-    ]);
+    error_log("place_order.php exception: " . $e->getMessage());
+    echo json_encode(["status" => "error", "message" => "Database error: " . $e->getMessage()]);
 }
