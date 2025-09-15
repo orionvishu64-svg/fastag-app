@@ -16,16 +16,12 @@ function safeFetch(...args) {
     });
 }
 
-// Mobile Navigation Toggle
-document.addEventListener("DOMContentLoaded", () => {
-  const hamburger = document.querySelector(".hamburger")
-  const Menu = document.querySelector(".hamburger-menu")
- if (hamburger && Menu) {
-    hamburger.addEventListener("click", () => {
-      Menu.classList.toggle("open")
-    });
-   }
-});
+(() => {
+  const path = location.pathname
+  document.querySelectorAll(".sidebar a").forEach((a) => {
+    if (a.getAttribute("href") === path) a.classList.add("active")
+  })
+})()
 
 // Smooth scrolling for anchor links
 document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
@@ -307,7 +303,7 @@ function updateLoginButton() {
 
   const email = getLoggedInEmail()
   if (email) {
-    loginButton.setAttribute("href", "profile.html")
+    loginButton.setAttribute("href", "profile.php")
     loginButton.innerHTML = `<i class="far fa-user-circle"></i>`
   } else {
     loginButton.setAttribute("href", "login.html")
@@ -334,9 +330,9 @@ function wireGlobalLogout() {
 
     // Redirect to a safe page
     if (window.top) {
-      window.top.location.href = "index.html"
+      window.top.location.href = "index.php"
     } else {
-      window.location.href = "index.html"
+      window.location.href = "index.php"
     }
   })
 }
@@ -356,9 +352,9 @@ function wireProfileLogoutButton() {
       await safeFetch("logout.php", { credentials: "include" })
     } catch (_) {}
     if (window.top) {
-      window.top.location.href = "index.html"
+      window.top.location.href = "index.php"
     } else {
-      window.location.href = "index.html"
+      window.location.href = "index.php"
     }
   })
 }

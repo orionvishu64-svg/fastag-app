@@ -17,6 +17,6 @@ if (ini_get("session.use_cookies")) {
 }
 
 // Redirect to login page or send a response
-header("Location: index.html"); // Or replace with your desired page
+header("Location: index.php"); // Or replace with your desired page
 exit;
 ?>

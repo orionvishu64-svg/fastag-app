@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="payment.css">
 </head>
 <body>
-
+<?php include __DIR__ . '/includes/header.php'; ?>
   <div class="payment-container">
     <a href="cart.php" class="back-btn">⬅ Go Back</a>
     <h2>Checkout</h2>
@@ -83,6 +83,8 @@
 </div>
 
     </div>
+   <script src="script.js"></script>
     <script src="payment.js"></script>
+<?php include __DIR__ . '/includes/footer.php'; ?>
   </body>
 </html>

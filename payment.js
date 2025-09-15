@@ -307,7 +307,7 @@ const isAlphaNum = (s) => /^[A-Za-z0-9]+$/.test(String(s || "").trim());
             window.location.href = `upi_intent.html?amount=${finalAmount}&address_id=${selectedAddressId}&order_id=${data.order_id}`;
           } else if (method === "agent-id") { // ✅ removed COD
             try { localStorage.removeItem("cart"); } catch (_) {}
-            window.location.href = "orderplaced.html";
+            window.location.href = "orderplaced.php";
           }
         } else {
           alert("Error placing order: " + (data.message || "Unknown error"));

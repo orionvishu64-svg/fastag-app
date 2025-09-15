@@ -1,0 +1,131 @@
+
+ <!-- Put preloader at the very first element inside <body> -->
+<div id="preloader" aria-hidden="false">
+  <div id="ctn-preloader" class="ctn-preloader" role="status" aria-label="Loading">
+    <div class="round_spinner">
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="text">
+        <!-- Use a small logo here. Avoid loading="lazy" for this image -->
+        <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200Black.png"
+             alt="ApnaPayment" class="preloader-logo" />
+      </div>
+    </div>
+    <h3 class="head" style="color: #000000">Get Your Fastag</h3>
+    <p class="preloader-fact"></p>
+  </div>
+</div>
+    <!-- Navigation -->
+   <nav class="navbar">
+  <div class="nav-container">
+    <div class="nav-logo">
+      <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png">
+    </div>
+      </div>
+</nav>
+<?php include __DIR__ . '/sidebar.php'; ?>
+<script>
+/* Robust preloader + header offset fix
+   Replace old fragile app.js preloader code with this.
+   Put this file after other libs (jquery/bootstrap) in footer.php before </body>.
+*/
+(function () {
+  'use strict';
+
+  // ---------- PRELOADER ----------
+  try {
+    const preloader = document.getElementById('preloader');
+
+    if (preloader) {
+      // Ensure visible immediately
+      document.documentElement.classList.add('preloader-active');
+      document.body.classList.add('preloader-active');
+      preloader.style.display = 'flex';
+      preloader.style.opacity = '1';
+      preloader.style.visibility = 'visible';
+      preloader.style.pointerEvents = 'auto';
+    }
+
+    const HIDE_MS = 2000; // always hide after 2s
+    const FORCED_FALLBACK_MS = HIDE_MS + 600;
+
+    function hidePreloaderGracefully() {
+      const p = document.getElementById('preloader');
+      if (!p) return;
+      // add class for CSS transition
+      p.classList.add('preloader-hidden');
+
+      // also set inline styles to override stubborn CSS
+      p.style.opacity = '0';
+      p.style.visibility = 'hidden';
+      p.style.pointerEvents = 'none';
+
+      // remove after transition
+      setTimeout(() => {
+        try { p.remove(); } catch (e) { /* ignore */ }
+        document.documentElement.classList.remove('preloader-active');
+        document.body.classList.remove('preloader-active');
+        console.info('Preloader removed (graceful).');
+      }, 420);
+    }
+
+    // schedule hide
+    setTimeout(hidePreloaderGracefully, HIDE_MS);
+
+    // final forced removal fallback
+    setTimeout(() => {
+      const p = document.getElementById('preloader');
+      if (p) {
+        try { p.remove(); } catch (e) {}
+        document.documentElement.classList.remove('preloader-active');
+        document.body.classList.remove('preloader-active');
+        console.warn('Preloader forced removal (fallback).');
+      }
+    }, FORCED_FALLBACK_MS);
+
+  } catch (err) {
+    console.error('Preloader script fatal error:', err);
+  }
+
+  // ---------- HEADER FIX: make header fixed + reserve space ----------
+  try {
+    const header = document.querySelector('.header');
+    if (header) {
+      // ensure header is fixed so it stays on top
+      header.style.position = 'fixed';
+      header.style.top = '0';
+      header.style.left = '0';
+      header.style.right = '0';
+      header.style.zIndex = '99998'; // below preloader (preloader uses 999999 in CSS)
+      // add a class to mark it's fixed (for future CSS)
+      header.classList.add('header-fixed-by-script');
+    }
+
+    // function to update body padding-top to equal header height
+    function syncBodyPaddingForHeader() {
+      const h = document.querySelector('.header');
+      if (!h) return;
+      // compute header's rendered height
+      const height = h.getBoundingClientRect().height;
+      // apply to body as padding-top to avoid content jumping under header
+      document.body.style.paddingTop = height + 'px';
+    }
+
+    // run now and on resize
+    syncBodyPaddingForHeader();
+    window.addEventListener('resize', function () {
+      // small debounce
+      clearTimeout(window.__headerPaddingTimeout);
+      window.__headerPaddingTimeout = setTimeout(syncBodyPaddingForHeader, 100);
+    });
+
+    // Also run after DOMContentLoaded in case header images/fonts change height
+    document.addEventListener('DOMContentLoaded', syncBodyPaddingForHeader);
+    // And after window.load for any late images
+    window.addEventListener('load', syncBodyPaddingForHeader);
+
+  } catch (err) {
+    console.error('Header layout fix error:', err);
+  }
+
+})();
+</script>

@@ -46,7 +46,7 @@ try {
         echo json_encode([
             "success" => true,
             "message" => "Payment verified and cart cleared",
-            "redirect" => "orderplaced.html"
+            "redirect" => "orderplaced.php"
         ]);
     } else {
         echo json_encode(["success" => false, "message" => "Failed to update payment"]);

@@ -9,58 +9,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-
-    <!-- Navigation -->
-   <nav class="navbar">
-  <div class="nav-container">
-    <div class="nav-logo">
-      <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png">
-    </div>
-
-    <div class="nav-right">
-      <!-- Desktop main nav -->
-      <ul class="nav-menu desktop-only">
-        <li><a href="index.html" class="nav-link">Home</a></li>
-        <li><a href="products.html" class="nav-link">Products</a></li>
-        <li><a href="blog.html" class="nav-link">Blog</a></li>
-        <li><a href="contact.html" class="nav-link">Contact Us</a></li>
-      </ul>
-
-      <!-- Icons (always visible) -->
-      <div class="nav-actions">
-        <a href="cart.php" class="cart-btn">
-          <i class="fas fa-shopping-cart"></i>
-          <span class="cart-count">0</span>
-        </a>
-        <a href="login.html" class="login-btn">
-          <i class="fas fa-user"></i> Login
-        </a>
-      </div>
-
-      <!-- Hamburger (always visible) -->
-      <div class="hamburger">
-        <i class="fas fa-bars"></i>
-      </div>
-
-      <!-- Hamburger dropdown -->
-      <div class="hamburger-menu">
-        <ul>
-          <!-- Mobile: show all links -->
-          <li class="mobile-only"><a href="index.html">Home</a></li>
-          <li class="mobile-only"><a href="profile.html">Profile</a></li>
-          <li class="mobile-only"><a href="cart.php">Cart</a></li>
-          <li class="mobile-only"><a href="products.html">Products</a></li>
-          <li class="mobile-only"><a href="contact.html">Contact Us</a></li>
-
-          <!-- Always inside hamburger -->
-          <li><a href="track_orders.php">Track Order</a></li>
-          <li><a href="#" id="nav-logout">Logout</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</nav>
-
+<?php include __DIR__ . '/includes/header.php'; ?>
     <!-- Hero Section -->
     <section class="about-hero">
         <div class="container">
@@ -116,7 +65,7 @@
                         
                         <p>We partner directly with major banks like Kotak, SBI, Bajaj, and IDFC to ensure you get genuine FASTags with the fastest activation and best customer support in the industry.</p></b>
                     </div>
-                    <a href="contact.html" class="btn btn-primary">Learn More About Our Journey</a>
+                    <a href="contact.php" class="btn btn-primary">Learn More About Our Journey</a>
                 </div>
                 <div class="story-image">
                     <img loading="lazy" src="https://as2.ftcdn.net/v2/jpg/04/51/27/79/1000_F_451277925_1MJ2JgqoCpDZoV2YPf62RpQ7O344mfqF.jpg" alt="Toll plaza with FASTag" >
@@ -263,79 +212,12 @@
             <h2>Ready to Join Our Journey?</h2>
             <p>Be part of the Apna Payment Services family and experience the future of toll payments</p>
             <div class="cta-buttons">
-                <a href="products.html" class="btn btn-primary">Get Your FASTag Now</a>
-                <a href="contact.html" class="btn btn-secondary">Join Our Team</a>
+                <a href="products.php" class="btn btn-primary">Get Your FASTag Now</a>
+                <a href="contact.php" class="btn btn-secondary">Join Our Team</a>
             </div>
         </div>
     </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="footer-logo">
-                        <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png" alt="Apna Payment Logo" style="max-width: 180px; margin-bottom: 1rem;">
-                    </div>
-                    <p>Apna Payment Services Private Limited -  A-40, KARDHANI, GOVINDPURA,<br>
-          JAIPUR, RAJASTHAN, 302012,<br>
-          KARDHANI, Rajasthan, PIN: 302012<br>
-          GSTIN : 08AAVCA0650L1ZA<br></p>
-                    <div class="social-links">
-                        <a href="https://www.facebook.com/apnapayment/"><i class="fab fa-facebook"></i></a>
-                        <a href="https://www.youtube.com/@ApnaPayment"><i class="fab fa-youtube"></i></a>
-                        <a href="https://www.instagram.com/apnapayment/"><i class="fab fa-instagram"></i></a>
-                    </div>
-                </div>
-                
-                <div class="footer-section">
-                    <h3>Quick Links</h3>
-                    <ul>
-                        <li><a href="https://play.google.com/store/apps/details?id=com.aps.agent">GV Partner</a></li>
-                        <li><a href="about.html">About Us</a></li>
-                        <li><a href="blog.html">Blog</a></li>
-                        <li><a href="terms-conditions.html">Terms &amp;condition</a></li>
-                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
-                        <li><a href="refund-cancel.html">Refund Policy</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h3>Services</h3>
-                    <ul>
-                        <li>Kotak FASTag</li>
-                        <li>SBI FASTag</li>
-                        <li>Bajaj FASTag</li>
-                        <li>IDFC FASTag</li>
-                        <li>FASTag recharge</li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h3>Contact Info</h3>
-                    <div class="contact-info">
-                        <div class="contact-item">
-                            <i class="fas fa-phone"></i>
-                            <span>+91 9509807591</span>
-                        </div>
-                        <div class="contact-item">
-                            <i class="fas fa-envelope"></i>
-                            <span>admin@apnapayment.com</span>
-                        </div>
-                        <div class="contact-item">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>Jaipur, Rajasthan, India</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <p>&copy; 2020-2025 Apna payments services pvt.ltd.. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
     <script src="script.js"></script>
+<?php include __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>

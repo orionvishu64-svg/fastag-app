@@ -1,97 +1,160 @@
 // Cart functionality
 class CartManager {
   constructor() {
-    this.cart = this.loadCart()
-    this.freeShippingThreshold = 500
-    this.shippingCost = 50
+    this.cart = this.loadCart();
+    this.freeShippingThreshold = 500;
+    this.shippingCost = 50;
 
-    this.init()
+    this.init();
   }
 
   init() {
-    this.renderCart()
-    this.setupEventListeners()
-    this.updateCartCount()
+    this.renderCart();
+    this.setupEventListeners();
+    this.updateCartCount();
   }
 
+  // Normalize cart on load: ensure numbers for price & quantity and consistent keys
   loadCart() {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    const raw = localStorage.getItem("cart") || "[]";
+    let cart = [];
+    try {
+      cart = JSON.parse(raw);
+      if (!Array.isArray(cart)) cart = [];
+    } catch (e) {
+      console.error("Invalid cart JSON in localStorage:", e, raw);
+      cart = [];
+    }
+
+    const sanitizeNumber = v => {
+      if (v === null || v === undefined) return NaN;
+      if (typeof v === "number") return v;
+      // remove anything that's not digit, dot or minus (handles commas, currency symbols)
+      const cleaned = String(v).replace(/[^0-9.\-]/g, "");
+      return cleaned === "" ? NaN : Number(cleaned);
+    };
+
+    cart = cart.map(item => {
+      // support multiple incoming keys for quantity
+      const incomingQty = item.quantity ?? item.qty ?? item.q ?? 1;
+      const price = sanitizeNumber(item.price ?? item.amount ?? item.rupee_price ?? 0);
+      const qty = sanitizeNumber(incomingQty);
+
+      return {
+        ...item,
+        // store canonical numeric types
+        price: Number.isFinite(price) ? price : 0,
+        quantity: Number.isFinite(qty) && qty > 0 ? Math.floor(qty) : 1
+      };
+    });
+
+    // Persist normalized cart so future loads are consistent
+    try {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    } catch (e) {
+      console.warn("Failed to write normalized cart to localStorage", e);
+    }
+
     return cart;
   }
 
+  // Save cart ensuring numeric price & quantity are stored
   saveCart() {
-    localStorage.setItem("cart", JSON.stringify(this.cart));
+    const normalized = this.cart.map(i => ({
+      ...i,
+      price: Number(i.price) || 0,
+      quantity: Math.max(1, parseInt(i.quantity || 1, 10))
+    }));
+
+    localStorage.setItem("cart", JSON.stringify(normalized));
+    this.cart = normalized; // keep in-memory consistent
     this.updateCartCount();
   }
 
   setupEventListeners() {
     // Clear cart button
-    const clearCartBtn = document.getElementById("clearCartBtn")
+    const clearCartBtn = document.getElementById("clearCartBtn");
     if (clearCartBtn) {
-      clearCartBtn.addEventListener("click", () => this.clearCart())
+      clearCartBtn.addEventListener("click", () => this.clearCart());
     }
 
     // Checkout button
-    const checkoutBtn = document.getElementById("checkoutBtn")
+    const checkoutBtn = document.getElementById("checkoutBtn");
     if (checkoutBtn) {
-      checkoutBtn.addEventListener("click", () => this.proceedToCheckout())
+      checkoutBtn.addEventListener("click", () => this.proceedToCheckout());
     }
   }
 
   renderCart() {
-    const emptyCart = document.getElementById("emptyCart")
-    const cartContent = document.getElementById("cartContent")
-    const itemsList = document.getElementById("itemsList")
-    const itemCount = document.getElementById("itemCount")
+    const emptyCart = document.getElementById("emptyCart");
+    const cartContent = document.getElementById("cartContent");
+    const itemsList = document.getElementById("itemsList");
+    const itemCount = document.getElementById("itemCount");
+
+    if (!itemsList || !itemCount || !emptyCart || !cartContent) {
+      console.warn("Cart DOM elements missing.");
+    }
 
     if (this.cart.length === 0) {
-      emptyCart.style.display = "flex"
-      cartContent.style.display = "none"
-      return
+      if (emptyCart) emptyCart.style.display = "flex";
+      if (cartContent) cartContent.style.display = "none";
+      if (itemsList) itemsList.innerHTML = "";
+      if (itemCount) itemCount.textContent = "0";
+      this.updateOrderSummary();
+      return;
     }
 
     // show cart content
-    emptyCart.style.display = "none"
-    cartContent.style.display = "block"
+    if (emptyCart) emptyCart.style.display = "none";
+    if (cartContent) cartContent.style.display = "block";
 
-    // Update item count
-    const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0)
-    itemCount.textContent = totalItems
+    // Update item count (sum of quantities)
+    const totalItems = this.cart.reduce((sum, item) => {
+      const q = parseInt(item.quantity || 0, 10);
+      return sum + (Number.isFinite(q) ? q : 0);
+    }, 0);
+    if (itemCount) itemCount.textContent = totalItems;
 
     // Render cart items
-    itemsList.innerHTML = ""
+    if (itemsList) itemsList.innerHTML = "";
     this.cart.forEach((item, index) => {
-      const itemElement = this.createCartItemElement(item, index)
-      itemsList.appendChild(itemElement)
-    })
+      const itemElement = this.createCartItemElement(item, index);
+      if (itemsList) itemsList.appendChild(itemElement);
+    });
 
     // Update order summary
-    this.updateOrderSummary()
+    this.updateOrderSummary();
   }
 
   createCartItemElement(item, index) {
     // Define standard quantity options
     const standardQuantities = [1, 5, 10, 20, 25, 50, 100];
-    // Ensure the current item's quantity is among the options, and selected
-    const optionsHtml = standardQuantities.map(qty => `
-      <option value="${Number(qty) || 1}">${qty}</option>
-    `).join('');
 
-    // Unique ID for the datalist
-    const datalistId = `quantity-options-${item.id}-${index}`;
-    const itemDiv = document.createElement("div")
-    itemDiv.className = "cart-item"
+    // Build options: value should be the quantity number, label the same
+    const optionsHtml = standardQuantities.map(qty => {
+      const selected = Number(item.quantity) === qty ? 'selected' : '';
+      return `<option value="${qty}" ${selected}>${qty}</option>`;
+    }).join('');
+
+    // Unique ID for the datalist (if you prefer datalist; kept for compatibility)
+    const datalistId = `quantity-options-${item.id ?? 'noid'}-${index}`;
+    const itemDiv = document.createElement("div");
+    itemDiv.className = "cart-item";
+    // Coerce price & quantity for display
+    const displayPrice = Number(item.price) || 0;
+    const displayQuantity = parseInt(item.quantity || 1, 10) || 1;
+
     itemDiv.innerHTML = `
             <div class="item-image">
-                ${item.bank}
+                ${item.bank ?? ''}
             </div>
             <div class="item-details">
-                <div class="item-name">${item.name}</div>
+                <div class="item-name">${item.name ?? item.title ?? "Unnamed item"}</div>
                 <div class="item-badges">
-                    <span class="item-badge bank">${item.bank}</span>
-                    <span class="item-badge category">${item.category}</span>
+                    <span class="item-badge bank">${item.bank ?? ''}</span>
+                    <span class="item-badge category">${item.category ?? ''}</span>
                 </div>
-               <div class="item-price">₹${(typeof item.price === 'number' ? item.price : 0).toLocaleString()} </div>
+               <div class="item-price">₹${displayPrice.toLocaleString()} </div>
                 <div class="item-specs">
                     Validity: 5 years • Activation: Within 24 hours
                 </div>
@@ -101,7 +164,7 @@ class CartManager {
                 <div class="quantity-controls">
                     <input type="number" 
                            class="quantity-input" 
-                           value="${item.quantity}" 
+                           value="${displayQuantity}" 
                            min="1" 
                            data-index="${index}"
                            list="${datalistId}"
@@ -132,12 +195,12 @@ class CartManager {
     // Add event listener for quantity input change (for immediate visual feedback, not saving)
     if (quantityInput) {
       quantityInput.addEventListener('input', (e) => {
-        // Optional: Add visual feedback here if the input value is invalid
-        // e.g., change border color if less than 1
-        if (parseInt(e.target.value, 10) < 1) {
-            e.target.style.borderColor = 'red';
+        // Add simple validation visual feedback
+        const val = parseInt(e.target.value, 10);
+        if (isNaN(val) || val < 1) {
+          e.target.style.borderColor = 'red';
         } else {
-            e.target.style.borderColor = '#ccc'; // Reset to default
+          e.target.style.borderColor = '#ccc'; // Reset to default
         }
       });
     }
@@ -146,23 +209,28 @@ class CartManager {
     if (saveQuantityBtn) {
       saveQuantityBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        let newQuantity = parseInt(quantityInput.value, 10);
+        const input = itemDiv.querySelector('.quantity-input');
+        let newQuantity = parseInt(input.value, 10);
 
         if (isNaN(newQuantity) || newQuantity < 1) {
-          window.cartManager.showCustomAlert("Please enter a valid quantity (minimum 1).");
-          quantityInput.value = this.cart[index].quantity; // Revert to current saved quantity
-          quantityInput.style.borderColor = ''; // Clear error visual
+          this.showCustomAlert("Please enter a valid quantity (minimum 1).");
+          // Revert displayed value to stored value
+          input.value = this.cart[index] ? this.cart[index].quantity : 1;
+          input.style.borderColor = '';
           return;
         }
+
         this.updateQuantity(index, newQuantity);
         this.showNotification(`Quantity saved as ${newQuantity}`, "success");
       });
     }
 
-    removeBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.removeItem(index);
-    });
+    if (removeBtn) {
+      removeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.removeItem(index);
+      });
+    }
   }
 
   updateQuantity(index, newQuantity) {
@@ -172,37 +240,35 @@ class CartManager {
     }
 
     if (newQuantity <= 0) {
-      this.removeItem(index)
-      return
+      this.removeItem(index);
+      return;
     }
 
-    this.cart[index].quantity = newQuantity
-    this.saveCart()
-    this.renderCart() // Re-render to update totals and input states
-
-    // Notification is now handled by the save button click
-    // this.showNotification(`Quantity updated to ${newQuantity}`, "success")
+    // Ensure numeric storage
+    this.cart[index].quantity = Math.max(1, parseInt(newQuantity, 10));
+    this.saveCart();
+    this.renderCart(); // Re-render to update totals and input states
   }
 
   removeItem(index) {
-    const item = this.cart[index]
-    this.cart.splice(index, 1)
-    this.saveCart()
-    this.renderCart()
+    const item = this.cart[index];
+    if (!item) return;
+    this.cart.splice(index, 1);
+    this.saveCart();
+    this.renderCart();
 
-    this.showNotification(`${item.bank} FASTag - ${item.name} removed from cart`, "info")
+    this.showNotification(`${item.bank ?? ''} FASTag - ${item.name ?? ''} removed from cart`, "info");
   }
 
   clearCart() {
-    if (this.cart.length === 0) return
+    if (this.cart.length === 0) return;
 
-    // Replace confirm() with a custom modal for better UX
     this.showCustomConfirmation("Are you sure you want to clear your cart?", () => {
-      this.cart = []
-      this.saveCart()
-      this.renderCart()
+      this.cart = [];
+      this.saveCart();
+      this.renderCart();
 
-      this.showNotification("Cart cleared successfully", "info")
+      this.showNotification("Cart cleared successfully", "info");
     });
   }
 
@@ -343,99 +409,112 @@ class CartManager {
     });
   }
 
-
   updateOrderSummary() {
+    // Make sure to coerce to numbers before arithmetic
+    const subtotal = this.cart.reduce((sum, item) => {
+      const price = Number(item.price) || 0;
+      const qty = Number(item.quantity) || 0;
+      return sum + price * qty;
+    }, 0);
 
-    const subtotal = this.cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
-    const shipping = subtotal >= this.freeShippingThreshold ? 0 : this.shippingCost
-    const total = subtotal + shipping
+    const shipping = subtotal >= this.freeShippingThreshold ? 0 : this.shippingCost;
+    const total = subtotal + shipping;
 
-    // Update DOM elements
-    document.getElementById("subtotal").textContent = `₹${subtotal.toLocaleString()}`
-    document.getElementById("shipping").textContent = shipping === 0 ? "Free" : `₹${shipping}`
-    document.getElementById("total").textContent = `₹${total.toLocaleString()}`
+    // Update DOM elements (guard in case missing)
+    const subtotalEl = document.getElementById("subtotal");
+    const shippingEl = document.getElementById("shipping");
+    const totalEl = document.getElementById("total");
 
+    if (subtotalEl) subtotalEl.textContent = `₹${(Number.isFinite(subtotal) ? subtotal : 0).toLocaleString()}`;
+    if (shippingEl) shippingEl.textContent = shipping === 0 ? "Free" : `₹${shipping.toLocaleString()}`;
+    if (totalEl) totalEl.textContent = `₹${(Number.isFinite(total) ? total : 0).toLocaleString()}`;
 
     // Update shipping info
-    const shippingInfo = document.getElementById("shippingInfo")
-    const freeShippingAmount = document.getElementById("freeShippingAmount")
+    const shippingInfo = document.getElementById("shippingInfo");
+    const freeShippingAmount = document.getElementById("freeShippingAmount");
 
-    if (subtotal < this.freeShippingThreshold) {
-      const remaining = this.freeShippingThreshold - subtotal
-      freeShippingAmount.textContent = remaining.toLocaleString()
-      shippingInfo.style.display = "block"
-    } else {
-      shippingInfo.style.display = "none"
+    if (shippingInfo && freeShippingAmount) {
+      if (subtotal < this.freeShippingThreshold) {
+        const remaining = this.freeShippingThreshold - subtotal;
+        freeShippingAmount.textContent = remaining.toLocaleString();
+        shippingInfo.style.display = "block";
+      } else {
+        shippingInfo.style.display = "none";
+      }
     }
 
     // Enable/disable checkout button
-    const checkoutBtn = document.getElementById("checkoutBtn")
+    const checkoutBtn = document.getElementById("checkoutBtn");
     if (checkoutBtn) {
-      checkoutBtn.disabled = this.cart.length === 0
+      checkoutBtn.disabled = this.cart.length === 0;
     }
   }
 
-// replace proceedToCheckout() in cart.js with this:
-proceedToCheckout() {
-  if (this.cart.length === 0) {
-    this.showNotification("Your cart is empty", "error");
-    return;
-  }
+  // replace proceedToCheckout() in cart.js with this:
+  proceedToCheckout() {
+    if (this.cart.length === 0) {
+      this.showNotification("Your cart is empty", "error");
+      return;
+    }
 
-  const checkoutBtn = document.getElementById("checkoutBtn");
-  if (checkoutBtn) {
-    checkoutBtn.disabled = true;
-    checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
-  }
+    const checkoutBtn = document.getElementById("checkoutBtn");
+    if (checkoutBtn) {
+      checkoutBtn.disabled = true;
+      checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+    }
 
-  // Check server-side session to verify login (more reliable than localStorage)
-  fetch('get_user.php', { credentials: 'same-origin' })
-    .then(r => r.json())
-    .then(data => {
-      if (checkoutBtn) {
-        checkoutBtn.disabled = false;
-        checkoutBtn.innerHTML = 'Proceed to Checkout';
-      }
+    // Check server-side session to verify login (more reliable than localStorage)
+    fetch('get_user.php', { credentials: 'same-origin' })
+      .then(r => r.json())
+      .then(data => {
+        if (checkoutBtn) {
+          checkoutBtn.disabled = false;
+          checkoutBtn.innerHTML = 'Proceed to Checkout';
+        }
 
-      if (data && data.success) {
-        // Logged in → go to payment
-        window.location.href = "payment.html";
-      } else {
-        // Not logged in → redirect to login, preserve return path
+        if (data && data.success) {
+          // Logged in → go to payment
+          window.location.href = "payment.php";
+        } else {
+          // Not logged in → redirect to login, preserve return path
+          const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+          window.location.href = `login.html?return=${returnUrl}`;
+        }
+      })
+      .catch(err => {
+        console.error('Session check failed', err);
+        if (checkoutBtn) {
+          checkoutBtn.disabled = false;
+          checkoutBtn.innerHTML = 'Proceed to Checkout';
+        }
+        // Safe fallback: send user to login page
         const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
         window.location.href = `login.html?return=${returnUrl}`;
-      }
-    })
-    .catch(err => {
-      console.error('Session check failed', err);
-      if (checkoutBtn) {
-        checkoutBtn.disabled = false;
-        checkoutBtn.innerHTML = 'Proceed to Checkout';
-      }
-      // Safe fallback: send user to login page
-      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
-      window.location.href = `login.html?return=${returnUrl}`;
-    });
-}
+      });
+  }
 
   // update cart count
   updateCartCount() {
-    const totalItems = this.cart.reduce((sum, item) => sum + Math.max(1, parseInt(item.quantity || 1, 10)), 0)
-    const cartCountElement = document.querySelector(".cart-count")
+    const totalItems = this.cart.reduce((sum, item) => {
+      const q = Math.max(1, parseInt(item.quantity || 1, 10));
+      return sum + (Number.isFinite(q) ? q : 0);
+    }, 0);
+
+    const cartCountElement = document.querySelector(".cart-count");
 
     if (cartCountElement) {
-      cartCountElement.textContent = totalItems
-      cartCountElement.style.display = totalItems > 0 ? "flex" : "none"
+      cartCountElement.textContent = totalItems;
+      cartCountElement.style.display = totalItems > 0 ? "flex" : "none";
     }
   }
 
   showNotification(message, type = "info") {
-    const notification = document.createElement("div")
-    notification.className = `notification ${type}`
+    const notification = document.createElement("div");
+    notification.className = `notification ${type}`;
     notification.innerHTML = `
             <i class="fas fa-${type === "success" ? "check-circle" : type === "error" ? "exclamation-circle" : "info-circle"}"></i>
             <span>${message}</span>
-        `
+        `;
 
     notification.style.cssText = `
             position: fixed;
@@ -453,24 +532,24 @@ proceedToCheckout() {
             align-items: center;
             gap: 8px;
             max-width: 350px;
-        `
+        `;
 
-    document.body.appendChild(notification)
+    document.body.appendChild(notification);
 
     // Animate in
     setTimeout(() => {
-      notification.style.transform = "translateX(0)"
-    }, 100)
+      notification.style.transform = "translateX(0)";
+    }, 100);
 
     // Remove after 4 seconds
     setTimeout(() => {
-      notification.style.transform = "translateX(100%)"
+      notification.style.transform = "translateX(100%)";
       setTimeout(() => {
         if (document.body.contains(notification)) {
-          document.body.removeChild(notification)
+          document.body.removeChild(notification);
         }
-      }, 300)
-    }, 4000)
+      }, 300);
+    }, 4000);
   }
 }
 

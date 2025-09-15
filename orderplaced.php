@@ -8,11 +8,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 </head>
 <body>
+<?php include __DIR__ . '/includes/header.php'; ?>
   <div class="order-success">
     <div id="orderSuccess" style="width:200px;height:200px;margin:auto;"></div>
     <h2>Thank you! Your order has been placed.</h2>
     <p>You can track your order in the <a href="track_orders.php">My Orders</a> section.</p>
-    <a href="products.html" class="btn">Continue Shopping</a>
+    <a href="products.php" class="btn">Continue Shopping</a>
   </div>
   <script>
   lottie.loadAnimation({
@@ -23,5 +24,6 @@
     path: 'https://assets10.lottiefiles.com/packages/lf20_jbrw3hcz.json' // Success animation JSON link
   });
 </script>
+<?php include __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>

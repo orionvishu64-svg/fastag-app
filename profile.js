@@ -1,10 +1,10 @@
-// redirect to index.html only those didn't login 
+// redirect to index.php only those didn't login 
 fetch('check_login.php', { credentials: 'include' })
     .then(res => res.text())
     .then(status => {
       if (status.trim() !== 'logged_in') {
         // Redirect back to homepage, where the login overlay will show
-        window.location.href = 'index.html';
+        window.location.href = 'index.php';
       }
     });
 

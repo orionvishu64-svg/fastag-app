@@ -34,3 +34,6 @@ if ($stmt->fetch()) {
 }
 
 echo json_encode(['success' => true, 'message' => 'Profile updated successfully.']);
+
+header("Location: profile.php");
+exit;

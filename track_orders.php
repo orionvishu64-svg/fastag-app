@@ -4,7 +4,7 @@ require 'db.php'; // PDO connection
 
 // Check login
 if (!isset($_SESSION['user_id'])) {
-    header("Location: index.html");
+    header("Location: index.php");
     exit();
 }
 
@@ -27,7 +27,7 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="track_orders.css">
 </head>
 <body>
-
+<?php include __DIR__ . '/includes/header.php'; ?>
     <div class="orders-container">
         <a href="cart.php" class="back-btn">⬅ Go Back</a>
         <h1>Your Orders</h1>
@@ -52,5 +52,6 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <p class="no-orders">You have no orders yet.</p>
         <?php endif; ?>
     </div>
+<?php include __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>
