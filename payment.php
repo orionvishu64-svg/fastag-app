@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Payment Gateway</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Gateway</title>
+  <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="payment.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-<?php include __DIR__ . '/includes/header.php'; ?>
   <div class="payment-container">
     <a href="cart.php" class="back-btn">⬅ Go Back</a>
     <h2>Checkout</h2>
@@ -83,8 +84,7 @@
 </div>
 
     </div>
-   <script src="script.js"></script>
     <script src="payment.js"></script>
-<?php include __DIR__ . '/includes/footer.php'; ?>
+    <script src="script.js"></script>
   </body>
 </html>

@@ -147,6 +147,8 @@ function createProductCard(product) {
     meta.innerHTML = `
       <div><small><strong>Activation:</strong> ${escapeHtml(product.activation || '')}${product.activation ? '&#8377;' : ''}</small></div>
       <div><small><strong>Security:</strong> ${escapeHtml(product.security || '')}${product.security ? '&#8377;' : ''}</small></div>
+      <div><small><strong>Tagcost:</strong> ${escapeHtml(product.tagcost || '')}${product.tagcost ? '&#8377;' : ''}</small></div>
+      <div><small><strong>Payout:</strong> ${escapeHtml(product.payout || '')}${product.payout ? '&#8377;' : ''}</small></div>
     `;
 
     // footer / actions

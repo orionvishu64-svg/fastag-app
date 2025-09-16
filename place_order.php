@@ -149,3 +149,46 @@ try {
     error_log("place_order.php exception: " . $e->getMessage());
     echo json_encode(["status" => "error", "message" => "Database error: " . $e->getMessage()]);
 }
+
+// ----------------- AFTER order is inserted and $order_id is available -----------------
+
+try {
+    // Destination pincode = user's address pincode (assumed in $pincode)
+    $dest_pin = trim($pincode ?? '');
+
+    if (!empty($dest_pin)) {
+        // Use existing helper in your delhivery.php which already uses DELHIVERY_ORIGIN_PINCODE
+        $shipRes = delhivery_calculate_shipping($dest_pin);
+
+        if (!empty($shipRes['success']) && !empty($shipRes['data'])) {
+            $pc = $shipRes['data']; // postal_code block from Delhivery
+
+            // try common keys (some accounts use 'tat', others 'tat_days', etc.)
+            $expected_days = null;
+            if (isset($pc['tat'])) {
+                $expected_days = intval($pc['tat']);
+            } elseif (isset($pc['tat_days'])) {
+                $expected_days = intval($pc['tat_days']);
+            }
+
+            $expected_date = null;
+            if (!empty($pc['expected_delivery_date'])) {
+                // normalize to MySQL DATETIME if possible
+                $expected_date = date('Y-m-d H:i:s', strtotime($pc['expected_delivery_date']));
+            }
+
+            // persist into orders if any value found
+            if ($expected_days !== null || $expected_date !== null) {
+                $upd = $pdo->prepare("UPDATE orders SET expected_tat_days = ?, expected_delivery_date = ? WHERE id = ?");
+                $upd->execute([$expected_days, $expected_date, $order_id]);
+            }
+        } else {
+            // no success — optionally log
+            error_log("delhivery_calculate_shipping failed for order {$order_id} pincode {$dest_pin}: " . json_encode($shipRes));
+        }
+    } else {
+        error_log("No destination pincode available to fetch TAT for order {$order_id}");
+    }
+} catch (Throwable $e) {
+    error_log("Exception while fetching TAT for order {$order_id}: " . $e->getMessage());
+}

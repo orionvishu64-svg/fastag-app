@@ -8,7 +8,7 @@
 
 /* Body Background */
 body {
-  background: linear-gradient(to right, #4facfe, #00f2fe);
+  background: transparent;
   min-height: 100vh;
   display: flex;
   align-items: center;

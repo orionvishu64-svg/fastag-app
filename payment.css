@@ -320,3 +320,4 @@ input[type="text"]:focus {
 .payment-section #proceed-btn:hover::after {
   transform: translateX(2px);
 }
+#pincode-msg { font-size:0.9rem; margin-top:6px; }

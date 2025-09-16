@@ -25,10 +25,10 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Track Orders</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="track_orders.css">
 </head>
 <body>
-<?php include __DIR__ . '/includes/header.php'; ?>
     <div class="orders-container">
         <a href="cart.php" class="back-btn">⬅ Go Back</a>
         <h1>Your Orders</h1>
@@ -53,6 +53,5 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <p class="no-orders">You have no orders yet.</p>
         <?php endif; ?>
     </div>
-<?php include __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>

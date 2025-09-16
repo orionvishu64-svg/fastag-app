@@ -76,7 +76,7 @@ if ($currentUserId <= 0) {
     if (function_exists('require_login')) {
         require_login();
     } else {
-        header('Location: login.php');
+        header('Location: login.html');
         exit;
     }
 }

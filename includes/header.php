@@ -21,14 +21,15 @@
       <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png">
     </div>
       </div>
-</nav>
-<button id="sidebarToggle" aria-label="Open sidebar" aria-expanded="false" class="sidebar-toggle">
+<!-- here is side bar button -->
+      <button id="sidebarToggle" aria-label="Open sidebar" aria-expanded="false" class="sidebar-toggle">
   <span class="hamburger" aria-hidden="true">
     <span></span><span></span><span></span>
   </span>
 </button>
 <!-- sidebar render -->
 <?php include __DIR__ . '/sidebar.php'; ?>
+</nav>
 <script>
 /* Robust preloader + header offset fix
    Replace old fragile app.js preloader code with this.
