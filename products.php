@@ -53,10 +53,6 @@
       </div>
     </section>
 
-<div id="mySidenav" class="sidenav">
-    <a href="cart.php" id="cart"><i class="fas fa-shopping-cart"></i>View Cart</a>
-</div>
-
     <section class="products-section">
       <div class="container">
         <div class="products-header-info">

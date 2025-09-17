@@ -1,3 +1,7 @@
+<?php
+$user_name = isset($_SESSION['user']['name']) ? $_SESSION['user']['name'] : 'Guest';
+$cart_count = isset($_SESSION['cart_count']) ? $_SESSION['cart_count'] : 0; // optional
+?>
 
  <!-- Put preloader at the very first element inside <body> -->
 <div id="preloader" aria-hidden="false">
@@ -14,22 +18,39 @@
     <p class="preloader-fact"></p>
   </div>
 </div>
-    <!-- Navigation -->
-   <nav class="navbar">
+
+ <nav class="navbar">
   <div class="nav-container">
+    <!-- Left side: Logo -->
     <div class="nav-logo">
-      <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png">
+      <a href="index.php">
+        <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png" alt="ApnaPayment">
+      </a>
     </div>
+  </div>
+
+  <!-- Toolbar row under logo -->
+  <div class="nav-toolbar">
+    <!-- Hamburger -->
+    <button id="sidebarToggle" class="sidebar-toggle" aria-label="Open sidebar" aria-expanded="false">
+      <span class="hamburger" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </span>
+    </button>
+
+    <!-- Right side -->
+    <div class="nav-right">
+      <div class="nav-greeting">
+        Hello, <strong><?php echo htmlspecialchars($user_name ?? 'Guest'); ?></strong>
       </div>
-<!-- here is side bar button -->
-      <button id="sidebarToggle" aria-label="Open sidebar" aria-expanded="false" class="sidebar-toggle">
-  <span class="hamburger" aria-hidden="true">
-    <span></span><span></span><span></span>
-  </span>
-</button>
-<!-- sidebar render -->
-<?php include __DIR__ . '/sidebar.php'; ?>
+      <a href="cart.php" class="nav-cart" data-count="<?php echo $cart_count ?? 0; ?>">Cart 🛒</a>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <?php include __DIR__ . '/sidebar.php'; ?>
 </nav>
+
 <script>
 /* Robust preloader + header offset fix
    Replace old fragile app.js preloader code with this.

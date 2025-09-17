@@ -16,7 +16,7 @@ function safeFetch(...args) {
     });
 }
 
-// SIDEBAR TOGGLE (append to fastag_website/script.js)
+// Minimal sidebar toggle (paste at end of script.js)
 (function () {
   const toggle = document.getElementById('sidebarToggle');
   const body = document.body;
@@ -24,35 +24,33 @@ function safeFetch(...args) {
 
   if (!toggle || !sidebar) return;
 
-  function setAria(open) {
+  function setState(open) {
+    body.classList.toggle('sidebar-open', open);
     toggle.setAttribute('aria-expanded', String(open));
-    sidebar.setAttribute('aria-hidden', String(!open));
     toggle.setAttribute('aria-label', open ? 'Close sidebar' : 'Open sidebar');
+    sidebar.setAttribute('aria-hidden', String(!open));
   }
 
-  // initial
-  setAria(false);
+  // initial state
+  setState(false);
 
   toggle.addEventListener('click', function (e) {
-    const open = !body.classList.contains('sidebar-open');
-    body.classList.toggle('sidebar-open', open);
-    setAria(open);
+    setState(!body.classList.contains('sidebar-open'));
   });
 
   // Escape to close
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && body.classList.contains('sidebar-open')) {
-      body.classList.remove('sidebar-open');
-      setAria(false);
+      setState(false);
     }
   });
 
-  // Click outside to close (optional; will close if the click wasn't on sidebar or toggle)
+  // Optional: click outside to close — only if you want it simple (keeps no overlay)
   document.addEventListener('click', function (e) {
     if (!body.classList.contains('sidebar-open')) return;
+    // if click on sidebar or toggle, do nothing
     if (sidebar.contains(e.target) || toggle.contains(e.target)) return;
-    body.classList.remove('sidebar-open');
-    setAria(false);
+    setState(false);
   });
 })();
 

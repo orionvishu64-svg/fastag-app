@@ -62,158 +62,6 @@ body {
   .mobile-only { display: block; }
 }
 
-/* Navigation */
-.navbar {
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(10px);
-  position: relative;
-  top: 0;
-  width: 100%;
-  z-index: 1000;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.nav-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.nav-logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #9c9c9c;
-}
-
-/* --- Sidebar toggle / push layout --- */
-:root{
-  --sidebar-width: 220px;
-  --transition: 300ms cubic-bezier(.2,.9,.3,1);
-}
-
-/* sidebar (hidden off-screen by default) */
-.sidebar{
-  width: var(--sidebar-width);
-  background: #000; /* solid so it shows on light backgrounds */
-  border-right: 1px solid rgba(255,255,255,0.04);
-  padding: 25px;
-  height: 100vh;
-  position: fixed;
-  top: 64px;
-  left: 0;
-  height: calc(100vh - 64px);
-  transform: translateX(-100%); /* hide to left */
-  transition: transform var(--transition);
-  z-index: 1000;
-  overflow-y: auto;
-  box-shadow: 2px 0 12px rgba(0,0,0,0.6);
-  -webkit-overflow-scrolling: touch;
-}
-
-/* sidebar links */
-.sidebar nav { display:flex; flex-direction:column; gap:8px; }
-.sidebar a{
-  display:block;
-  padding:10px;
-  border-radius:8px;
-  color: var(--muted-1, #9e9e9e); /* fallback color if var not set */
-  text-decoration:none;
-  font-weight:600;
-}
-.sidebar a:hover,
-.sidebar a.active {
-  background: var(--accent, rgba(255,255,255,0.06));
-  color: #fff;
-}
-
-/* open state: reveal sidebar and push content */
-body.sidebar-open .sidebar{
-  transform: translateX(0);
-}
-
-/* push main content when sidebar opens */
-body.sidebar-open .container,
-body.sidebar-open .page-wrap {
-  margin-left: var(--sidebar-width);
-  transition: margin-left var(--transition);
-}
-
-/* ---------------------------
-   Hamburger / toggle button
-   (not fixed — so it can sit inside header under logo)
-   --------------------------- */
-.sidebar-toggle{
-  position: relative !important; /* allow it to flow inside header */
-  top: 10 !important;
-  left: auto !important;
-  margin: 0 0 0 0; /* small gap under logo */
-  padding: 8px;
-  width: 42px;
-  height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  border: none;
-  background: rgba(255,255,255,0.95);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-  cursor: pointer;
-  transition: transform var(--transition), background 200ms;
-  z-index: 1100;
-}
-
-/* ensure toggle shows when placed after .nav-logo (no HTML change needed) */
-.nav-logo + .sidebar-toggle,
-.nav-left .sidebar-toggle {
-  display: inline-flex;
-}
-
-/* when sidebar opens, slide the toggle right by sidebar width so it 'rides' the sidebar */
-body.sidebar-open .sidebar-toggle {
-  transform: translateX(calc(var(--sidebar-width) + 8px)); /* +8px gap so it clears edge */
-}
-
-/* hamburger visuals */
-.hamburger { display:inline-block; width:18px; height:14px; position:relative; }
-.hamburger span{
-  position:absolute;
-  left:0; right:0;
-  height:2px;
-  background:#000000; /* white bars for dark header */
-  display:block;
-  border-radius:2px;
-  transition: transform var(--transition), opacity var(--transition);
-}
-.hamburger span:nth-child(1){ top:0; }
-.hamburger span:nth-child(2){ top:6px; }
-.hamburger span:nth-child(3){ top:12px; }
-
-/* animate into X when open */
-body.sidebar-open .hamburger span:nth-child(1){
-  transform: translateY(6px) rotate(45deg);
-}
-body.sidebar-open .hamburger span:nth-child(2){
-  opacity: 0;
-}
-body.sidebar-open .hamburger span:nth-child(3){
-  transform: translateY(-6px) rotate(-45deg);
-}
-
-/* Mobile: make sidebar overlay and keep toggle in place */
-@media (max-width: 720px) {
-  :root { --sidebar-width: 80vw; }
-  body.sidebar-open .container,
-  body.sidebar-open .page-wrap { margin-left: 0; } /* overlay on mobile */
-  body.sidebar-open .sidebar-toggle { transform: none; } /* don't slide toggle on mobile */
-  .sidebar { width: var(--sidebar-width); }
-}
-
 /* Hero Section */
 .hero {
   background: linear-gradient(135deg, #363636 0%, #000000 100%);
@@ -726,33 +574,231 @@ html.preloader-active, body.preloader-active { overflow:hidden !important; heigh
 /* If your nav has .navbar (bootstrap), ensure it doesn't get extra margin */
 .header .navbar { margin: 0; padding: 0; }
 
+/* =========================
+   Compact modern header + sidebar
+   (keeps your existing HTML & class names)
+   ========================= */
 
-/* hover cart loader */
-/* small horizontal tab */
-#mySidenav a {
-  position: fixed;
-  right: -90px;              /* hidden off-screen */
-  top: 150px;               /* move down as needed; remove #cart rule */
-  transition: right 0.25s ease;
+/* Header base */
+.navbar {
+  background: linear-gradient(90deg,#070707 0%, #111111 100%);
+  position: relative;
+  width: 100%;
+  z-index: 1200;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Container */
+.nav-container {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 8px 18px;      /* compact */
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Logo */
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.nav-logo img {
+  height: 46px;           /* larger, prominent logo */
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.45));
+  transition: transform 140ms ease;
+}
+.nav-logo img:hover { transform: scale(1.03); }
+
+/* ----- Toolbar: 2x2 grid (logo/greeting on row1, hamburger/cart on row2) ----- */
+.nav-toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto; /* left expands, right auto */
+  grid-template-rows: auto auto;   /* row1: logo/greeting, row2: hamburger/cart */
+  gap: 6px 12px;                   /* row-gap, col-gap */
+  align-items: center;
+  padding: 6px 12px;
+  background: transparent;
+}
+
+/* Keep left column stacked visually (logo above hamburger flow) */
+.nav-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+/* Hamburger (row2 left) */
+.sidebar-toggle {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: start;
+
+  padding: 6px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  width: 120px;             /* visible width when hovered */
-  padding: 12px 14px;       /* compact padding */
-  box-sizing: border-box;   /* important so padding doesn't expand beyond width */
-  text-decoration: none;
-  font-size: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
   color: #fff;
-  background: #135861;
-  border-radius: 6px 0 0 6px;
-  z-index: 9999;
+  border-radius: 6px;
+  transition: transform 160ms ease, background 120ms ease, color 120ms ease;
+}
+.sidebar-toggle:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.02);
+  color: #90cdf4;
 }
 
-#mySidenav a:hover {
-  right: 0;
+/* Hamburger bars */
+.hamburger {
+  width: 18px;
+  height: 14px;
+  position: relative;
+  display: inline-block;
+}
+.hamburger span {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+  transition: transform 220ms cubic-bezier(.2,.9,.3,1), opacity 160ms ease;
+}
+.hamburger span:nth-child(1){ top: 0; }
+.hamburger span:nth-child(2){ top: 6px; }
+.hamburger span:nth-child(3){ top: 12px; }
+body.sidebar-open .hamburger span:nth-child(1){ transform: translateY(6px) rotate(45deg); }
+body.sidebar-open .hamburger span:nth-child(2){ opacity: 0; }
+body.sidebar-open .hamburger span:nth-child(3){ transform: translateY(-6px) rotate(-45deg); }
+
+/* Right side content: flatten to grid children */
+.nav-right {
+  display: contents; /* so children occupy grid cells */
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
-#cart {
-  top: 100px;
-  background-color: #135861;
+/* Greeting (row1 right) -> same row as logo */
+.nav-greeting {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  align-self: center;
+  color: #f3f4f6;
+  letter-spacing: 0.1px;
+  white-space: nowrap;
 }
+
+/* Cart (row2 right) -> under greeting */
+.nav-cart {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
+  align-self: start;
+
+  text-decoration: none;
+  color: #fff;
+  font-size: 1.05rem;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  transition: transform 140ms ease, color 140ms ease;
+}
+.nav-cart:hover { transform: translateY(-1px); color: #90cdf4; }
+
+/* cart badge */
+.nav-cart::after {
+  content: attr(data-count);
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: #ef4444;
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  display: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.45);
+}
+.nav-cart[data-count]:not([data-count="0"])::after { display:inline-block; }
+
+/* ================= Sidebar styling (sleek panel) ================= */
+:root {
+  --sidebar-width: 280px;
+  --sidebar-ease: 260ms cubic-bezier(.2,.9,.3,1);
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  background: rgba(12,12,12,0.92);
+  backdrop-filter: blur(8px);
+  color: #e8e8e8;
+  padding: 18px;
+  position: fixed;
+  top: 60px;                             /* align under header */
+  left: 0;
+  height: calc(100vh - 60px);
+  transform: translateX(-112%);
+  transition: transform var(--sidebar-ease);
+  z-index: 1300;
+  overflow-y: auto;
+  box-shadow: 6px 12px 36px rgba(0,0,0,0.6);
+  border-right: 1px solid rgba(255,255,255,0.03);
+}
+
+/* reveal sidebar */
+body.sidebar-open .sidebar { transform: translateX(0); }
+
+/* links */
+.sidebar nav { display:flex; flex-direction:column; gap:8px; }
+.sidebar a {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  color:#cfcfcf;
+  text-decoration:none;
+  border-radius:8px;
+  transition: background 160ms ease, color 160ms ease, padding-left 160ms;
+}
+.sidebar a i, .sidebar a .icon { min-width:22px; color:#9aa0a6; }
+.sidebar a:hover { background: rgba(255,255,255,0.04); color:#fff; padding-left:14px; }
+.sidebar a.active { background: rgba(96,165,250,0.12); color:#60a5fa; }
+
+/* push content when sidebar open (if container/page-wrap exist) */
+body.sidebar-open .container,
+body.sidebar-open .page-wrap {
+  margin-left: var(--sidebar-width);
+  transition: margin-left var(--sidebar-ease);
+}
+
+/* make sidebar links above page content */
+.sidebar a { position: relative; z-index: 1310; }
+
+/* ================= Responsive tweaks ================= */
+@media (max-width: 720px) {
+  .nav-container { padding: 8px 12px; }
+  .nav-logo img { height: 42px; }
+  .nav-greeting { display: none; } /* hide greeting on small screens for clarity */
+  .nav-toolbar { grid-template-rows: 1fr; grid-template-columns: auto 1fr; gap:6px 10px; align-items:center; padding:6px 8px; }
+  .sidebar-toggle { grid-row: 1; margin-left: 6px; }
+  .nav-cart { grid-row: 1; justify-self: end; }
+  .sidebar { top: 56px; height: calc(100vh - 56px); width: 80vw; }
+}
+
+/* small performance hint */
+.nav-logo img, .sidebar-toggle, .nav-cart { will-change: transform, color; }
