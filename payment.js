@@ -315,3 +315,14 @@ const isAlphaNum = (s) => /^[A-Za-z0-9]+$/.test(String(s || "").trim());
       });
   });
 });
+
+// fetch('/fastag_website/api/pincode_check.php?pin=302016')
+fetch('/fastag_website/api/pincode_check.php?pin=' + encodeURIComponent(pin))
+  .then(r=>r.json())
+  .then(json=>{
+    if(json.success) {
+      // show cost: json.data.shipping_cost, TAT: json.data.min_tat_days - max_tat_days
+    } else {
+      // handle not serviceable / fallback
+    }
+  });

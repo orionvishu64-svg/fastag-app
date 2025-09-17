@@ -1,6 +1,12 @@
 <?php
-$user_name = isset($_SESSION['user']['name']) ? $_SESSION['user']['name'] : 'Guest';
-$cart_count = isset($_SESSION['cart_count']) ? $_SESSION['cart_count'] : 0; // optional
+// Ensure session is started before any output
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Read user name and cart count from session (safe defaults)
+$user_name  = isset($_SESSION['user']['name']) ? $_SESSION['user']['name'] : 'Guest';
+$cart_count = isset($_SESSION['cart_count']) ? (int) $_SESSION['cart_count'] : 0;
 ?>
 
  <!-- Put preloader at the very first element inside <body> -->

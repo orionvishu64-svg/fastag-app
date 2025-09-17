@@ -1,79 +1,61 @@
 <?php
-require_once 'common_start.php';
-require 'db.php';
-header('Content-Type: application/json');
+// place_order.php
+require_once __DIR__ . '/common_start.php';
+require_once __DIR__ . '/config/db.php';
+require_once __DIR__ . '/lib/admin_ship_api.php';
 
-// user must be logged in
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['status'=>'error','message'=>'Please log in']);
-    exit;
-}
-$user_id = (int)$_SESSION['user_id'];
+// assume POST contains: user_id, address_id, items (json), payment_method ('upi' or 'agent_id')
+$user_id = (int)($_POST['user_id'] ?? 0);
+$address_id = (int)($_POST['address_id'] ?? 0);
+$payment_method = trim($_POST['payment_method'] ?? 'upi');
+$items = json_decode($_POST['items'] ?? '[]', true);
 
-// read input
-$input = json_decode(file_get_contents('php://input'), true);
-if (!$input || !is_array($input)) $input = $_POST;
-
-$payment_method = trim($input['payment_method'] ?? '');
-$transaction_id = $input['transaction_id'] ?? null;
-$address_id = isset($input['address_id']) ? (int)$input['address_id'] : 0;
-$items = $input['items'] ?? [];
-if ($address_id <= 0 || empty($items)) {
-    echo json_encode(['status'=>'error','message'=>'Missing or invalid order data']);
-    exit;
-}
-
-// compute total
-$total_amount = 0.0;
+// Compute total server-side. Example:
+$total = 0.00;
 foreach ($items as $it) {
-    $qty = isset($it['quantity']) ? (int)$it['quantity'] : 1;
-    $price = isset($it['price']) ? (float)$it['price'] : 0;
-    $total_amount += $qty * $price;
+    $qty = (int)($it['quantity'] ?? 1);
+    $price = (float)($it['price'] ?? 0.0);
+    $total += $qty * $price;
 }
 
-// apply your rule: agent-id = free
-if (strtolower($payment_method) === 'agent-id') {
-    $total_amount = 0.0;
+// shipping_amount can be calculated via admin calculate_cost API if needed.
+// For now set to 0 or compute via admin API later
+$shipping_amount = 0.00;
+
+// Insert order
+$ins = $pdo->prepare("INSERT INTO orders (user_id, address_id, payment_method, amount, shipping_amount, payment_status, created_at, updated_at) VALUES (:uid, :aid, :pm, :amt, :ship, :pstatus, NOW(), NOW())");
+$payment_status = 'pending';
+if ($payment_method === 'agent_id') {
+    // Agent_id is treated prepaid per your requirement
+    $payment_status = 'paid';
 }
+$ins->execute([
+    ':uid'=>$user_id, ':aid'=>$address_id, ':pm'=>$payment_method,
+    ':amt'=>number_format($total,2,'.',''), ':ship'=>$shipping_amount, ':pstatus'=>$payment_status
+]);
+$order_id = $pdo->lastInsertId();
 
-try {
-    $pdo->beginTransaction();
-
-    // insert order (your schema)
-    $stmt = $pdo->prepare("
-        INSERT INTO orders (user_id, address_id, payment_method, transaction_id, amount, shipping_amount, payment_status, status, created_at, updated_at)
-        VALUES (:user_id, :address_id, :payment_method, :transaction_id, :amount, 0.00, 'pending', 'new', NOW(), NOW())
-    ");
-    $stmt->execute([
-        ':user_id' => $user_id,
-        ':address_id' => $address_id,
-        ':payment_method' => $payment_method,
-        ':transaction_id' => $transaction_id,
-        ':amount' => number_format($total_amount, 2, '.', '')
+// insert order_items
+$itstmt = $pdo->prepare("INSERT INTO order_items (order_id, product_name, quantity, price, product_id) VALUES (:oid, :pname, :qty, :price, :pid)");
+foreach ($items as $it) {
+    $itstmt->execute([
+        ':oid'=>$order_id,
+        ':pname'=>$it['product_name'] ?? '',
+        ':qty'=> (int)($it['quantity'] ?? 1),
+        ':price'=> number_format((float)($it['price'] ?? 0),2,'.',''),
+        ':pid'=> (int)($it['product_id'] ?? 0)
     ]);
-    $order_id = (int)$pdo->lastInsertId();
-
-    // insert items
-    $stmtItem = $pdo->prepare("INSERT INTO order_items (order_id, bank, product_name, quantity, price, product_id) VALUES (:order_id, :bank, :product_name, :quantity, :price, :product_id)");
-    foreach ($items as $it) {
-        $stmtItem->execute([
-            ':order_id' => $order_id,
-            ':bank' => $it['bank'] ?? null,
-            ':product_name' => $it['product_name'] ?? 'Item',
-            ':quantity' => isset($it['quantity']) ? (int)$it['quantity'] : 1,
-            ':price' => isset($it['price']) ? number_format((float)$it['price'], 2, '.', '') : 0.00,
-            ':product_id' => $it['product_id'] ?? null
-        ]);
-    }
-
-    $pdo->commit();
-
-    echo json_encode([
-        'status'=>'success',
-        'order_id'=>$order_id,
-        'message'=>($payment_method==='upi' ? 'Proceed with UPI payment' : 'Order placed successfully')
-    ]);
-} catch (Throwable $e) {
-    if ($pdo->inTransaction()) $pdo->rollBack();
-    echo json_encode(['status'=>'error','message'=>'DB error: '.$e->getMessage()]);
 }
+
+// If payment_method is UPI, redirect to payment gateway flow and set payment_status to 'pending' until verify_payment marks 'paid'.
+// For agent_id (prepaid) we already set 'paid' and should immediately call admin to create shipment:
+if ($payment_status === 'paid') {
+    // call admin create_shipment for instant AWB
+    $resp = admin_api_post('/fastag_admin/api/create_shipment.php', ['order_id' => (int)$order_id]);
+    // store admin response in a log table or check $resp['success']
+    // optionally show AWB to user if present
+}
+
+// Return success to client
+echo json_encode(['success'=>true,'order_id'=>$order_id]);
+exit;

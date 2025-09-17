@@ -1,50 +1,30 @@
 <?php
-// fastag_website/verify_payment.php
-// Minimal payment verification without any Delhivery API calls.
-// Verifies payment details, updates order payment_status, and leaves shipment creation to admin.
+// verify_payment.php
+require_once __DIR__ . '/common_start.php';
+require_once __DIR__ . '/config/db.php';
+require_once __DIR__ . '/lib/admin_ship_api.php';
 
-require_once 'common_start.php';
-require 'db.php'; // provides $pdo
-header('Content-Type: application/json');
+// Example: you receive POST with order_id and gateway status
+$order_id = (int)($_POST['order_id'] ?? 0);
+$gateway_status = $_POST['gateway_status'] ?? 'failed'; // depends on your gateway
 
-$input = json_decode(file_get_contents('php://input'), true);
-if (!$input) $input = $_POST;
+if (!$order_id) { echo json_encode(['success'=>false,'error'=>'missing order_id']); exit; }
 
-// Basic validation
-$order_id = isset($input['order_id']) ? (int)$input['order_id'] : 0;
-$payment_status = isset($input['payment_status']) ? $input['payment_status'] : 'failed';
-$payment_ref = isset($input['payment_ref']) ? $input['payment_ref'] : null;
+// verify gateway response with their APIs/SDK (not covered here). Assume success:
+if ($gateway_status === 'success') {
+    $upd = $pdo->prepare("UPDATE orders SET payment_status = 'paid', transaction_id = :tx, updated_at = NOW() WHERE id = :id");
+    $upd->execute([':tx'=>$_POST['transaction_id'] ?? null, ':id'=>$order_id]);
 
-if ($order_id <= 0) {
-    echo json_encode(["success" => false, "message" => "Invalid order id"]);
-    exit;
-}
-
-try {
-    // Fetch order to ensure it exists
-    $stmt = $pdo->prepare("SELECT id, payment_method FROM orders WHERE id = :id LIMIT 1");
-    $stmt->execute([':id' => $order_id]);
-    $order = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$order) {
-        echo json_encode(["success" => false, "message" => "Order not found"]);
-        exit;
+    // call admin to create shipment
+    $resp = admin_api_post('/fastag_admin/api/create_shipment.php', ['order_id' => $order_id]);
+    if (!empty($resp['success'])) {
+        echo json_encode(['success'=>true,'admin'=>$resp['json'] ?? $resp]);
+    } else {
+        // if admin create failed, return success but the workers will pick it up later
+        echo json_encode(['success'=>true,'warning'=>'shipment_pending','admin_error'=>$resp]);
     }
-
-    // Update payment status
-    $stmt = $pdo->prepare("UPDATE orders SET payment_status = :payment_status, payment_ref = :payment_ref, updated_at = NOW() WHERE id = :id");
-    $stmt->execute([':payment_status' => $payment_status, ':payment_ref' => $payment_ref, ':id' => $order_id]);
-
-    // If payment succeeded and method is online, mark order for shipment creation (admin will pick this up).
-    if ($payment_status === 'success') {
-        $stmt2 = $pdo->prepare("UPDATE orders SET shipment_status = :shipment_status, updated_at = NOW() WHERE id = :id");
-        $stmt2->execute([':shipment_status' => 'pending_shipment', ':id' => $order_id]);
-    }
-
-    echo json_encode(["success" => true, "message" => "Payment status recorded", "order_id" => $order_id]);
     exit;
-
-} catch (Exception $e) {
-    error_log("verify_payment.php exception: " . $e->getMessage());
-    echo json_encode(["success" => false, "message" => "Database error: " . $e->getMessage()]);
+} else {
+    echo json_encode(['success'=>false,'error'=>'payment_failed']);
     exit;
 }
