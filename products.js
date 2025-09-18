@@ -1,72 +1,19 @@
-/* products.js (merged)
- *
- * Combined renderer + UI glue:
- * - Renders product cards into #products-container using ProductDB
- * - Exposes window.reloadProducts({ bank, category, q, limit })
- * - Wires searchInput, bankFilter, categoryFilter, resultsCount, noResults and Clear All Filters
- *
- * Requirements:
- * - productdb.js must be loaded before this file (provides ProductDB)
- * - If you have a global addToCart(product) function, this file will call it; otherwise it falls back to localStorage.
- */
-
-/* =========================
-   Renderer / product card
-   ========================= */
+/* products.js — single-file renderer + Blinkit-style bottom sheet
+   - Renders products into #products-container / .products-grid
+   - Clicking a product card opens the full-screen sheet (reliable)
+   - No legacy modal left behind
+   - addToCart fallback uses localStorage
+*/
 
 (function () {
-  if (!window.ProductDB) {
-    console.error('ProductDB missing — include productdb.js before products.js');
-    return null;
-  }
+  /* ---------------- small helpers ---------------- */
+  const $ = (s, root = document) => { try { return (root || document).querySelector(s); } catch { return null; } };
+  const $all = (s, root = document) => { try { return Array.from((root || document).querySelectorAll(s)); } catch { return []; } };
+  const escapeHtml = v => (v == null ? '' : String(v)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'));
 
-  // Safe fetch wrapper (reused)
-  async function safeFetchJson(url, opts = {}) {
-    const res = await fetch(url, Object.assign({ credentials: 'include' }, opts));
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
-  }
-
-  // DOM helpers
-  function $(sel, root = document) {
-    try {
-      return root.querySelector(sel);
-    } catch (e) {
-      return null;
-    }
-  }
-  function $all(sel, root = document) {
-    try {
-      return Array.from(root.querySelectorAll(sel));
-    } catch (e) {
-      return [];
-    }
-  }
-
-  // Escape text for HTML (small utility)
-  function escapeHtml(s) {
-    if (s == null) return '';
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
-  // Detect bank from body data attribute or path
-  function detectBankFromPage() {
-    const b = document.body && document.body.dataset && document.body.dataset.bank;
-    if (b) return b;
-    const path = location.pathname.split('/').pop().toLowerCase();
-    if (path.includes('bajaj')) return 'Bajaj';
-    if (path.includes('sbi')) return 'SBI';
-    if (path.includes('kotak')) return 'Kotak';
-    if (path.includes('idfc')) return 'IDFC';
-    return null;
-  }
-
-  // Default container selectors (update if your HTML uses other containers)
+  /* ---------- container finder ---------- */
   const containerSelectors = ['#products-container', '.products-grid', '.products-list'];
   function findContainer() {
     for (const sel of containerSelectors) {
@@ -80,144 +27,225 @@
     return fallback;
   }
 
-  // Build the product card — adapt classes/structure to your CSS if needed.
-  
-function createProductCard(product) {
-    const card = document.createElement('article');
-    // add bank class if present (normalized)
-    const bankClass = (product.bank || '').toString().trim();
-    card.className = 'product-card' + (bankClass ? ' ' + bankClass.toLowerCase() : '');
-    card.setAttribute('data-bank', product.bank || '');
+  /* ---------- product sheet (single source of truth) ---------- */
+  function initSheet() {
+    if (window.__productSheet) return window.__productSheet;
 
-    // header (bank + badges)
-    const header = document.createElement('div');
-    header.className = 'product-header';
+    // Create sheet DOM
+    const sheet = document.createElement('div');
+    sheet.id = 'productFullSheet';
+    sheet.className = 'product-full-sheet';
+    sheet.style.display = 'none';
+    sheet.innerHTML = `
+      <div class="sheet-backdrop" data-dismiss="true"></div>
+      <div class="sheet-panel" role="dialog" aria-modal="true">
+        <div class="sheet-handle"></div>
+        <div class="sheet-body">
+          <button class="sheet-close" aria-label="Close">✕</button>
+          <div class="sheet-content">
+            <div class="sheet-left"><div class="sheet-image-wrap"><img src="" alt="product"></div></div>
+            <div class="sheet-right">
+              <h2 class="sheet-title"></h2>
+              <div class="sheet-bank-cat"></div>
+              <div class="sheet-meta-grid">
+                <div><strong>Activation:</strong> <span class="sheet-activation"></span></div>
+                <div><strong>Security:</strong> <span class="sheet-security"></span></div>
+                <div><strong>Tagcost:</strong> <span class="sheet-tagcost"></span></div>
+                <div><strong>Payout:</strong> <span class="sheet-payout"></span></div>
+              </div>
+              <div class="sheet-price"></div>
+              <div class="sheet-desc"></div>
+              <div class="sheet-actions">
+                <div class="sheet-qty">
+                  <button class="qty-decr" aria-label="decrease">−</button>
+                  <input class="qty-input" type="number" value="1" min="1" />
+                  <button class="qty-incr" aria-label="increase">+</button>
+                </div>
+                <button class="btn sheet-add">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(sheet);
 
-    const bankInfo = document.createElement('div');
-    bankInfo.className = 'product-bank-info';
+    // cache nodes, defensive
+    const panel = sheet.querySelector('.sheet-panel');
+    const backdrop = sheet.querySelector('.sheet-backdrop');
+    const closeBtn = sheet.querySelector('.sheet-close');
+    const img = sheet.querySelector('.sheet-image-wrap img');
+    const title = sheet.querySelector('.sheet-title');
+    const bankCat = sheet.querySelector('.sheet-bank-cat');
+    const activation = sheet.querySelector('.sheet-activation');
+    const security = sheet.querySelector('.sheet-security');
+    const tagcost = sheet.querySelector('.sheet-tagcost');
+    const payout = sheet.querySelector('.sheet-payout');
+    const priceEl = sheet.querySelector('.sheet-price');
+    const desc = sheet.querySelector('.sheet-desc');
+    const qtyInput = sheet.querySelector('.qty-input');
+    const qtyInc = sheet.querySelector('.qty-incr');
+    const qtyDec = sheet.querySelector('.qty-decr');
+    let addBtn = sheet.querySelector('.sheet-add');
 
-    const bankLogo = document.createElement('div');
-    bankLogo.className = 'bank-logo-section';
-    // if product has a logo URL use img, else show bank short text
-    if (product.logo) {
-      const img = document.createElement('img');
-      img.src = product.logo;
-      img.alt = product.bank || '';
-      img.style.maxHeight = '44px';
-      bankLogo.appendChild(img);
-    } else {
-      bankLogo.innerHTML = `<div class="chip bank-chip">${escapeHtml(product.bank || '')}</div>`;
+    // helper to wire add button safely
+    function wireAdd(product) {
+      // always fetch current addBtn node
+      addBtn = sheet.querySelector('.sheet-add');
+      if (!addBtn) return;
+      // remove previous listeners by replacing node with clone
+      const newAdd = addBtn.cloneNode(true);
+      addBtn.parentNode.replaceChild(newAdd, addBtn);
+      addBtn = newAdd;
+      addBtn.addEventListener('click', function () {
+        const q = Math.max(1, Number(qtyInput.value || 1));
+        if (typeof addToCart === 'function') {
+          addToCart(Object.assign({}, product, { qty: q }));
+        } else {
+          const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+          cart.push(Object.assign({}, product, { qty: q }));
+          localStorage.setItem('cart', JSON.stringify(cart));
+        }
+        // small feedback then close
+        addBtn.textContent = '✔ Added';
+        setTimeout(hide, 500);
+      });
     }
 
-    const rightHeader = document.createElement('div');
-    rightHeader.className = 'product-header-right';
-    rightHeader.innerHTML = `<div class="chip cat-chip">${escapeHtml(product.category || '')}</div>`;
+    // show/hide functions
+    function show(product) {
+      if (!product) return;
+      try {
+        img.src = product.logo || '';
+        img.alt = product.name || '';
+        title.textContent = product.name || '';
+        bankCat.textContent = `${product.bank || ''} • ${product.category || ''}`;
+        activation.textContent = (product.activation != null) ? `₹${product.activation}` : '—';
+        security.textContent = (product.security != null) ? `₹${product.security}` : '—';
+        tagcost.textContent = (product.tagcost != null) ? `₹${product.tagcost}` : '—';
+        payout.textContent = product.payout || '—';
+        priceEl.textContent = product.price != null ? `₹${Number(product.price).toLocaleString()}` : '₹0';
+        desc.textContent = product.description || '';
+        qtyInput.value = 1;
 
-    bankInfo.appendChild(bankLogo);
-    bankInfo.appendChild(rightHeader);
-    header.appendChild(bankInfo);
+        // wire qty controls
+        qtyInc.onclick = () => qtyInput.value = Math.max(1, Number(qtyInput.value || 1) + 1);
+        qtyDec.onclick = () => qtyInput.value = Math.max(1, Number(qtyInput.value || 1) - 1);
+        qtyInput.oninput = () => { if (!qtyInput.value || Number(qtyInput.value) < 1) qtyInput.value = 1; };
 
-    // content
-    const content = document.createElement('div');
-    content.className = 'product-content';
+        // wire add
+        wireAdd(product);
 
-    const title = document.createElement('h3');
-    title.className = 'product-title';
-    title.textContent = product.name || '';
+        // show sheet with CSS transition
+        sheet.style.display = '';
+        // ensure panel reset
+        panel.classList.remove('panel-up');
+        sheet.classList.remove('sheet-open');
 
-    const desc = document.createElement('p');
-    desc.className = 'product-description';
-    desc.textContent = product.description || '';
+        // show next frame
+        requestAnimationFrame(() => {
+          sheet.classList.add('sheet-open');
+          panel.classList.add('panel-up');
+        });
+      } catch (err) {
+        console.error('sheet show error', err);
+      }
+    }
 
-    // price section
-    const priceSection = document.createElement('div');
-    priceSection.className = 'price-section';
-    const priceEl = document.createElement('div');
-    priceEl.className = 'price';
-    priceEl.textContent = (product.price != null) ? '₹' + Number(product.price).toLocaleString() : '₹0';
-    priceSection.appendChild(priceEl);
+    function hide() {
+      try {
+        panel.classList.remove('panel-up');
+        sheet.classList.remove('sheet-open');
+        // reset after transition
+        setTimeout(() => {
+          sheet.style.display = 'none';
+          panel.classList.remove('panel-up');
+          sheet.classList.remove('sheet-open');
+        }, 320);
+      } catch (err) {
+        // never crash
+        sheet.style.display = 'none';
+      }
+    }
 
-    const subtext = document.createElement('div');
-    subtext.className = 'product-subtext';
-    subtext.textContent = 'Inclusive of all charges';
+    // close handlers
+    backdrop && backdrop.addEventListener('click', hide);
+    closeBtn && closeBtn.addEventListener('click', hide);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide(); });
 
-    // meta row
-    const meta = document.createElement('div');
-    meta.className = 'product-meta';
-    meta.innerHTML = `
-      <div><small><strong>Activation:</strong> ${escapeHtml(product.activation || '')}${product.activation ? '&#8377;' : ''}</small></div>
-      <div><small><strong>Security:</strong> ${escapeHtml(product.security || '')}${product.security ? '&#8377;' : ''}</small></div>
-      <div><small><strong>Tagcost:</strong> ${escapeHtml(product.tagcost || '')}${product.tagcost ? '&#8377;' : ''}</small></div>
-      <div><small><strong>Payout:</strong> ${escapeHtml(product.payout || '')}${product.payout ? '&#8377;' : ''}</small></div>
+    // expose API
+    window.showProductSheet = show;
+    window.hideProductSheet = hide;
+
+    // store
+    window.__productSheet = { show, hide, sheet, panel };
+    return window.__productSheet;
+  }
+
+  /* ---------- product card creation & renderer ---------- */
+  function createProductCard(product) {
+    product = product || {};
+    const card = document.createElement('article');
+    const bankClass = (product.bank || '').toString().trim().toLowerCase().replace(/\s+/g, '-');
+    card.className = 'product-card' + (bankClass ? ' ' + bankClass : '');
+
+    // index & dataset for retrieval
+    window._productIndex = window._productIndex || [];
+    const idx = window._productIndex.push(product) - 1;
+    card.setAttribute('data-product-index', String(idx));
+    try { card.dataset.product = JSON.stringify(product); } catch (e) { /* ignore */ }
+
+    card.innerHTML = `
+      <div class="product-image-wrap">
+        <img src="${escapeHtml(product.logo||'')}" alt="${escapeHtml(product.name||'')}">
+        <button class="add-overlay">ADD</button>
+      </div>
+      <div class="product-info">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="cat-chip">${escapeHtml(product.category||'')}</div>
+          <div class="bank-small">${escapeHtml(product.bank||'')}</div>
+        </div>
+        <h3 class="product-title">${escapeHtml(product.name||'')}</h3>
+        <div class="price">${product.price!=null? '₹' + Number(product.price).toLocaleString() : ''}</div>
+      </div>
     `;
 
-    // footer / actions
-    const footer = document.createElement('div');
-    footer.className = 'product-card-footer';
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'add-to-cart-btn';
-    btn.textContent = 'Add To Cart';
-    // data attributes for existing cart integration
-    btn.dataset.productId = product.product_id || '';
-    btn.dataset.dbId = product.id || '';
-    btn.dataset.price = product.price || 0;
-    btn.addEventListener('click', function () {
-      const prodPayload = {
-        id: product.id,
-        product_id: product.product_id,
-        name: product.name,
-        price: product.price,
-        bank: product.bank,
-        category: product.category
-      };
-      if (typeof window.addToCart === 'function') {
-        window.addToCart(prodPayload);
-      } else {
-        try {
-          let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-          cart.push(prodPayload);
+    // add button
+    const btn = card.querySelector('.add-overlay');
+    if (btn) {
+      btn.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        if (typeof addToCart === 'function') addToCart(product);
+        else {
+          const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+          cart.push(product);
           localStorage.setItem('cart', JSON.stringify(cart));
-          // update cart count if present
-          const cc = document.querySelector('.cart-count');
-          if (cc) cc.textContent = cart.length;
-        } catch (e) { console.error('add to cart error', e); }
-      }
-    });
-
-    footer.appendChild(btn);
-
-    // assemble content
-    content.appendChild(title);
-    content.appendChild(desc);
-    content.appendChild(priceSection);
-    content.appendChild(subtext);
-    content.appendChild(meta);
-    content.appendChild(footer);
-
-    card.appendChild(header);
-    card.appendChild(content);
+          console.info('Added to cart (fallback localStorage)', product);
+        }
+      });
+    }
 
     return card;
   }
-function renderProductsList(products, container) {
+
+  function renderProductsList(products, container) {
     container = container || findContainer();
     container.innerHTML = '';
     if (!products || products.length === 0) {
       container.innerHTML = '<div class="notice-card">No products found.</div>';
-      return null;
+      return;
     }
+    // reset index
+    window._productIndex = [];
+
     const frag = document.createDocumentFragment();
-    for (const p of products) {
-      const card = createProductCard(p);
-      frag.appendChild(card);
-    }
+    for (const p of products) frag.appendChild(createProductCard(p || {}));
     container.appendChild(frag);
   }
 
-  // Public loader that fetches and renders (supports opts: { bank, category, q, limit, container })
+  /* ---------- loader & UI glue (ProductDB) ---------- */
   async function loadAndRender(opts = {}) {
-    const bank = opts.bank === undefined ? detectBankFromPage() : opts.bank;
+    const bank = opts.bank === undefined ? (document.body && document.body.dataset && document.body.dataset.bank) : opts.bank;
     const category = opts.category || null;
     const q = opts.q || null;
     const limit = opts.limit || 0;
@@ -225,137 +253,95 @@ function renderProductsList(products, container) {
 
     try {
       container.innerHTML = '<div class="notice-card">Loading products…</div>';
-      const products = await ProductDB.getAll({ force: false, bank, category, q, limit });
-      await renderProductsList(products, container);
+      const products = (window.ProductDB && typeof window.ProductDB.getAll === 'function')
+        ? await window.ProductDB.getAll({ force: false, bank, category, q, limit })
+        : [];
+      renderProductsList(products, container);
     } catch (err) {
       console.error('Failed to load products', err);
-      container.innerHTML = `<div class="notice-card">Failed to load products.</div>`;
+      container.innerHTML = '<div class="notice-card">Failed to load products.</div>';
     }
   }
-
-  // make reload available globally
   window.reloadProducts = (opts) => loadAndRender(opts);
 
-  // Auto load on DOM ready (but the UI glue below will also kick off a load via reloadAndUpdateUI)
-  document.addEventListener('DOMContentLoaded', () => {
-    // do not auto call loadAndRender here to avoid double-loading — UI glue controls initial load
-    // loadAndRender();
-  });
-
-  /* =========================
-     UI glue (merged from products-ui.js)
-     ========================= */
-
-  // Map UI control values -> ProductDB params
   function uiToParams() {
     const bankValRaw = document.getElementById('bankFilter')?.value || '';
     const categoryValRaw = document.getElementById('categoryFilter')?.value || '';
     const q = document.getElementById('searchInput')?.value?.trim() || '';
     const bank = (bankValRaw && bankValRaw !== 'all') ? bankValRaw : null;
     const category = (categoryValRaw && categoryValRaw !== 'all') ? categoryValRaw : null;
-    return {
-      bank: bank,
-      category: category,
-      q: q || null
-    }
-
-
+    return { bank, category, q: q || null };
   }
 
-  function showNoResults(show) {
-    const el = document.getElementById('noResults');
-    if (!el) return;
-    el.style.display = show ? '' : 'none';
-  }
-
-  function updateResultsCount(n) {
-    const el = document.getElementById('resultsCount');
-    if (!el) return;
-    el.textContent = String(n);
-  }
-
-  function clearAllFilters() {
-    const s = document.getElementById('searchInput');
-    const b = document.getElementById('bankFilter');
-    const c = document.getElementById('categoryFilter');
-    if (s) s.value = '';
-    if (b) b.value = 'all';
-    if (c) c.value = 'all';
-    reloadAndUpdateUI();
-  }
-
-  // Expose globally for HTML button onclick
-  window.clearAllFilters = clearAllFilters;
-
-  // Core: fetch products (count) then render and update UI
-  
-async function reloadAndUpdateUI() {
+  async function reloadAndUpdateUI() {
     const params = uiToParams();
     try {
-      // Get matching products (force server fetch to ensure count reflects filters)
-      const products = await ProductDB.getAll({ force: true, bank: params.bank, category: params.category, q: params.q });
-      updateResultsCount(products.length);
-      showNoResults(products.length === 0);
-
-      // Render cards using already fetched products to avoid duplicate fetch
-      const container = findContainer();
-      renderProductsList(products, container);
+      const products = (window.ProductDB && typeof window.ProductDB.getAll === 'function')
+        ? await window.ProductDB.getAll({ force: true, bank: params.bank, category: params.category, q: params.q })
+        : [];
+      const resultsCountEl = document.getElementById('resultsCount');
+      if (resultsCountEl) resultsCountEl.textContent = String(products.length);
+      const noEl = document.getElementById('noResults');
+      if (noEl) noEl.style.display = products.length === 0 ? '' : 'none';
+      renderProductsList(products, findContainer());
     } catch (err) {
       console.error('reloadAndUpdateUI error', err);
-      updateResultsCount(0);
-      showNoResults(true);
-      // render an empty set so renderer shows no products
-      const container = findContainer();
-      renderProductsList([], container);
+      const resultsCountEl = document.getElementById('resultsCount');
+      if (resultsCountEl) resultsCountEl.textContent = '0';
+      const noEl = document.getElementById('noResults');
+      if (noEl) noEl.style.display = '';
+      renderProductsList([], findContainer());
     }
-  };
-
-  // Debounce helper
-  function debounce(fn, wait = 300) {
-    let t = null;
-    return (...args) => {
-      clearTimeout(t);
-      t = setTimeout(() => fn(...args), wait);
-    };
   }
 
-  // Wire controls on DOMContentLoaded
+  function debounce(fn, wait = 300) { let t = null; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); }; }
+
+  /* ---------- init on DOM ready if products page ---------- */
   document.addEventListener('DOMContentLoaded', function () {
     const isProductsPage = document.body && document.body.dataset && document.body.dataset.page === 'products';
-    if (!isProductsPage) {
-      // don't auto-load products or wire products-page specific UI on bank pages
-      return null;
-    }
-
-    // initial load via UI glue (counts + render)
+    if (!isProductsPage) return;
+    // ensure sheet created
+    initSheet();
     reloadAndUpdateUI();
 
-    // search input (debounced)
     const search = document.getElementById('searchInput');
-    if (search) {
-      search.addEventListener('input', debounce(() => reloadAndUpdateUI(), 300));
-    }
-
-    // clear filters button
+    if (search) search.addEventListener('input', debounce(() => reloadAndUpdateUI(), 300));
     const clearBtn = document.querySelector('.clear-filters');
-    if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
-        clearAllFilters();
-        reloadAndUpdateUI();
-      });
-    }
-
-    // bank filter
+    if (clearBtn) clearBtn.addEventListener('click', () => { const s = document.getElementById('searchInput'); if (s) s.value = ''; reloadAndUpdateUI(); });
     const bankSel = document.getElementById('bankFilter');
-    if (bankSel) {
-      bankSel.addEventListener('change', () => reloadAndUpdateUI());
-    }
-
-    // category filter
+    if (bankSel) bankSel.addEventListener('change', () => reloadAndUpdateUI());
     const catSel = document.getElementById('categoryFilter');
-    if (catSel) {
-      catSel.addEventListener('change', () => reloadAndUpdateUI());
-    }
+    if (catSel) catSel.addEventListener('change', () => reloadAndUpdateUI());
   });
 
+  /* ---------- delegated click: show sheet for any product card click ---------- */
+  document.addEventListener('click', function (e) {
+    const card = e.target.closest && e.target.closest('article.product-card');
+    if (!card) return;
+    // ignore add-overlay clicks
+    if (e.target.closest && e.target.closest('.add-overlay, .add-to-cart, .overlay-add, .btn.add-to-cart')) return;
+
+    // get product from index / dataset
+    let prod = null;
+    try {
+      const idx = card.getAttribute('data-product-index');
+      if (idx !== null && window._productIndex && window._productIndex[idx]) prod = window._productIndex[idx];
+    } catch (err) { prod = null; }
+    if (!prod && card.dataset && card.dataset.product) {
+      try { prod = JSON.parse(card.dataset.product); } catch (err) { prod = null; }
+    }
+
+    if (prod) {
+      try {
+        initSheet(); // ensure sheet exists
+        // open sheet (sheet API handles show/hide robustly)
+        window.showProductSheet(prod);
+      } catch (err) {
+        console.error('open sheet failed', err);
+      }
+    }
+  }, false);
+
+  // expose debug API
+  window.reloadAndUpdateUI = reloadAndUpdateUI;
 })();

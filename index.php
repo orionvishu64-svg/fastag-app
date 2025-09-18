@@ -64,9 +64,6 @@
             <h2>Choose Your Preferred Bank</h2>
             <div class="banks-grid">
                 <div class="bank-card kotak">
-                    <div class="bank-logo">
-                        <img src="https://placehold.co/120x60/fecaca/000000/png?text=Kotak" alt="Kotak Bank" height="120" width="160">
-                    </div>
                     <h3>Kotak FASTag</h3>
                     <p>Available for vehicle categories:</p>
                     <div class="categories">
@@ -80,9 +77,6 @@
                 </div>
                 
                 <div class="bank-card sbi">
-                    <div class="bank-logo">
-                        <img src="https://placehold.co/120x60/bfdbfe/000000/png?text=SBI" alt="SBI Bank" height="120" width="160">
-                    </div>
                     <h3>SBI FASTag</h3>
                     <p>Available for vehicle categories:</p>
                     <div class="categories">
@@ -97,9 +91,6 @@
                 </div>
                 
                 <div class="bank-card bajaj">
-                    <div class="bank-logo">
-                        <img src="https://placehold.co/120x60/bae6fd/000000/png?text=Bajaj" alt="Bajaj Finserv" height="120" width="160">
-                    </div>
                     <h3>Bajaj FASTag</h3>
                     <p>Available for vehicle categories:</p>
                     <div class="categories">
@@ -114,9 +105,6 @@
                 </div>
                 
                 <div class="bank-card idfc">
-                    <div class="bank-logo">
-                        <img src="https://placehold.co/120x60/e9d5ff/000000/png?text=IDFC" alt="IDFC FIRST Bank" height="120" width="160">
-                    </div>
                     <h3>IDFC FASTag</h3>
                     <p>Available for vehicle categories:</p>
                     <div class="categories">
@@ -137,7 +125,7 @@
     <!-- Call To Action Section -->
     <section class="cta">
         <div class="container">
-            <h2>Ready to Skip the Toll Queues?</h2>
+            <h3>Ready to Skip the Toll Queues?</h3>
             <p>Join millions of satisfied customers who save time and money with FASTag</p>
             <div class="cta-buttons">
                 <a href="product.php" class="btn btn-primary">Order Now</a>

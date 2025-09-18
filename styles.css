@@ -163,105 +163,109 @@ body {
   color: #111827;
 }
 
+/* ---------- Banks grid & card (index) - two-per-row, equal-height ---------- */
+
+/* ensure the banks container uses the same grid behavior as product grid */
+/* FORCE two columns for banks grid (override earlier rules) */
 .banks-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 12px !important;
+  align-items: start;
+  grid-auto-rows: minmax(160px, auto) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
+/* Ensure each card fills the grid cell */
+.banks-grid .bank-card {
+  height: 100% !important;
+  min-height: 160px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+}
+
+/* bank-card: compact, equal-height, border colored by bank class */
 .bank-card {
-  background: white;
+  background: var(--card-bg, #fff);   /* keep consistent with product cards */
   border-radius: 12px;
-  padding: 2rem;
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  padding: 12px;
+  text-align: left;
+  box-shadow: 0 4px 14px rgba(12,18,24,0.03);
+  transition: transform .14s ease, box-shadow .14s ease;
   border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 200px;   /* matches grid-auto-rows min */
+  height: 100%;        /* let the grid row set the final height */
+  box-sizing: border-box;
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none; /* safe if card is an <a> */
 }
-
 .bank-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-6px);
+  box-shadow: 0 18px 60px rgba(11,22,45,0.12);
 }
 
-.bank-card.kotak {
-  background: #fecaca;
-  border-color: #fecaca;
-}
-
-.bank-card.sbi {
-  background: #bfdbfe;
-  border-color: #bfdbfe;
-}
-
-.bank-card.bajaj {
-  background: #bae6fd;
-  border-color: #bae6fd;
-}
-
-.bank-card.idfc {
-  background: #e9d5ff;
-  border-color: #e9d5ff;
-}
-
+/* image area: square and fixed so images don't affect height */
 .bank-logo {
-  margin-bottom: 1rem;
+  width: 100%;
+  aspect-ratio: 1/1; /* square image area */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: #f6f7f8;
+  border-radius: 10px;
+  overflow: hidden;
+  flex: 0 0 auto;
+  margin-bottom: 10px;
 }
-
 .bank-logo img {
-  max-width: 120px;
-  background-color: transparent;
-  height: 60px;
+  max-width: 80%;
+  max-height: 80%;
+  object-fit: contain;
+  display:block;
 }
 
-/* Specific styling for bank logos to match card background */
-.bank-card.kotak .bank-logo img {
-    background-color: #fecaca; /* Matches .bank-card.kotak background */
-}
-
-.bank-card.sbi .bank-logo img {
-    background-color: #bfdbfe; /* Matches .bank-card.sbi background */
-}
-
-.bank-card.bajaj .bank-logo img {
-    background-color: #bae6fd; /* Matches .bank-card.bajaj background */
-}
-
-.bank-card.idfc .bank-logo img {
-    background-color: #e9d5ff; /* Matches .bank-card.idfc background */
-}
-
+/* compact bank info */
 .bank-card h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+  margin: 6px 0 4px;
+  font-size: 1.05rem;
+  font-weight: 700;
   color: #111827;
 }
-
 .bank-card p {
-  color: #6b7280;
-  margin-bottom: 1rem;
+  margin: 0 0 8px;
+  color: var(--muted, #6b7280);
+  font-size: 0.92rem;
+}
+.bank-card .categories { margin-bottom: 10px; display:flex; gap:8px; flex-wrap:wrap; }
+.bank-card .category { font-size: 0.78rem; color:#374151; background: rgba(15,23,42,0.03); padding:6px 8px; border-radius:6px; }
+
+/* CTA alignment */
+.bank-card .btn {
+  margin-top: auto; /* push CTA to bottom so cards align */
+  align-self: start;
 }
 
-.categories {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
-  margin-bottom: 1.5rem;
-}
+/* bank border colors (preserve your color scheme but apply to border only) */
+.bank-card.kotak { border-color: #dc2626; background: #fff6f6; }
+.bank-card.sbi   { border-color: #0c45e4; background: #f6f8ff; }
+.bank-card.bajaj { border-color: #2bbcff; background: #f3fcff; }
+.bank-card.idfc  { border-color: #a94cff; background: #fcf3ff; }
 
-.category {
-  background: #e5e7eb;
-  color: #374151;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  font-weight: 500;
+/* mobile: keep two cards visible as requested (tighten spacing) */
+@media (max-width: 480px) {
+  .banks-grid {grid-template-columns: repeat(2, 1fr) !important; }
+  .bank-card { min-height: 160px; padding: 8px; }
+  .bank-logo { aspect-ratio: 1/1; }
 }
 
 /* CTA Section */
 .cta {
-  background: #2563eb;
+  background: #061c4b;
   color: white;
   padding: 80px 0;
   text-align: center;

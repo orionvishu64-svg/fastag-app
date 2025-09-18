@@ -65,6 +65,10 @@
         <!-- renderer inserts cards here -->
         <div id="products-container" class="products-grid" aria-live="polite"></div>
 
+<div id="productDetailModal" class="product-detail-modal" style="display:none;">
+  <div class="product-detail-content"><div class="product-detail-body"></div></div>
+</div>
+
         <div class="no-results" id="noResults" style="display:none;">
           <i class="fas fa-search"></i>
           <h3>No products found</h3>
