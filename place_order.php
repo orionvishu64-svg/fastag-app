@@ -51,7 +51,7 @@ foreach ($items as $it) {
 // For agent_id (prepaid) we already set 'paid' and should immediately call admin to create shipment:
 if ($payment_status === 'paid') {
     // call admin create_shipment for instant AWB
-    $resp = admin_api_post('/fastag_admin/api/create_shipment.php', ['order_id' => (int)$order_id]);
+    $resp = admin_api_post('/api/create_shipment.php', ['order_id' => (int)$order_id]);
     // store admin response in a log table or check $resp['success']
     // optionally show AWB to user if present
 }

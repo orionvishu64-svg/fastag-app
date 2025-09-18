@@ -16,7 +16,7 @@ if ($gateway_status === 'success') {
     $upd->execute([':tx'=>$_POST['transaction_id'] ?? null, ':id'=>$order_id]);
 
     // call admin to create shipment
-    $resp = admin_api_post('/fastag_admin/api/create_shipment.php', ['order_id' => $order_id]);
+    $resp = admin_api_post('/api/create_shipment.php', ['order_id' => $order_id]);
     if (!empty($resp['success'])) {
         echo json_encode(['success'=>true,'admin'=>$resp['json'] ?? $resp]);
     } else {

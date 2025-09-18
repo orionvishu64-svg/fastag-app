@@ -316,8 +316,8 @@ const isAlphaNum = (s) => /^[A-Za-z0-9]+$/.test(String(s || "").trim());
   });
 });
 
-// fetch('/fastag_website/api/pincode_check.php?pin=302016')
-fetch('/fastag_website/api/pincode_check.php?pin=' + encodeURIComponent(pin))
+// fetch('/api/pincode_check.php?pin=302016')
+fetch('/api/pincode_check.php?pin=' + encodeURIComponent(pin))
   .then(r=>r.json())
   .then(json=>{
     if(json.success) {
