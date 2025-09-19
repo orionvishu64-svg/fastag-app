@@ -391,3 +391,20 @@ function wireProfileLogoutButton() {
 }
 
 document.addEventListener("DOMContentLoaded", wireProfileLogoutButton)
+
+// theme helpers
+window.theme = {
+  copyToClipboard: function(text){
+    if(navigator.clipboard){
+      return navigator.clipboard.writeText(text);
+    }
+    var ta = document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); }catch(e){}
+    document.body.removeChild(ta);
+    return Promise.resolve();
+  },
+  toast: function(msg, timeout=2500){
+    var t = document.createElement('div'); t.className='toast'; t.innerText = msg; document.body.appendChild(t);
+    setTimeout(()=> t.style.opacity=0, timeout-200); setTimeout(()=> t.remove(), timeout);
+  }
+};

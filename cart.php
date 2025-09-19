@@ -8,6 +8,7 @@ require_once 'common_start.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopping Cart - Apna Payment Services</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="theme.css">
     <link rel="stylesheet" href="cart.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>

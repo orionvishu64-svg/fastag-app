@@ -26,6 +26,7 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Track Orders</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="theme.css">
     <link rel="stylesheet" href="track_orders.css">
 </head>
 <body>
