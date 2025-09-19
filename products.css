@@ -304,11 +304,11 @@ img { max-width: 100%; display: block; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) {
-  .products-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: minmax(180px, auto); }
+  .products-grid { grid-template-columns: repeat(4, 1fr); grid-auto-rows: minmax(180px, auto); }
 }
 
 @media (max-width: 768px) {
-  .filters-grid { grid-template-columns: 1fr; gap: 10px; }
+  .filters-grid { grid-template-columns: 4fr; gap: 10px; }
   .products-header { padding: 2rem 1rem; min-height: 160px; background-position: top center; }
   .products-header h1 { font-size: 1.6rem; }
   .products-header-info { flex-direction: column; align-items: flex-start; gap: 8px; }
@@ -318,7 +318,7 @@ img { max-width: 100%; display: block; }
   .product-full-sheet .sheet-left { width: 100%; max-width: 100%; }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 580px) {
   /* you requested two cards visible on mobile; keep two columns but tighten spacing */
   .products-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; grid-auto-rows: minmax(160px, auto); }
   .product-card { padding: 8px; border-radius: 10px; }
