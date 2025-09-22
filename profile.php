@@ -25,19 +25,15 @@ if (!function_exists('h')) {
 
 // Determine current user id
 function current_user_id(): int {
-    $uid = 0;
-    if (function_exists('current_user')) {
-        $cu = current_user();
-        if (is_array($cu) && !empty($cu['id'])) $uid = (int)$cu['id'];
-        if (is_object($cu) && !empty($cu->id)) $uid = (int)$cu->id;
+    if (!empty($_SESSION['user']['id'])) {
+        return (int)$_SESSION['user']['id'];
     }
-    if (!$uid) {
-        if (!empty($_SESSION['user_id'])) $uid = (int)$_SESSION['user_id'];
-        if (!$uid && !empty($_SESSION['id'])) $uid = (int)$_SESSION['id'];
-        if (!$uid && !empty($_SESSION['auth']['id'])) $uid = (int)$_SESSION['auth']['id'];
+    if (!empty($_SESSION['user_id'])) {
+        return (int)$_SESSION['user_id'];
     }
-    return $uid;
+    return 0;
 }
+
 
 // Redirect helper (PRG / canonical)
 function redirect_profile(): void {
@@ -70,15 +66,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_POST['action'] ?? '') === 'dele
     redirect_profile();
 }
 
-// Ensure logged in
+// Ensure logged in (if not, allow page to render and let client overlay handle the login)
 $currentUserId = current_user_id();
 if ($currentUserId <= 0) {
-    if (function_exists('require_login')) {
-        require_login();
-    } else {
-        header('Location: login.html');
-        exit;
-    }
+    // Not logged in: allow the profile page to load (overlay will prompt login)
+    $user = [];
+    $latestAddress = null;
+    $addresses = [];
 }
 
 // Fetch data for the page
@@ -119,6 +113,8 @@ $err = function_exists('flash_get') ? flash_get('error') : null;
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
+  <div id="status-message" aria-live="polite"></div>
+
 <?php include __DIR__ . '/includes/header.php'; ?>
 <div class="container">
   <?php if ($ok): ?><div class="flash flash-ok"><?= h($ok) ?></div><?php endif; ?>
@@ -217,9 +213,8 @@ $err = function_exists('flash_get') ? flash_get('error') : null;
     </form>
   </div>
 </div>
-
-<script src="profile.js"></script>
 <script src="script.js"></script>
+<script src="profile.js"></script>
 <?php include __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>

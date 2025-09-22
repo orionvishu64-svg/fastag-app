@@ -316,16 +316,21 @@ document.addEventListener("DOMContentLoaded", initializeSearch)
 // Update navbar login button based on auth state
 function getLoggedInEmail() {
   try {
-    const storedUserJson = localStorage.getItem("user")
+    const storedUserJson = localStorage.getItem("app_user") || localStorage.getItem("user");
     if (storedUserJson) {
-      const storedUser = JSON.parse(storedUserJson)
+      const storedUser = JSON.parse(storedUserJson);
       if (storedUser && storedUser.email) {
-        return storedUser.email
+        return storedUser.email;
+      }
+      if (storedUser && storedUser.name) {
+        return storedUser.name;
       }
     }
-  } catch (_) {}
-  const fallbackEmail = localStorage.getItem("userEmail")
-  return fallbackEmail || null
+  } catch (e) {
+    // ignore parse errors
+  }
+  const fallbackEmail = localStorage.getItem("userEmail");
+  return fallbackEmail || null;
 }
 
 function updateLoginButton() {
@@ -354,7 +359,9 @@ function wireGlobalLogout() {
     try {
       // Clear client-side auth state
       localStorage.removeItem("user")
-      localStorage.removeItem("userEmail")
+localStorage.removeItem("userEmail")
+localStorage.removeItem("app_logged_in")
+localStorage.removeItem("app_user")
       // Invalidate server session
       await safeFetch("logout.php", { credentials: "include" })
     } catch (_) {}

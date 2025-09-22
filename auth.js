@@ -96,7 +96,8 @@ if (loginForm) {
       const data = await res.json();
       alert(data.message);
       if (data.success) {
-         localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('app_logged_in', '1');
+        localStorage.setItem('app_user', JSON.stringify(data.user));
          if (window.top) {
            window.top.location.href = 'index.php';
          } else {

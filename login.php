@@ -50,7 +50,23 @@ if ($loginType === 'manual') {
 }
 
 // Login successful
-$_SESSION['user_id'] = $user['id'];
+// put a structured user object into session so other pages can rely on it
+$_SESSION['user_id'] = (int)$user['id'];
+$_SESSION['user'] = [
+    'id' => (int)$user['id'],
+    'name' => $user['name'] ?? '',
+    'email' => $user['email'] ?? '',
+    'login_type' => $user['login_type'] ?? 'manual',
+];
+
+// convenience legacy fields (optional)
+$_SESSION['user_name'] = $user['name'] ?? $user['email'] ?? '';
+
+// Prevent session fixation and persist session now
+session_regenerate_id(true);
+session_write_close();
+
+// respond to client
 echo json_encode([
     "success" => true,
     "message" => "Login successful.",
@@ -61,4 +77,4 @@ echo json_encode([
         "login_type" => $user['login_type']
     ]
 ]);
-?>
+exit;

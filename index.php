@@ -134,24 +134,26 @@
         </div>
     </section>
     <style>
+    /* BEFORE: #loginOverlay { display: none; ... } */
 #loginOverlay {
-    display: none;
+    display: flex; /* show overlay by default to prevent flash */
     position: fixed;
     top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.4);
-    backdrop-filter: blur(5px);
-    z-index: 9999;
-    justify-content: center;
+    width: 100%;
+    height: 100%;
     align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.6);
+    z-index: 99999;
 }
+/* existing iframe styles can remain */
 #loginOverlay iframe {
     width: 400px;
-    height: 500px;
+    height: 520px;
     border: none;
-    border-radius: 10px;
-    background: white;
+    border-radius: 6px;
 }
+
 </style>
 
 <div id="loginOverlay">
@@ -160,26 +162,37 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  const overlay = document.getElementById('loginOverlay');
 
-    // Handle login overlay visibility
-    const hasLocalUser = !!localStorage.getItem('user');
-    if (hasLocalUser) {
-        document.getElementById('loginOverlay').style.display = 'none';
-        return;
-    }
-
-    fetch('check_login.php', { credentials: 'include' })
-        .then(res => res.text())
-        .then(status => {
-            if (status.trim() === 'not_logged_in') {
-                document.getElementById('loginOverlay').style.display = 'flex';
-                } else {
-                document.getElementById('loginOverlay').style.display = 'none';
-            }
-              })
-        .catch(() => {
-            document.getElementById('loginOverlay').style.display = 'flex';
-        });
+  // Ask server for authoritative login state (don't trust localStorage alone)
+  fetch('check_login.php', { credentials: 'include', cache: 'no-store' })
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.logged_in) {
+        // server says logged in -> hide overlay
+        overlay.style.display = 'none';
+        try {
+          localStorage.setItem('app_logged_in', '1');
+          localStorage.setItem('app_user', JSON.stringify({ id: data.user_id, name: data.name }));
+        } catch (e) {}
+      } else {
+        // not logged in -> keep overlay visible and ensure client state cleared
+        overlay.style.display = 'flex';
+        try {
+          localStorage.removeItem('app_logged_in');
+          localStorage.removeItem('app_user');
+        } catch (e) {}
+      }
+    })
+    .catch((err) => {
+      // on network or parse error, act conservative: require login
+      console.warn('Auth check failed', err);
+      overlay.style.display = 'flex';
+      try {
+        localStorage.removeItem('app_logged_in');
+        localStorage.removeItem('app_user');
+      } catch (e) {}
+    });
 });
 </script>
     <script src="script.js"></script> 
