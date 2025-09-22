@@ -170,3 +170,57 @@ socket.on("new_message", () => {
 socket.on("newReplyAdded", () => {
   scrollToMostRecent({ smooth: true });
 });
+// ---- USER live reply listener (paste into conversation.js) ----
+
+if (typeof socket === 'undefined') {
+  console.warn('socket not found — attach this script after socket init.');
+} else {
+  socket.on('connect', () => {
+    console.log('user socket connected', socket.id);
+    const ticketEl = document.querySelector('[data-ticket-id]');
+    const ticketId = ticketEl ? ticketEl.dataset.ticketId : (window.TICKET_ID || null);
+    if (ticketId) {
+      socket.emit('openTicketRoom', { ticket_id: String(ticketId) });
+      console.log('user socket joined room', ticketId);
+    }
+  });
+
+  socket.on('reply', (r) => {
+    console.log('user: live reply event', r);
+    if (!r) return;
+    appendReplyToConversationDOM_user(r);
+  });
+
+  function appendReplyToConversationDOM_user(r) {
+    const container = document.querySelector('#conversationList');
+    if (!container) return;
+    const text = r.reply_text ?? r.message ?? '';
+    const isAdmin = (typeof r.is_admin !== 'undefined') ? Boolean(Number(r.is_admin)) : Boolean(r.admin_identifier);
+    const ts = r.created_at ?? r.replied_at ?? new Date().toISOString();
+
+    const wrap = document.createElement('div');
+    wrap.className = 'conversation-item ' + (isAdmin ? 'reply-admin' : 'reply-user');
+
+    const meta = document.createElement('div');
+    meta.className = 'conv-meta';
+    meta.textContent = `${isAdmin ? 'Admin' : 'You'} • ${new Date(ts).toLocaleString()}`;
+
+    const body = document.createElement('div');
+    body.className = 'conv-text';
+    body.innerHTML = escapeHtml(text).replace(/\n/g,'<br>');
+
+    wrap.appendChild(meta);
+    wrap.appendChild(body);
+    container.appendChild(wrap);
+    setTimeout(()=> container.scrollTop = container.scrollHeight, 20);
+  }
+
+  function escapeHtml(s) {
+    return String(s || '')
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+  }
+}

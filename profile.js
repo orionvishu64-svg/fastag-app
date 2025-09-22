@@ -151,3 +151,13 @@ if (data && data.success) {
     if (msgEl) msgEl.innerText = 'Profile update failed. See console.';
   }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('profile-form');
+  if (form) {
+    form.addEventListener('submit', handleProfileSubmit);
+    console.log('Profile form handler attached.');
+  } else {
+    console.warn('No form with id="profile-form" found.');
+  }
+});

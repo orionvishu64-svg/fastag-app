@@ -132,7 +132,7 @@ $err = function_exists('flash_get') ? flash_get('error') : null;
         <p>Update your name, contact, and address</p>
       </div>
 <section>
-      <form id="profile-form" class="profile-form" method="post" action="update_profile.php">
+      <form id="profile-form" class="profile-form" method="post">
         <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
         <div class="form-row">
           <div class="form-group">
