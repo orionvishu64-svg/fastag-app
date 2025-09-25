@@ -82,3 +82,19 @@ button:hover {
     padding: 20px;
   }
 }
+
+/* Saved partners card styles */
+.saved-partners { margin: 20px 0; padding: 14px; background:#fff; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
+.saved-partners h3 { margin:0 0 8px 0; font-size:1.15rem; }
+.partners-grid { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; }
+.card { border:1px solid #eee; border-radius:10px; padding:12px; min-width:220px; max-width:320px; background:#fbfbfb; box-sizing:border-box; }
+.card-title { font-weight:700; margin-bottom:6px; }
+.card-meta { font-size:0.85rem; color:#666; margin-bottom:10px; }
+.card-actions { text-align:right; }
+.btn { padding:6px 10px; border-radius:6px; border:none; cursor:pointer; }
+.btn-danger { background:#d64545; color:#fff; }
+.muted { color:#666; }
+@media (max-width:700px) {
+  .partners-grid { flex-direction:column; }
+  .card { width:100%; }
+}

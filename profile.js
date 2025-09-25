@@ -161,3 +161,183 @@ document.addEventListener('DOMContentLoaded', () => {
     console.warn('No form with id="profile-form" found.');
   }
 });
+
+// Saved partners - AJAX delete enhancement and flash message
+document.addEventListener('DOMContentLoaded', function () {
+  const grid = document.getElementById('partners-grid');
+  if (!grid) return;
+
+  // Simple flash message helper
+  function flash(msg, success = true) {
+    let el = document.createElement('div');
+    el.className = 'pf-flash ' + (success ? 'pf-success' : 'pf-error');
+    el.textContent = msg;
+    el.style = 'position:fixed;top:18px;right:18px;padding:10px 14px;border-radius:8px;z-index:99999;background:' + (success ? '#0f9d58' : '#d64545') + ';color:#fff;';
+    document.body.appendChild(el);
+    setTimeout(()=> el.style.opacity = '0.95', 10);
+    setTimeout(()=> el.remove(), 3000);
+  }
+
+  // Attach handler to all delete forms
+  document.querySelectorAll('.delete-partner-form').forEach(form => {
+    form.addEventListener('submit', function (e) {
+      // If user wants full page submit (hold Ctrl) let it through
+      if (e.ctrlKey || e.metaKey) return;
+
+      e.preventDefault();
+
+      // Build FormData
+      const fd = new FormData(form);
+      // Include csrf if it's in DOM (some projects put hidden CSRF elsewhere)
+      // If a global csrf token variable exists, you can add it here
+      // fd.append('csrf_token', window.CSRF_TOKEN || '');
+
+      // Determine which card to remove on success
+      const card = form.closest('.partner-card') || form.closest('.gv-card');
+
+      // Send fetch
+      fetch(form.action, {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: fd
+      }).then(async res => {
+        // Try to parse text (partner_form.php might redirect)
+        const text = await res.text();
+
+        // If partner_form.php returns a redirect, fetch will follow it and return final HTML.
+        // We'll detect success by checking status or presence of keywords.
+        // Best-effort: if response ok -> consider success.
+        if (res.ok) {
+          // Remove card from DOM
+          if (card) card.remove();
+          flash('Partner deleted', true);
+        } else {
+          flash('Could not delete partner', false);
+        }
+      }).catch(err => {
+        console.error('Delete error', err);
+        flash('Network error: delete failed', false);
+      });
+    });
+  });
+
+  // If profile.php redirected back with ?deleted=1 or ?deleted=0, show message
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('deleted') === '1') flash('Partner deleted', true);
+  if (urlParams.get('deleted') === '0') flash('Delete failed', false);
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  const overlay = document.getElementById('edit-partner-overlay');
+  const form = document.getElementById('edit-partner-form');
+
+  function flash(msg, ok = true) {
+    const el = document.createElement('div');
+    el.textContent = msg;
+    el.style = 'position:fixed;right:18px;top:18px;padding:8px 12px;border-radius:8px;background:' + (ok? '#0f9d58' : '#d64545') + ';color:#fff;z-index:10000;';
+    document.body.appendChild(el);
+    setTimeout(()=> el.remove(), 3000);
+  }
+
+  // Open editor with data attributes from button
+  document.querySelectorAll('.edit-partner-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const id = btn.dataset.id;
+      const table = btn.dataset.table;
+
+      // Hide both field groups then show relevant
+      document.getElementById('ep-gv-fields').style.display = 'none';
+      document.getElementById('ep-p-fields').style.display = 'none';
+
+      document.getElementById('ep-id').value = id;
+      document.getElementById('ep-table').value = table;
+
+      if (table === 'gv_partners') {
+        // show GV fields and populate
+        document.getElementById('ep-gv-fields').style.display = '';
+        document.getElementById('ep-gv_partner_id').value = btn.dataset.gv_partner_id || '';
+        document.getElementById('ep-gv-name').value = btn.dataset.name || '';
+        document.getElementById('edit-partner-title').textContent = 'Edit GV Partner';
+      } else {
+        // show normal partner fields
+        document.getElementById('ep-p-fields').style.display = '';
+        document.getElementById('ep-bank_name').value = btn.dataset.bank_name || '';
+        document.getElementById('ep-partner_id').value = btn.dataset.partner_id || '';
+        document.getElementById('ep-p-name').value = btn.dataset.name || '';
+        document.getElementById('edit-partner-title').textContent = 'Edit Partner';
+      }
+
+      overlay.style.display = 'flex';
+    });
+  });
+
+  // cancel
+  document.getElementById('ep-cancel').addEventListener('click', function () {
+    overlay.style.display = 'none';
+  });
+
+  // submit
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const id = document.getElementById('ep-id').value;
+    const table = document.getElementById('ep-table').value;
+
+    const fd = new FormData();
+    fd.append('action', 'update_partner');
+    fd.append('id', id);
+    fd.append('table', table);
+
+    if (table === 'gv_partners') {
+      fd.append('gv_partner_id', document.getElementById('ep-gv_partner_id').value.trim());
+      fd.append('name', document.getElementById('ep-gv-name').value.trim());
+    } else {
+      fd.append('bank_name', document.getElementById('ep-bank_name').value.trim());
+      fd.append('partner_id', document.getElementById('ep-partner_id').value.trim());
+      fd.append('name', document.getElementById('ep-p-name').value.trim());
+    }
+
+    // If your app uses a CSRF token in a meta tag or global var, include it here:
+    // fd.append('csrf_token', window.CSRF_TOKEN || '');
+
+    fetch('update_profile.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: fd
+    }).then(res => res.json())
+      .then(data => {
+        if (data && data.success) {
+          // Update the card in DOM to reflect new values
+          const card = document.querySelector(`.card[data-row-id="${id}"][data-table="${table}"]`);
+          if (card) {
+            if (table === 'gv_partners') {
+              const title = card.querySelector('.card-title');
+              title.textContent = 'GV ' + (fd.get('gv_partner_id') || '') + ' — ' + (fd.get('name') || '');
+            } else {
+              const title = card.querySelector('.card-title');
+              title.textContent = (fd.get('bank_name') || '') + ' — ' + (fd.get('partner_id') || '') + ' (' + (fd.get('name') || '') + ')';
+            }
+            // also update data attributes on the edit button
+            const editBtn = card.querySelector('.edit-partner-btn');
+            if (editBtn) {
+              if (table === 'gv_partners') {
+                editBtn.dataset.gv_partner_id = fd.get('gv_partner_id');
+                editBtn.dataset.name = fd.get('name');
+              } else {
+                editBtn.dataset.bank_name = fd.get('bank_name');
+                editBtn.dataset.partner_id = fd.get('partner_id');
+                editBtn.dataset.name = fd.get('name');
+              }
+            }
+          }
+          flash(data.message || 'Updated', true);
+          overlay.style.display = 'none';
+        } else {
+          flash(data.message || 'Update failed', false);
+        }
+      }).catch(err => {
+        console.error(err);
+        flash('Network error', false);
+      });
+  });
+
+});

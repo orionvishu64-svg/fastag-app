@@ -144,14 +144,14 @@ $savedPartners = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php if ($success_partner): ?><div class="msg success"><?= $success_partner ?></div><?php endif; ?>
     <?php if ($error_partner): ?><div class="msg error"><?= $error_partner ?></div><?php endif; ?>
     <div class="group">
-      <label>Name</label>
-      <input type="text" name="name" placeholder="Enter the name that was used to create your Partner ID">
+      <label>Bank Name</label>
+      <input type="text" name="bank_name" placeholder="Enter Bank Name">
 
       <label>Partner ID</label>
       <input type="text" name="partner_id" placeholder="Enter Partner ID">
 
-      <label>Bank Name</label>
-      <input type="text" name="bank_name" placeholder="Enter Bank Name">
+      <label>Name</label>
+      <input type="text" name="name" placeholder="Enter Your Name">
     </div>
 
     <div class="btn-row">
