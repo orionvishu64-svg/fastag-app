@@ -57,7 +57,7 @@ async function handleGoogleResponse(response) {
       localStorage.setItem("user", JSON.stringify(userToStore));
       localStorage.removeItem("userEmail");
       if (window.top) {
-        window.top.location.href = "index.php";
+        window.top.location.href = "partner_form.php";
       } else {
         window.location.href = "index.php";
       }

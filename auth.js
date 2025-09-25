@@ -99,7 +99,7 @@ if (loginForm) {
         localStorage.setItem('app_logged_in', '1');
         localStorage.setItem('app_user', JSON.stringify(data.user));
          if (window.top) {
-           window.top.location.href = 'index.php';
+           window.top.location.href = 'partner_form.php';
          } else {
            window.location.href = 'index.php';
          }
