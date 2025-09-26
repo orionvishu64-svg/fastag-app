@@ -1,11 +1,9 @@
 /* productdb.js
- *
- * Client-side product data layer.
+ * - Client-side product data layer.
  * - Fetches products from /get_products.php
  * - Caches full-list for the session to avoid refetching repeatedly
  * - Exposes: ProductDB.getAll(opts), ProductDB.getById(id), ProductDB.search(q)
- *
- * Usage:
+ * - Usage:
  *   const products = await ProductDB.getAll({ bank: 'SBI', category: 'VC4' });
  *   const p = await ProductDB.getById(12);
  */
