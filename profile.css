@@ -1,100 +1,176 @@
-/* Profile container */
-.profile-container {
-  background-color: #fff;
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+/* profile.css — Profile-only styling (namespaced to .profile-page) */
+/* Drop this file in place of your previous profile.css */
+
+/* Theme variables */
+:root{
+  --profile-bg: #ffffff;
+  --profile-muted: #70757a;
+  --profile-card-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  --profile-accent: #0f9d58;
+  --profile-danger: #d64545;
+  --profile-gap: 12px;
+  --profile-radius: 8px;
 }
 
-.profile-container h2 {
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 24px;
-  border-bottom: 2px solid #f0f0f0;
-  padding-bottom: 8px;
-}
-
-/* Form groups */
-.form-group {
-  margin-bottom: 20px;
-}
-
-label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 6px;
-  color: #333;
-}
-
-input[type="text"],
-input[type="email"],
-input[type="tel"] {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #d5d9d9;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="tel"]:focus {
-  border-color: #007185;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 113, 133, 0.2);
-}
-
-input[readonly] {
-  background-color: #f3f3f3;
-}
-
-/* Button styles */
-button {
-  width: 100%;
-  background-color: #ffd814;
+/* Ensure rules only apply when <body class="profile-page"> is present */
+.profile-page {
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  background: #fafafa;
   color: #111;
-  padding: 12px;
-  border: 1px solid #fcd200;
-  border-radius: 8px;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* page container (profile only) */
+.profile-page .container {
+  max-width: 1100px;
+  margin: 18px auto;
+  padding: 14px;
+  box-sizing: border-box;
+}
+
+/* cards used in profile */
+.profile-page .card {
+  background: var(--profile-bg);
+  border-radius: var(--profile-radius);
+  padding: 14px;
+  box-shadow: var(--profile-card-shadow);
+  margin-bottom: var(--profile-gap);
+  box-sizing: border-box;
+}
+
+/* Header/title */
+.profile-page .profile-section h1 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+/* Form labels & inputs (profile-only) */
+.profile-page label {
+  display: block;
+  margin: 10px 0 6px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: #222;
+}
+.profile-page input[type="text"],
+.profile-page input[type="email"],
+.profile-page input[type="tel"],
+.profile-page textarea,
+.profile-page select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+  background: #fff;
+  color: #111;
+}
+
+/* Form actions */
+.profile-page .form-actions { margin-top: 12px; }
+.profile-page .btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 0;
   cursor: pointer;
-  font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+.profile-page .btn-primary { background: var(--profile-accent); color: #fff; }
+.profile-page .btn-secondary { background: #f0f0f0; color: #222; }
+.profile-page .btn-danger { background: var(--profile-danger); color: #fff; }
+
+/* Addresses & partners layout */
+.profile-page .partners-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+.profile-page .partner-card {
+  min-width: 240px;
+  max-width: 320px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+  box-sizing: border-box;
+}
+.profile-page .partner-title { font-weight: 700; margin-bottom: 6px; }
+.profile-page .partner-meta { font-size: 0.86rem; color: #666; margin-bottom: 10px; }
+
+/* partner card action area - keeps edit/delete inline */
+.profile-page .card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  align-items: center;
 }
 
-button:hover {
-  background-color: #f7ca00;
+/* addresses */
+.profile-page .address-item {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  background: #f6f6f6;
+}
+.profile-page .addr-line { margin-bottom: 4px; }
+.profile-page .addr-line.small { font-size: 0.9rem; color: #666; }
+
+/* flash messages (profile only) */
+.profile-page .flash { padding: 10px; border-radius: 6px; margin-bottom: 10px; }
+.profile-page .flash-ok { background: #e6f4ea; color: #0f6f3d; }
+.profile-page .flash-error { background: #fdecea; color: #8a1f12; }
+
+/* muted small text used in profile page */
+.profile-page .muted { color: var(--profile-muted); }
+
+/* responsive adjustments */
+@media (max-width: 980px) {
+  .profile-page .partners-grid { flex-direction: column; }
+  .profile-page .partner-card { width: 100%; }
+  .profile-page .container { padding: 10px; }
 }
 
-/* Status message */
-#status-message {
-  margin-top: 15px;
-  text-align: center;
-  font-weight: 500;
-  color: #007600;
+/* small utility spacing */
+.profile-page .small { font-size: 0.9rem; color: var(--profile-muted); }
+
+.profile-page .inline-editor{
+  margin-top:10px;
+  border-top:1px solid #eee;
+  padding-top:10px;
+  overflow:hidden;
+  box-sizing:border-box;
+}
+.profile-page .inline-editor .inline-edit-form label{font-weight:600;font-size:.9rem;color:#222}
+.profile-page .inline-editor .inline-edit-form input{
+  width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;box-sizing:border-box;margin-top:4px;
+}
+.profile-page .inline-editor .inline-actions{
+  margin-top:8px;display:flex;gap:8px;justify-content:flex-end;
+}
+/* header row for partners card */
+.profile-page .partners-header{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:8px
 }
 
-/* Responsive layout */
-@media (max-width: 600px) {
-  .profile-container {
-    margin: 20px;
-    padding: 20px;
-  }
-}
+/* small button */
+.profile-page .btn-sm{padding:6px 10px;font-size:.9rem;border-radius:6px}
 
-/* Saved partners card styles */
-.saved-partners { margin: 20px 0; padding: 14px; background:#fff; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
-.saved-partners h3 { margin:0 0 8px 0; font-size:1.15rem; }
-.partners-grid { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; }
-.card { border:1px solid #eee; border-radius:10px; padding:12px; min-width:220px; max-width:320px; background:#fbfbfb; box-sizing:border-box; }
-.card-title { font-weight:700; margin-bottom:6px; }
-.card-meta { font-size:0.85rem; color:#666; margin-bottom:10px; }
-.card-actions { text-align:right; }
-.btn { padding:6px 10px; border-radius:6px; border:none; cursor:pointer; }
-.btn-danger { background:#d64545; color:#fff; }
-.muted { color:#666; }
-@media (max-width:700px) {
-  .partners-grid { flex-direction:column; }
-  .card { width:100%; }
+/* inline add/edit form reuses the same look */
+.profile-page .inline-editor{
+  margin-top:10px;border-top:1px solid #eee;padding-top:10px;overflow:hidden;box-sizing:border-box
+}
+.profile-page .inline-editor .inline-edit-form label{
+  font-weight:600;font-size:.9rem;color:#222;display:block;margin-bottom:6px
+}
+.profile-page .inline-editor .inline-edit-form input{
+  width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;box-sizing:border-box;margin-top:4px
+}
+.profile-page .inline-editor .inline-actions{
+  margin-top:8px;display:flex;gap:8px;justify-content:flex-end
 }

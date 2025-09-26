@@ -21,7 +21,7 @@
   --max-width: 1200px;
 }
 
-/* ---------- Reset / base ---------- */
+/* ---------- Reset / base ---------- make it like render same as small screens only make four cards in one row in large screens */
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color: #111827; background: var(--bg-page); }
 a { color: inherit; text-decoration: none; }

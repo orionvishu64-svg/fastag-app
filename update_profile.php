@@ -1,95 +1,83 @@
 <?php
-// update_profile.php — unified JSON API with robust PDO fallback and JSON error responses
+// update_profile.php - JSON API for profile, address, partner updates
 declare(strict_types=1);
-
 require_once 'common_start.php';
 require_once 'db.php';
 
 header('Content-Type: application/json; charset=utf-8');
-
-// Ensure session
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-// Global JSON error handler so client always receives JSON
-set_exception_handler(function ($e) {
-    error_log('update_profile.php uncaught exception: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+// Error handling -> JSON
+set_exception_handler(function($e){
+    error_log('update_profile.php uncaught: ' . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Server error (exception).']);
+    echo json_encode(['success' => false, 'message' => 'Server error.']);
     exit;
 });
-set_error_handler(function ($severity, $message, $file, $line) {
-    // convert PHP warnings/notices to exceptions for consistent handling
+set_error_handler(function($severity, $message, $file, $line){
     throw new ErrorException($message, 0, $severity, $file, $line);
 });
 
-// Fallback get_db_pdo() if not defined by your project
+// get PDO fallback
 if (!function_exists('get_db_pdo')) {
     function get_db_pdo(): PDO {
-        // If function db() exists, prefer it
         if (function_exists('db')) {
             $maybe = db();
             if ($maybe instanceof PDO) return $maybe;
         }
-        // If global $pdo exists, use it
         global $pdo;
         if ($pdo instanceof PDO) return $pdo;
 
-        // Try to build PDO from common environment variables (optional)
-        $host = getenv('DB_HOST') ?: getenv('MYSQL_HOST') ?: '127.0.0.1';
-        $name = getenv('DB_NAME') ?: getenv('MYSQL_DATABASE') ?: null;
-        $user = getenv('DB_USER') ?: getenv('MYSQL_USER') ?: null;
-        $pass = getenv('DB_PASS') ?: getenv('MYSQL_PASSWORD') ?: null;
+        // Try env variables (optional)
+        $host = getenv('DB_HOST') ?: '127.0.0.1';
+        $name = getenv('DB_NAME') ?: null;
+        $user = getenv('DB_USER') ?: null;
+        $pass = getenv('DB_PASS') ?: null;
 
         if ($name && $user !== null) {
             $dsn = "mysql:host={$host};dbname={$name};charset=utf8mb4";
-            try {
-                $pdo_local = new PDO($dsn, $user, $pass, [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                ]);
-                return $pdo_local;
-            } catch (Throwable $e) {
-                error_log("get_db_pdo auto-create failed: " . $e->getMessage());
-            }
+            $pdo_local = new PDO($dsn, $user, $pass, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+            ]);
+            return $pdo_local;
         }
 
-        // Last resort: throw — the exception handler will return JSON
-        throw new RuntimeException('No PDO available. Ensure db.php exposes db() or $pdo or set DB_* env vars.');
+        throw new RuntimeException('No PDO available. Ensure db.php provides db() or global $pdo.');
     }
 }
 
-// helper JSON functions
-function json_err(string $msg, int $code = 400) {
+// JSON helpers
+function json_err($msg, $code = 400) {
     http_response_code($code);
     echo json_encode(['success' => false, 'message' => $msg]);
     exit;
 }
-function json_ok(string $msg = 'OK', array $data = []) {
-    echo json_encode(array_merge(['success' => true, 'message' => $msg], $data));
+function json_ok($msg='OK', $data=[]) {
+    echo json_encode(array_merge(['success'=>true,'message'=>$msg], $data));
     exit;
 }
 
-// Ensure user is logged in (use existing session patterns)
+// Session user
 $user_id = (int)($_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0);
-if ($user_id <= 0) {
-    json_err('User not logged in', 401);
-}
+if ($user_id <= 0) json_err('Not authenticated', 401);
 
 $pdo = get_db_pdo();
-
-// read action
 $action = trim((string)($_POST['action'] ?? ''));
 
-// --------- update partner branch ----------
+// optional CSRF check
+if (function_exists('verify_csrf')) {
+    try { verify_csrf(); } catch (Throwable $e) { json_err('Invalid request token', 403); }
+}
+
+// 1.1) update_partner
 if ($action === 'update_partner') {
     $table = $_POST['table'] ?? '';
-    $id    = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-
+    $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
     $whitelist = [
-        'gv_partners' => ['gv_partner_id', 'name'],
-        'partners'    => ['bank_name', 'partner_id', 'name'],
+        'gv_partners' => ['gv_partner_id','name'],
+        'partners'    => ['bank_name','partner_id','name'],
     ];
-
     if (!isset($whitelist[$table]) || $id <= 0) json_err('Invalid request', 400);
 
     try {
@@ -102,78 +90,113 @@ if ($action === 'update_partner') {
         $set = [];
         $params = [];
         foreach ($whitelist[$table] as $col) {
-            if (isset($_POST[$col])) {
+            if (array_key_exists($col, $_POST)) {
                 $val = trim((string)$_POST[$col]);
                 $set[] = "`$col` = ?";
-                $params[] = $val;
+                $params[] = ($val === '') ? null : $val;
             }
         }
-
         if (empty($set)) json_err('No fields to update', 400);
-
         $set[] = "`updated_at` = NOW()";
         $params[] = $id;
 
         $sql = "UPDATE `$table` SET " . implode(', ', $set) . " WHERE id = ?";
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
-
         json_ok('Partner updated');
     } catch (Throwable $e) {
-        error_log('update_profile.php update_partner error: ' . $e->getMessage());
+        error_log('update_profile.update_partner: ' . $e->getMessage());
         json_err('Error updating partner', 500);
     }
 }
 
-// --------- profile/address update branch ----------
-$raw_name  = trim((string)($_POST['name'] ?? ''));
-$firstName = trim((string)($_POST['firstName'] ?? ''));
-$lastName  = trim((string)($_POST['lastName'] ?? ''));
-$email     = trim((string)($_POST['email'] ?? ''));
-$phone     = trim((string)($_POST['phone'] ?? ''));
-$house_no  = trim((string)($_POST['house_no'] ?? $_POST['houseNo'] ?? ''));
-$landmark  = trim((string)($_POST['landmark'] ?? ''));
-$city      = trim((string)($_POST['city'] ?? ''));
-$pincode   = trim((string)($_POST['pincode'] ?? $_POST['pin'] ?? ''));
-
-$final_name = $raw_name !== '' ? $raw_name : trim(($firstName . ' ' . $lastName));
-
-if ($final_name === '') json_err('Name is required', 400);
-if ($phone !== '' && !preg_match('/^[0-9+\-\s]{6,20}$/', $phone)) json_err('Invalid phone number', 400);
-
-try {
-    // Update users table
-    $updateParts = [];
-    $params = [];
-    if ($final_name !== '') { $updateParts[] = "name = ?"; $params[] = $final_name; }
-    if ($email !== '') { $updateParts[] = "email = ?"; $params[] = $email; }
-    if ($phone !== '') { $updateParts[] = "phone = ?"; $params[] = $phone; }
-
-    if (!empty($updateParts)) {
-        $params[] = $user_id;
-        $sql = "UPDATE users SET " . implode(", ", $updateParts) . " WHERE id = ?";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
+// 1.2) create_partner (insert into partners)
+if ($action === 'create_partner') {
+    $bank_name = trim((string)($_POST['bank_name'] ?? ''));
+    $partner_id = trim((string)($_POST['partner_id'] ?? ''));
+    $name = trim((string)($_POST['name'] ?? ''));
+    if ($bank_name === '' || $partner_id === '') {
+        json_err('Bank name and Partner ID are required', 400);
     }
 
-    // Update/insert addresses if provided
-    $hasAddress = ($house_no !== '' || $landmark !== '' || $city !== '' || $pincode !== '');
-    if ($hasAddress) {
+    try {
+        $stmt = $pdo->prepare("INSERT INTO partners (user_id, bank_name, partner_id, name, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())");
+        $stmt->execute([$user_id, $bank_name, $partner_id, $name !== '' ? $name : null]);
+        $newId = (int)$pdo->lastInsertId();
+
+        // fetch created_at to show on the card
+        $stmt2 = $pdo->prepare("SELECT created_at FROM partners WHERE id = ? AND user_id = ?");
+        $stmt2->execute([$newId, $user_id]);
+        $createdAt = $stmt2->fetchColumn();
+
+        json_ok('Partner added', [
+            'partner' => [
+                'id' => $newId,
+                'bank_name' => $bank_name,
+                'partner_id' => $partner_id,
+                'name' => $name,
+                'created_at' => $createdAt,
+            ]
+        ]);
+    } catch (Throwable $e) {
+        error_log('update_profile.create_partner: ' . $e->getMessage());
+        json_err('Error adding partner', 500);
+    }
+}
+
+// 2) profile_update (update user name + phone only — email not changed)
+if ($action === 'profile_update') {
+    $raw_name = trim((string)($_POST['name'] ?? ''));
+    $phone = trim((string)($_POST['phone'] ?? ''));
+    if ($raw_name === '') json_err('Name is required', 400);
+    if ($phone !== '' && !preg_match('/^[0-9+\-\s]{6,20}$/', $phone)) json_err('Invalid phone', 400);
+
+    try {
+        $parts = [];
+        $params = [];
+        $parts[] = "name = ?";
+        $params[] = $raw_name;
+        // phone optional
+        if ($phone !== '') { $parts[] = "phone = ?"; $params[] = $phone; }
+        $params[] = $user_id;
+        $sql = "UPDATE users SET " . implode(', ', $parts) . " WHERE id = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        // respond with reload flag so client can refresh to reflect server state
+        json_ok('Profile updated', ['reload' => true]);
+    } catch (Throwable $e) {
+        error_log('update_profile.profile_update: ' . $e->getMessage());
+        json_err('Server error updating profile', 500);
+    }
+}
+
+// 3) save_address (insert/update)
+if ($action === 'save_address') {
+    $house_no = trim((string)($_POST['house_no'] ?? ''));
+    $landmark = trim((string)($_POST['landmark'] ?? ''));
+    $city = trim((string)($_POST['city'] ?? ''));
+    $pincode = trim((string)($_POST['pincode'] ?? ''));
+    if ($city === '' || $pincode === '') json_err('City & Pincode required', 400);
+    if (!preg_match('/^\d{4,8}$/', $pincode)) json_err('Invalid pincode format', 400);
+
+    try {
         $stmt = $pdo->prepare("SELECT id FROM addresses WHERE user_id = ? LIMIT 1");
         $stmt->execute([$user_id]);
-        $addr = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($addr) {
-            $stmt = $pdo->prepare("UPDATE addresses SET house_no = ?, landmark = ?, city = ?, pincode = ?, created_at = created_at WHERE id = ? AND user_id = ?");
-            $stmt->execute([$house_no ?: null, $landmark ?: null, $city, $pincode, (int)$addr['id'], $user_id]);
+        $existing = $stmt->fetchColumn();
+        if ($existing) {
+            $stmt = $pdo->prepare("UPDATE addresses SET house_no = ?, landmark = ?, city = ?, pincode = ? WHERE id = ? AND user_id = ?");
+            $stmt->execute([$house_no ?: null, $landmark ?: null, $city, $pincode, (int)$existing, $user_id]);
+            json_ok('Address updated');
         } else {
             $stmt = $pdo->prepare("INSERT INTO addresses (user_id, house_no, landmark, city, pincode, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
             $stmt->execute([$user_id, $house_no ?: null, $landmark ?: null, $city, $pincode]);
+            json_ok('Address saved');
         }
+    } catch (Throwable $e) {
+        error_log('update_profile.save_address: ' . $e->getMessage());
+        json_err('Error saving address', 500);
     }
-
-    json_ok('Profile updated', ['reload' => true]);
-} catch (Throwable $e) {
-    error_log('update_profile.php profile update error: ' . $e->getMessage());
-    json_err('Server error updating profile', 500);
 }
+
+// Falls through: invalid action
+json_err('Unknown action', 400);
