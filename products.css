@@ -334,4 +334,56 @@ img { max-width: 100%; display: block; }
 /* ---------- Accessibility / Active nav ---------- */
 .nav-link.active { color: var(--accent); font-weight: 700; }
 
+/* ==== Desktop-only tuning (does NOT affect small screens) ==== */
+@media (min-width: 1200px) {
+  /* 4-up grid on wide screens */
+  :where(.products-grid, .product-grid, .product-list, .cards, .items) {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 20px !important;         /* space between cards */
+    align-items: stretch;
+  }
+
+  /* Make each card a bit smaller/tighter */
+  :where(.product-card, .card.product, .product-item, .card-item) {
+    border-radius: 14px;
+    padding: 14px 14px 12px;
+    box-shadow: 0 2px 16px rgba(0,0,0,.06);
+  }
+
+  /* Image box height so cards don’t look huge */
+  :where(.product-card, .card.product, .product-item, .card-item) 
+  :where(.image, .thumb, .product-image){
+    height: 170px;         /* adjust 160–190px to taste */
+    max-height: 170px;
+    overflow: hidden;
+  }
+  :where(.product-card, .card.product, .product-item, .card-item) 
+  :where(img){
+    width: 100%;
+    height: 100%;
+    object-fit: contain;   /* keep full image visible */
+  }
+
+  /* Tighter text + button sizes on desktop */
+  :where(.product-title){ font-size: 1rem; line-height: 1.2; }
+  :where(.brand, .sku, .meta){ font-size: .78rem; opacity: .8; }
+  :where(.price){ font-size: 1.05rem; font-weight: 700; }
+
+  :where(.add-btn, .btn-add, .btn-primary){
+    padding: 8px 12px;
+    font-size: .9rem;
+    border-radius: 10px;
+  }
+}
+
+/* Optional: medium/large laptops that aren’t full HD */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  :where(.products-grid, .product-grid, .product-list, .cards, .items){
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important; /* 3-up here */
+    gap: 18px !important;
+  }
+}
+
 /* ---------- End of file ---------- */
