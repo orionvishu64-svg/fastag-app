@@ -84,8 +84,14 @@
       </div>
     </form>
   </div>
-
+<script src="google-auth.js"></script>
 <script>
+  // make sure google-auth.js defines window.startGoogleSignIn
+  document.getElementById('googleBtn').onclick = () => {
+    if (window.startGoogleSignIn) { window.startGoogleSignIn(); }
+    else alert('Google Sign-in not wired yet');
+  };
+
 const $ = s => document.querySelector(s);
 const say = t => $('#msg').textContent = t || '';
 
