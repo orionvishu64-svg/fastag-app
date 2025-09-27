@@ -204,7 +204,7 @@ $err = function_exists('flash_get') ? flash_get('error') : null;
   <div class="partners-grid">
         <?php foreach ($gv_partners as $gp): ?>
           <div class="partner-card" data-row-id="<?= (int)$gp['id'] ?>" data-table="gv_partners">
-            <div class="partner-title">GV <?= h($gp['gv_partner_id']) ?><?= !empty($gp['name']) ? ' — '.h($gp['name']) : '' ?></div>
+            <div class="partner-title">GV - <?= h($gp['gv_partner_id']) ?><?= !empty($gp['name']) ? ' — '.h($gp['name']) : '' ?></div>
             <div class="partner-meta">Saved: <?= h($gp['created_at']) ?></div>
             <div class="card-actions">
               <button class="btn btn-secondary edit-partner-btn"
@@ -226,7 +226,7 @@ $err = function_exists('flash_get') ? flash_get('error') : null;
 
         <?php foreach ($partners as $p): ?>
           <div class="partner-card" data-row-id="<?= (int)$p['id'] ?>" data-table="partners">
-            <div class="partner-title"><?= h($p['bank_name']) ?> — <?= h($p['partner_id']) ?><?= !empty($p['name']) ? ' ('.h($p['name']).')' : '' ?></div>
+            <div class="partner-title"><?= h($p['name']) ?> — <?= h($p['partner_id']) ?><?= !empty($p['bank_name']) ? ' ('.h($p['bank_name']).')' : '' ?></div>
             <div class="partner-meta">Saved: <?= h($p['created_at']) ?></div>
             <div class="card-actions">
               <button class="btn btn-secondary edit-partner-btn"
