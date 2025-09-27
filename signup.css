@@ -1,119 +1,141 @@
-/* General Reset */
-* {
-  box-sizing: border-box;
+
+/* mPIN Auth Pages — unified CSS for signup.html, login.html, forgot-mpin.html */
+
+/* Base reset & layout */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
   margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, Noto Sans, 'Helvetica Neue', sans-serif;
+  color: #0f172a; /* slate-900 */
+  background: radial-gradient(1200px 800px at 20% -10%, #e0f2fe 0%, transparent 60%),
+              radial-gradient(1000px 700px at 120% 10%, #f1f5f9 0%, transparent 55%),
+              #f8fafc;
+  display: grid;
+  place-items: center;
+  padding: 24px;
 }
 
-/* Body Background */
-body {
-  background: linear-gradient(135deg, hsla(0, 0%, 14%, 0.76) 0%, #03033b5e 100%);
-  min-height: 100vh;
+/* Card */
+form, .auth-card {
+  width: 100%;
+  max-width: 460px;
+  background: #ffffffcc;
+  backdrop-filter: blur(6px);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px 22px;
+  box-shadow: 0 10px 30px rgba(2, 6, 23, .06);
+}
+
+/* Headings */
+h1, h2, h3 {
+  margin: 0 0 18px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  color: #0f172a;
+}
+h2 { font-size: 1.4rem; text-align: center; }
+
+/* Rows used in your HTML */
+.row {
   display: flex;
   align-items: center;
-  justify-content: center;
-}
-
-/* Auth Container */
-.auth-container {
-  width: 100%;
-  max-width: 400px;
-  background: #ffffff;
-  padding: 30px 25px;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-}
-
-/* Form Box */
-.form-box h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.form-box form {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-box input {
-  padding: 12px 15px;
-  margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 14px;
-}
-
-.form-box button {
-  padding: 12px;
-  background-color: #4facfe;
-  border: none;
-  border-radius: 5px;
-  color: #fff;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.form-box button:hover {
-  background-color: #1152b3;
-}
-
-/* Divider */
-.divider {
-  text-align: center;
-  margin: 15px 0;
-  color: #aaa;
-  font-size: 14px;
-  position: relative;
-}
-
-.divider::before,
-.divider::after {
-  content: "";
-  position: absolute;
-  height: 1px;
-  width: 40%;
-  background-color: #ddd;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.divider::before {
-  left: 0;
-}
-
-.divider::after {
-  right: 0;
-}
-
-/* Google Button Placeholder */
-.google-btn {
+  gap: 10px;
   margin: 10px 0;
-  text-align: center;
 }
 
-/* Link Styling */
-.switch-link {
-  text-align: center;
-  margin-top: 15px;
-  font-size: 14px;
+/* Labels & inputs */
+label {
+  min-width: 120px;
+  font-size: .95rem;
+  color: #334155; /* slate-700 */
+}
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[pattern],
+input[inputmode="numeric"] {
+  flex: 1 1 auto;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1; /* slate-300 */
+  border-radius: 10px;
+  background: #ffffff;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+input:focus {
+  border-color: #60a5fa; /* blue-400 */
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, .25);
 }
 
-.switch-link a {
-  color: #4facfe;
-  text-decoration: none;
+/* Small side buttons (Send OTP / Verify) */
+button.small {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #3b82f6; /* blue-500 */
+  background: linear-gradient(180deg, #60a5fa, #3b82f6);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .06s ease, filter .15s ease;
+}
+button.small:hover { filter: brightness(1.05); }
+button.small:active { transform: translateY(1px); }
+
+/* Primary form buttons */
+button[type="submit"],
+#send, #verify, #set {
+  width: 100%;
+  margin-top: 6px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #0ea5e9; /* sky-600 */
+  background: linear-gradient(180deg, #38bdf8, #0284c7);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .06s ease, box-shadow .15s ease, filter .15s ease;
+}
+button[type="submit"]:hover,
+#send:hover, #verify:hover, #set:hover {
+  filter: brightness(1.05);
+}
+button[type="submit"]:active,
+#send:active, #verify:active, #set:active {
+  transform: translateY(1px);
+}
+button[disabled] { opacity: .6; cursor: not-allowed; }
+
+/* Helper messages and ticks */
+.err { color: #dc2626; margin-top: 6px; min-height: 20px; }
+.ok { color: #16a34a; font-weight: 700; }
+
+/* OTP rows (hidden until needed) */
+#emailOtpRow, #phoneOtpRow, #step2, #step3 { transition: all .2s ease; }
+#emailOtpRow[style*="display: none"],
+#phoneOtpRow[style*="display: none"],
+#step2[style*="display: none"],
+#step3[style*="display: none"] {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 
-.switch-link a:hover {
-  text-decoration: underline;
-}
+/* Links */
+a { color: #0ea5e9; text-decoration: none; font-weight: 600; }
+a:hover { text-decoration: underline; }
 
-/* Responsive */
-@media screen and (max-width: 480px) {
-  .auth-container {
-    margin: 20px;
-    padding: 25px 20px;
-  }
+/* Footer/link row on login */
+.footer-links { margin-top: 12px; display: flex; justify-content: space-between; }
+
+/* Responsive tweaks */
+@media (max-width: 520px) {
+  label { min-width: 92px; }
+  .row { gap: 8px; }
+  body { padding: 16px; }
+  form, .auth-card { padding: 20px 16px; }
 }
+/* Verified tick hidden by default */
+.ok { display: none; color: #16a34a; font-weight: 700; }

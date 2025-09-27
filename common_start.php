@@ -35,12 +35,12 @@ $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVE
 
 /* set cookie params so PHP will send persistent cookie */
 session_set_cookie_params([
-    'lifetime' => (int)$sessionCookieLifetime,
-    'path'     => '/',
-    'domain'   => $domain,
-    'secure'   => (bool)$secure,
-    'httponly' => true,
-    'samesite' => 'Lax'
+  'lifetime' => $sessionCookieLifetime, // you already set this
+  'path'     => '/',
+  'domain'   => '',          // leave empty unless you need a specific domain
+  'secure'   => !empty($_SERVER['HTTPS']),
+  'httponly' => true,
+  'samesite' => 'Lax',
 ]);
 
 /* start session if not already started */

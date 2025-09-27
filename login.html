@@ -1,42 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sign In - Apna Payment Services</title>
-  <link rel="stylesheet" href="signup.css"/>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login</title>
+  <link rel="stylesheet" href="signup.css">
 </head>
 <body>
-  <div class="auth-container">
-    <div class="form-box">
-      <h2>Sign In</h2>
-      <form id="login-form">
-        <input type="email" id="login-email" placeholder="Email Address" required />
-        <div class="password-wrapper" style="position:relative;">
-          <input type="password" id="login-password" placeholder="Enter Password" required />
-            <span id="toggle-login-password" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer;">
-              👁️
-            </span>
-        </div>
-        <button type="submit">Sign In</button>
-      </form>
+  <h2>Login</h2>
+  <form id="loginForm">
+    <label>M-PIN</label>
+    <input name="mpin" placeholder="XXX-XXX" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}" required />
+    <button type="submit">Login</button>
+  </form>
+  <p><a href="forgot-mpin.html">Forgot your mPIN?</a></p>
+  <div id="msg" style="color:#b00020"></div>
 
-      <div class="divider">or</div>
+  <p class="switch-link">
+    Don't have an account? <a href="signup.html">Sign Up</a>
+  </p>
+<script>
+const say = t => document.querySelector('#msg').textContent = t || '';
+document.querySelector('#loginForm').onsubmit = async (e) => {
+  e.preventDefault(); say('');
+  const fd = new FormData(e.target);
+  const mpin = (fd.get('mpin') || '').trim();
+  if (!/^\d{4,6}$/.test(mpin)) return say('Invalid mPIN');
 
-      <div id="google-login" class="google-btn" data-type="login"></div>
-
-      <p class="switch-link">
-        Forgot your password? <a href="forgot-password.html">Reset here</a>
-      </p>
-
-      <p class="switch-link">
-        Don't have an account? <a href="signup.html">Sign Up</a>
-      </p>
-    </div>
-  </div>
-
-  <script src="auth.js"></script>
-  <script src="google-auth.js"></script>
+  const r = await fetch('login.php', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({mpin})});
+  const d = await r.json();
+  if (!d.success) return say(d.error || 'Login failed');
+  location.href = 'index.php'; // or your dashboard path
+};
+</script>
 </body>
 </html>

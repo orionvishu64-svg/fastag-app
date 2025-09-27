@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Forgot mPIN</title>
+  <link rel="stylesheet" href="signup.css">
+  <style>.ok{display:none;color:green;font-weight:600}.err{color:#b00020}</style>
+</head>
+<body>
+  <h2>Forgot mPIN</h2>
+  <div id="step1">
+    <label>Phone</label>
+    <input id="phone" pattern="\d{10}" />
+    <button id="send">Send OTP</button>
+    <div id="msg" class="err"></div>
+    <p class="switch-link">
+        Remembered your M-Pin? <a href="login.html">Back to Login</a>
+    </p>
+  </div>
+  <div id="step2" style="display:none">
+    <label>Enter OTP</label>
+    <input id="otp" inputmode="numeric" maxlength="6" pattern="\d{6}" />
+    <button id="verify">Verify</button>
+    <span id="tick" class="ok">✓ Verified</span>
+  </div>
+  <div id="step3" style="display:none">
+    <label>New mPIN</label>
+    <input id="mpin" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}">
+    <label>Confirm mPIN</label>
+    <input id="mpin2" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}">
+    <button id="set">Reset mPIN</button>
+  </div>
+<script>
+const $=s=>document.querySelector(s); const msg=t=>$('#msg').textContent=t||'';
+$('#send').onclick=async()=>{
+  msg(''); const phone=$('#phone').value.trim();
+  if(!/^\d{10}$/.test(phone)) return msg('Enter 10-digit phone');
+  const r=await fetch('forgot_send_sms.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone})});
+  const d=await r.json(); if(!d.success) return msg(d.error||'Send failed'); $('#step2').style.display='block';
+};
+$('#verify').onclick=async()=>{
+  const phone=$('#phone').value.trim(); const code=$('#otp').value.trim();
+  const r=await fetch('forgot_verify_sms.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,code})});
+  const d=await r.json(); if(!d.success) return msg(d.error||'Invalid OTP');
+  $('#tick').style.display='inline'; $('#step3').style.display='block';
+};
+$('#set').onclick=async()=>{
+  const phone=$('#phone').value.trim(); const mpin=$('#mpin').value.trim(); const mpin2=$('#mpin2').value.trim();
+  if(!/^\d{4,6}$/.test(mpin)) return msg('mPIN must be 4–6 digits');
+  if(mpin!==mpin2) return msg('mPINs do not match');
+  const r=await fetch('reset_mpin.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,mpin})});
+  const d=await r.json(); if(!d.success) return msg(d.error||'Reset failed');
+  location.href='login.html';
+};
+</script>
+</body>
+</html>

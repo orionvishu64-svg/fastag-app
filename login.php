@@ -1,72 +1,45 @@
 <?php
-// login.php
-session_start();
-require_once "db.php"; // must set $pdo (PDO instance)
-
-// expected POST: email, password (adjust to your auth method)
+require_once __DIR__ . '/common_start.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/config_auth.php';
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 header('Content-Type: application/json; charset=utf-8');
 
-$input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
-
-$email = trim($input['email'] ?? '');
-$password = trim($input['password'] ?? '');
-
-if ($email === '' || $password === '') {
-    echo json_encode(['success' => false, 'message' => 'Email and password required.']);
-    exit;
-}
-
 try {
-    // Adjust query to your auth logic (password hashing etc.)
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-    $stmt->execute([$email]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $in   = json_decode(file_get_contents('php://input'), true) ?: [];
+    $mpin = trim($in['mpin'] ?? '');
 
-    if (!$user) {
-        echo json_encode(['success' => false, 'message' => 'Invalid credentials.']);
-        exit;
+    if (!preg_match('/^\d{4,6}$/', $mpin)) throw new Exception('Invalid mPIN');
+
+    $token   = $_COOKIE[AUTH_COOKIE_NAME] ?? '';
+    $payload = $token ? verify_token($token) : null;
+    if (!$payload) {
+        throw new Exception('Device not recognized. Use "Forgot mPIN" to bind this device.');
+    }
+    $uid = (int)($payload['uid'] ?? 0);
+    if ($uid <= 0) throw new Exception('Invalid identifier');
+
+    $st = $pdo->prepare('SELECT id, name, email, phone, login_type, mpin_hash FROM users WHERE id = ? LIMIT 1');
+    $st->execute([$uid]);
+    $u = $st->fetch(PDO::FETCH_ASSOC);
+
+    if (!$u || empty($u['mpin_hash']) || !password_verify($mpin, $u['mpin_hash'])) {
+        throw new Exception('Incorrect mPIN');
     }
 
-    // If you store hashed passwords
-    // if (!password_verify($password, $user['password'])) { ... }
-    // For the example below, we'll accept any password equal to 'test' OR match hashed:
-    $ok = false;
-    if (isset($user['password']) && password_needs_rehash($user['password'], PASSWORD_DEFAULT)) {
-        // not typical - please adapt to your password storage
-    }
-    // Use your real password verification
-    if (isset($user['password']) && password_verify($password, $user['password'])) {
-        $ok = true;
-    } elseif ($password === 'test') {
-        // fallback for local testing only — remove in production
-        $ok = true;
-    }
+    // Log in
+    $_SESSION['user'] = [
+        'id'         => (int)$u['id'],
+        'name'       => $u['name'],
+        'email'      => $u['email'],
+        'phone'      => $u['phone'],
+        'login_type' => $u['login_type'],
+    ];
 
-    if (!$ok) {
-        echo json_encode(['success' => false, 'message' => 'Invalid credentials.']);
-        exit;
-    }
+    $pdo->prepare('UPDATE users SET updated_at = NOW() WHERE id = ?')->execute([$u['id']]);
 
-    // Auth OK -> set session
-    $_SESSION['user_id'] = (int)$user['id'];
-    $_SESSION['user'] = ['id' => $user['id'], 'name' => $user['name'] ?? '', 'email' => $user['email']];
-
-    // Return JSON with has_filled_partner_form flag
-    echo json_encode([
-        'success' => true,
-        'message' => 'Login successful.',
-        'user' => [
-            'id' => (int)$user['id'],
-            'name' => $user['name'] ?? '',
-            'email' => $user['email'] ?? '',
-            'login_type' => $user['login_type'] ?? '',
-            'has_filled_partner_form' => (int)($user['has_filled_partner_form'] ?? 0)
-        ]
-    ]);
-    exit;
-
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Server error.']);
-    exit;
+    echo json_encode(['success' => true]); exit;
+} catch (Throwable $e) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]); exit;
 }

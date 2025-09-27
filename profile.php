@@ -252,6 +252,7 @@ $err = function_exists('flash_get') ? flash_get('error') : null;
 
   </section>
 </main>
+<script src="js/auth-sync.js"></script>
 <script src="script.js"></script>
 <script src="profile.js" defer></script>
 <?php include __DIR__ . '/includes/footer.php'; ?>

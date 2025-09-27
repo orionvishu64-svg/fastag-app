@@ -1,40 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sign Up - Apna Payment Services</title>
-  <link rel="stylesheet" href="signup.css"/>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Create an Account</title>
+  <link rel="stylesheet" href="signup.css">
+  <style>
+    .overlay { min-height:100vh; display:grid; place-items:center; padding:24px; }
+    .auth-card { max-width:460px; margin:0 auto; }
+    .header { text-align:center; margin-bottom:6px; }
+    .divider { text-align:center; margin:12px 0; color:#64748b; font-weight:600; }
+    .footer-links { margin-top:10px; text-align:center; }
+    .spacer-label { width:130px; display:inline-block; } /* aligns button rows */
+  </style>
 </head>
 <body>
-  <div class="auth-container">
-    <div class="form-box">
-      <h2>Create an Account</h2>
-      <form id="signup-form">
-        <input type="text" id="signup-name" placeholder="Full Name" required />
-        <input type="email" id="signup-email" placeholder="Email Address" required />
-        <div class="password-wrapper" style="position:relative;">
-  <input type="password" id="signup-password" placeholder="Create Password" required />
-  <span id="toggle-signup-password" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer;">
-    👁️
-  </span>
-</div>
-        <input type="tel" id="signup-phone" placeholder="Enter your mobile number" required>
-        <button type="submit">Sign Up</button>
-      </form>
+  <div class="overlay">
+    <form id="signupForm" class="auth-card">
+      <h2 class="header">Create an Account</h2>
+
+      <div class="row">
+        <label style="width:130px">Full Name</label>
+        <input name="name" type="text" required placeholder="Your name" />
+      </div>
+
+      <!-- Email input -->
+      <div class="row">
+        <label style="width:130px">Email</label>
+        <input name="email" type="email" required placeholder="you@example.com" />
+        <span id="emailTick" class="ok">✓ Verified</span>
+      </div>
+      <!-- Email: Send OTP button row -->
+      <div class="row">
+        <span class="spacer-label"></span>
+        <button class="small" id="sendEmailOtp" type="button">Send OTP</button>
+      </div>
+      <!-- Email: OTP entry row -->
+      <div class="row" id="emailOtpRow" style="display:none">
+        <label style="width:130px">Email OTP</label>
+        <input id="emailOtp" inputmode="numeric" maxlength="6" pattern="\d{6}" placeholder="6-digit code" />
+        <button class="small" id="verifyEmailOtp" type="button">Verify</button>
+      </div>
+
+      <!-- Phone input -->
+      <div class="row">
+        <label style="width:130px">Phone</label>
+        <input name="phone" inputmode="numeric" maxlength="10" pattern="\d{10}" placeholder="10-digit number" />
+        <span id="phoneTick" class="ok">✓ Verified</span>
+      </div>
+      <!-- Phone: Send OTP button row -->
+      <div class="row">
+        <span class="spacer-label"></span>
+        <button class="small" id="sendPhoneOtp" type="button">Send OTP</button>
+      </div>
+      <!-- Phone: OTP entry row -->
+      <div class="row" id="phoneOtpRow" style="display:none">
+        <label style="width:130px">Phone OTP</label>
+        <input id="phoneOtp" inputmode="numeric" maxlength="6" pattern="\d{6}" placeholder="6-digit code" />
+        <button class="small" id="verifyPhoneOtp" type="button">Verify</button>
+      </div>
+
+      <div class="row">
+        <label style="width:130px">mPIN</label>
+        <input name="mpin" id="mpin" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}" required placeholder="4–6 digits" />
+      </div>
+      <div class="row">
+        <label style="width:130px">Confirm mPIN</label>
+        <input name="mpin_confirm" id="mpin_confirm" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}" required placeholder="Repeat mPIN" />
+      </div>
+
+      <button type="submit">Sign Up</button>
+      <div id="msg" class="err"></div>
 
       <div class="divider">or</div>
+      <div class="row">
+        <button type="button" id="googleBtn" class="small" style="width:100%;justify-content:center">
+          Continue with Google
+        </button>
+      </div>
 
-      <div id="google-signup" class="google-btn" data-type="signup"></div>
-
-      <p class="switch-link">
+      <div class="footer-links">
         Already have an account? <a href="login.html">Sign In</a>
-      </p>
-    </div>
+      </div>
+    </form>
   </div>
 
-  <script src="auth.js"></script>
-  <script src="google-auth.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const say = t => $('#msg').textContent = t || '';
+
+// Hide ticks if the user edits email/phone after verifying
+$('[name=email]').addEventListener('input', () => { $('#emailTick').style.display = 'none'; });
+$('[name=phone]').addEventListener('input', () => { $('#phoneTick').style.display = 'none'; });
+
+$('#sendEmailOtp').onclick = async () => {
+  say('');
+  const email = $('[name=email]').value.trim();
+  if (!email) return say('Enter email first');
+  const r = await fetch('otp_send_email.php', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ email })
+  });
+  const d = await r.json();
+  if (!d.success) return say(d.error || 'Failed to send email OTP');
+  $('#emailOtpRow').style.display = 'flex';
+};
+$('#verifyEmailOtp').onclick = async () => {
+  const email = $('[name=email]').value.trim();
+  const code  = $('#emailOtp').value.trim();
+  const r = await fetch('otp_verify_email.php', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ email, code })
+  });
+  const d = await r.json();
+  if (!d.success) return say(d.error || 'Email OTP invalid');
+  $('#emailTick').style.display = 'inline';
+  $('#emailOtpRow').style.display = 'none';
+};
+
+$('#sendPhoneOtp').onclick = async () => {
+  say('');
+  const phone = $('[name=phone]').value.trim();
+  if (phone && !/^\d{10}$/.test(phone)) return say('Enter 10-digit phone');
+  const r = await fetch('otp_send_sms.php', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ phone })
+  });
+  const d = await r.json();
+  if (!d.success) return say(d.error || 'Failed to send phone OTP');
+  $('#phoneOtpRow').style.display = 'flex';
+};
+$('#verifyPhoneOtp').onclick = async () => {
+  const phone = $('[name=phone]').value.trim();
+  const code  = $('#phoneOtp').value.trim();
+  const r = await fetch('otp_verify_sms.php', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ phone, code })
+  });
+  const d = await r.json();
+  if (!d.success) return say(d.error || 'Phone OTP invalid');
+  $('#phoneTick').style.display = 'inline';
+  $('#phoneOtpRow').style.display = 'none';
+};
+
+$('#signupForm').onsubmit = async (e) => {
+  e.preventDefault(); say('');
+  const name  = $('[name=name]').value.trim();
+  const email = $('[name=email]').value.trim();
+  const phone = $('[name=phone]').value.trim();
+  const mpin  = $('[name=mpin]').value.trim();
+  const mpin2 = $('[name=mpin_confirm]').value.trim();
+  if (!/^\d{4,6}$/.test(mpin)) return say('mPIN must be 4–6 digits');
+  if (mpin !== mpin2) return say('mPINs do not match');
+
+  const r = await fetch('register.php', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ name, email, phone, mpin })
+  });
+  const d = await r.json();
+  if (!d.success) return say(d.error || 'Signup failed');
+  location.href = 'login.html';
+};
+
+// Wire your Google handler if needed
+$('#googleBtn').onclick = () => { location.href = 'google-auth.js'; };
+</script>
 </body>
 </html>

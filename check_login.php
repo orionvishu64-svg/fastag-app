@@ -1,10 +1,18 @@
 <?php
-// check_login.php
-require_once 'common_start.php'; // ensure this starts the session
-header('Content-Type: application/json');
+require_once __DIR__ . '/common_start.php';
+header('Content-Type: application/json; charset=utf-8');
 
-if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
-  echo json_encode(['logged_in' => true, 'user_id' => $_SESSION['user_id'], 'name' => $_SESSION['user_name'] ?? null]);
+$user = $_SESSION['user'] ?? null;
+if ($user && !empty($user['id'])) {
+  echo json_encode([
+    'logged_in' => true,
+    'user' => [
+      'id'    => (int)$user['id'],
+      'name'  => $user['name'] ?? null,
+      'email' => $user['email'] ?? null,
+      'phone' => $user['phone'] ?? null,
+    ]
+  ]);
 } else {
   echo json_encode(['logged_in' => false]);
 }

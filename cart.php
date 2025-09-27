@@ -120,6 +120,7 @@ require_once 'common_start.php';
             </div>
         </div>
     </section>
+    <script src="js/auth-sync.js"></script>
     <script src="script.js"></script>
     <script src="cart.js"></script>
 <?php include __DIR__ . '/includes/footer.php'; ?>

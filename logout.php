@@ -1,22 +1,22 @@
 <?php
+require_once __DIR__ . '/common_start.php';
+require_once __DIR__ . '/config_auth.php';
 
-require_once 'common_start.php';
-// Destroy all session variables
+// Clear session
 $_SESSION = [];
-
-// Destroy the session itself
-session_destroy();
-
-// Optionally clear any authentication cookies
-if (ini_get("session.use_cookies")) {
-    $params = session_get_cookie_params();
-    setcookie(session_name(), '', time() - 42000,
-        $params["path"], $params["domain"],
-        $params["secure"], $params["httponly"]
-    );
+if (session_status() === PHP_SESSION_ACTIVE) {
+  session_destroy();
 }
 
-// Redirect to login page or send a response
-header("Location: index.php"); // Or replace with your desired page
+// Clear session cookie
+if (ini_get('session.use_cookies')) {
+  $p = session_get_cookie_params();
+  setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
+}
+
+// ✅ Also clear mPIN signed cookie
+setcookie(AUTH_COOKIE_NAME, '', time() - 3600, '/', '', !empty($_SERVER['HTTPS']), true);
+
+// Redirect to login (or return JSON)
+header('Location: login.html');
 exit;
-?>

@@ -1,80 +1,80 @@
 <?php
-require_once 'common_start.php';
-/* file_put_contents("debug.txt", json_encode($_data));
-$raw = file_get_contents("php://input");
-file_put_contents("debug.txt", $raw); // Log the raw JSON input
-$data = json_decode($raw, true);   */
+require_once __DIR__ . '/common_start.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/config_auth.php';
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+header('Content-Type: application/json; charset=utf-8');
 
-header('Content-Type: application/json');
-require 'db.php';
-
-// Get JSON input
-$raw = file_get_contents("php://input");
-$data = json_decode($raw, true);
-
-// Validate
-if (!isset($data['email'], $data['login_type'])) {
-    echo json_encode(["success" => false, "message" => "Invalid request."]);
-    exit;
-}
-
-$email = trim($data['email']);
-$name = trim($data['name'] ?? '');
-$phone = trim($data['phone'] ?? '');
-$loginType = trim($data['login_type']);
-$password = trim($data['password'] ?? '');
-
-// Check if email already exists
-$stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
-$stmt->execute([$email]);
-if ($stmt->fetch()) {
-    echo json_encode(["success" => false, "message" => "Email already exists. Please login."]);
-    exit;
-}
-
-// Handle Manual Sign-Up
-if ($loginType === 'manual') {
-    if (!$name || !$password || !$phone) {
-        echo json_encode(["success" => false, "message" => "All fields are required."]);
-        exit;
-    }
- try {
-    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-    $insert = $pdo->prepare("INSERT INTO users (name, email, phone, password, login_type, created_at)
-                             VALUES (?, ?, ?, ?, 'manual', NOW())");
-    $success = $insert->execute([$name, $email, $phone, $hashedPassword]);
- } catch (PDOException $e) {
-    echo json_encode(["success" => false, "message" => "Database error: " . $e->getMessage()]);
-    exit;
- }
-} elseif ($loginType === 'google') {
-    if (!$name) {
-        echo json_encode(["success" => false, "message" => "Name required for Google Sign-Up."]);
-        exit;
-    }
 try {
-    $insert = $pdo->prepare("INSERT INTO users (name, email, password, phone, login_type, created_at)
-                             VALUES (?, ?, NULL, NULL, 'google', NOW())");
-    $success = $insert->execute([$name, $email]);
-} catch (PDOException $e) {
-    echo json_encode(["success" => false, "message" => "Database error: " . $e->getMessage()]);
-    exit;
- }
-} else {
-    echo json_encode(["success" => false, "message" => "Invalid login type."]);
-    exit;
-}
+    $in    = json_decode(file_get_contents('php://input'), true) ?: [];
+    $name  = trim($in['name']  ?? '');
+    $email = trim($in['email'] ?? '');
+    $phone = preg_replace('/\D/', '', $in['phone'] ?? '');
+    $mpin  = trim($in['mpin']  ?? '');
 
-// Final response
-if ($success) {
-    $user = $pdo->prepare("SELECT id FROM users WHERE email = ?");
-    $user->execute([$email]);
-    $user = $user->fetch();
-    if ($user) {
-        $_SESSION['user_id'] = $user['id'];
+    if ($name === '')                                        throw new Exception('Name required');
+    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) throw new Exception('Valid email required');
+    if ($phone !== '' && !preg_match('/^\d{10}$/', $phone))  throw new Exception('Phone must be 10 digits');
+    if (!preg_match('/^\d{4,6}$/', $mpin))                   throw new Exception('mPIN must be 4–6 digits');
+
+    // Signup requires OTPs: email always; phone if provided/required by your policy
+    if (($_SESSION['email_verified'] ?? '') !== $email) throw new Exception('Verify email OTP first');
+    if ($phone !== '' && (($_SESSION['phone_verified'] ?? '') !== $phone)) {
+        throw new Exception('Verify phone OTP first');
     }
-    echo json_encode(["success" => true, "message" => "Account created successfully."]);
-} else {
-    echo json_encode(["success" => false, "message" => "Something went wrong."]);
+
+    // Uniqueness
+    $st = $pdo->prepare('SELECT id FROM users WHERE email = ? LIMIT 1');
+    $st->execute([$email]);
+    if ($st->fetch()) throw new Exception('Email already registered');
+
+    if ($phone !== '') {
+        $st = $pdo->prepare('SELECT id FROM users WHERE phone = ? LIMIT 1');
+        $st->execute([$phone]);
+        if ($st->fetch()) throw new Exception('Phone already registered');
+    }
+
+    $mpin_hash = password_hash($mpin, PASSWORD_DEFAULT);
+
+    // Set verified timestamps based on OTPs we just checked
+    $email_verified_at = (new DateTime())->format('Y-m-d H:i:s');
+    $phone_verified_at = ($phone !== '' && ($_SESSION['phone_verified'] ?? '') === $phone)
+        ? (new DateTime())->format('Y-m-d H:i:s') : null;
+
+    $ins = $pdo->prepare('
+        INSERT INTO users
+            (name, email, phone, mpin_hash, google_id, login_type,
+             email_verified_at, phone_verified_at, is_verified,
+             created_at, updated_at, has_filled_partner_form,
+             email_otp_code, email_otp_expires_at, phone_otp_code, phone_otp_expires_at)
+        VALUES
+            (?,    ?,     ?,     ?,         NULL,     "manual",
+             ?,                 ?,                0,
+             NOW(),    NOW(),    0,
+             NULL,             NULL,               NULL,             NULL)
+    ');
+    $ins->execute([
+        $name, $email, ($phone ?: null), $mpin_hash,
+        $email_verified_at, $phone_verified_at
+    ]);
+
+    $uid = (int)$pdo->lastInsertId();
+
+    // Set signed cookie for mPIN-only login (device binding)
+    $payload = ['uid' => $uid, 'exp' => time() + AUTH_COOKIE_TTL];
+    setcookie(AUTH_COOKIE_NAME, sign_token($payload), [
+        'expires'  => time() + AUTH_COOKIE_TTL,
+        'path'     => '/',
+        'secure'   => !empty($_SERVER['HTTPS']),
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+
+    // Cleanup OTP session flags
+    unset($_SESSION['email_verified'], $_SESSION['phone_verified'], $_SESSION['email_otp'], $_SESSION['phone_otp']);
+
+    echo json_encode(['success' => true]); exit;
+} catch (Throwable $e) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]); exit;
 }
