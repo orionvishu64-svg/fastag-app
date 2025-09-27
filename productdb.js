@@ -1,28 +1,40 @@
-/* productdb.js
- * - Client-side product data layer.
+/* productdb.js — rewritten
  * - Fetches products from /get_products.php
- * - Caches full-list for the session to avoid refetching repeatedly
- * - Exposes: ProductDB.getAll(opts), ProductDB.getById(id), ProductDB.search(q)
- * - Usage:
- *   const products = await ProductDB.getAll({ bank: 'SBI', category: 'VC4' });
- *   const p = await ProductDB.getById(12);
+ * - Normalizes fields (incl. IMAGE → LOGO mapping)
+ * - Session cache (load + save) for unfiltered lists
+ * - Exposes: ProductDB.getAll(opts), ProductDB.getById(id), ProductDB.search(q), ProductDB.clearCache()
  */
 
 const ProductDB = (function () {
   const CACHE_KEY = '__productdb_cache';
-  let cache = null;              // cached array (null until fetched)
+  let cache = null;
   let lastFetchedAt = 0;
 
-  // Small wrapper fetch that includes credentials and basic error handling
+  /* ---------------- helpers ---------------- */
+
+  // Load cache from sessionStorage (if any)
+  (function hydrateCache() {
+    try {
+      const raw = sessionStorage.getItem(CACHE_KEY);
+      if (!raw) return;
+      const { ts, data } = JSON.parse(raw);
+      if (Array.isArray(data)) {
+        cache = data;
+        lastFetchedAt = ts || 0;
+      }
+    } catch (_) {}
+  })();
+
+  // Fetch JSON with basic error handling
   async function safeFetchJson(url, opts = {}) {
-    const res = await fetch(url, Object.assign({ credentials: 'include' }, opts));
+    const res = await fetch(url, { credentials: 'include', ...opts });
     if (!res.ok) {
       const text = await res.text().catch(() => '');
       throw new Error(`Network error: ${res.status} ${text}`);
     }
     const json = await res.json();
     if (!json || json.success === false) {
-      throw new Error(json && json.message ? json.message : 'Invalid server response');
+      throw new Error(json?.message || 'Invalid server response');
     }
     return json;
   }
@@ -38,7 +50,17 @@ const ProductDB = (function () {
     return 'get_products.php' + (qs ? `?${qs}` : '');
   }
 
-  // Normalize product fields (casts numbers)
+  // Turn any image-ish column into a usable web URL
+  function normalizeLogo(row) {
+    const candidate = row.logo || row.image || row.image_url || row.image_path || '';
+    if (!candidate) return '';
+    // Absolute (http/https or protocol-relative) — leave as-is
+    if (/^https?:\/\//i.test(candidate) || candidate.startsWith('//')) return candidate;
+    // Ensure web-rooted path (leading slash)
+    return candidate.startsWith('/') ? candidate : '/' + candidate;
+  }
+
+  // Normalize product fields and attach `logo`
   function normalizeProducts(rows = []) {
     return rows.map(r => ({
       id: r.id != null ? Number(r.id) : null,
@@ -52,10 +74,14 @@ const ProductDB = (function () {
       security: r.security != null ? Number(r.security) : 0,
       tagcost: r.tagcost != null ? Number(r.tagcost) : 0,
       payout: r.payout || '',
-      // any extra fields remain as-is
-      ...r
+      // keep original fields
+      ...r,
+      // critical: provide a reliable image src for the frontend
+      logo: normalizeLogo(r)
     }));
   }
+
+  /* ---------------- public API ---------------- */
 
   return {
     /**
@@ -65,18 +91,16 @@ const ProductDB = (function () {
     async getAll(opts = {}) {
       const { force = false, bank = null, category = null, q = null, limit = 0 } = opts;
 
-      // If request is unfiltered and we have cache and not forcing -> return cache
-      if (!force && !bank && !category && !q && cache) {
-        return cache;
-      }
+      // If unfiltered and we have a hydrated cache, return it unless forced
+      const unfiltered = !bank && !category && !q;
+      if (!force && unfiltered && cache) return cache;
 
       const url = buildProductsUrl({ bank, category, q, limit });
-
       const json = await safeFetchJson(url);
       const rows = normalizeProducts(json.products || []);
 
-      // Cache only if unfiltered (complete list)
-      if (!bank && !category && !q) {
+      // Cache only the complete list (unfiltered)
+      if (unfiltered) {
         cache = rows;
         lastFetchedAt = Date.now();
         try {
@@ -88,23 +112,18 @@ const ProductDB = (function () {
     },
 
     /**
-     * Get product by DB id or product_id
-     * id can be numeric DB id or product_id string
+     * Get a single product by DB id or product_id
      */
     async getById(id) {
-      // check cache first (if present)
+      const key = String(id);
       if (cache) {
-        const found = cache.find(p => String(p.id) === String(id) || String(p.product_id) === String(id));
+        const found = cache.find(p => String(p.id) === key || String(p.product_id) === key);
         if (found) return found;
       }
-
-      // fallback: fetch single product by searching product_id or id
-      // We'll call server search (force)
+      // fallback: search on server
       try {
-        const q = String(id);
-        const rows = await this.getAll({ force: true, q, limit: 50 });
-        const found = rows.find(p => String(p.id) === String(id) || String(p.product_id) === String(id));
-        return found || null;
+        const rows = await this.getAll({ force: true, q: key, limit: 50 });
+        return rows.find(p => String(p.id) === key || String(p.product_id) === key) || null;
       } catch (err) {
         console.error('ProductDB.getById error', err);
         return null;
@@ -112,7 +131,7 @@ const ProductDB = (function () {
     },
 
     /**
-     * Server-side search (returns results)
+     * Server-side search (filtered fetch)
      */
     async search(query) {
       if (!query) return [];
@@ -120,7 +139,7 @@ const ProductDB = (function () {
     },
 
     /**
-     * Clear cached product list (useful after updating DB)
+     * Clear session cache
      */
     clearCache() {
       cache = null;
@@ -130,5 +149,5 @@ const ProductDB = (function () {
   };
 })();
 
-// Expose to global (if needed)
+// Expose globally if needed
 window.ProductDB = ProductDB;

@@ -1,7 +1,7 @@
-/* products.js — single-file renderer + Blinkit-style bottom sheet
+/* products.js — single-file renderer + Blinkit-style bottom sheet (rewritten)
    - Renders products into #products-container / .products-grid
-   - Clicking a product card opens the full-screen sheet (reliable)
-   - No legacy modal left behind
+   - Image handling fixed: pickLogo() supports logo/image/image_url/image_path + SVG placeholder fallback
+   - Clicking a product card opens the full-screen sheet
    - addToCart fallback uses localStorage
 */
 
@@ -12,6 +12,44 @@
   const escapeHtml = v => (v == null ? '' : String(v)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'));
+
+  // Inline SVG placeholder for missing images
+  function svgPlaceholder(text = '?') {
+    text = (text || '?').toString().trim().slice(0, 3).toUpperCase();
+    const svg =
+`<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640">
+  <rect width="100%" height="100%" fill="#f0f2f5"/>
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+        font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif"
+        font-size="160" fill="#9aa3af">${text}</text>
+</svg>`;
+    return 'data:image/svg+xml;base64,' + (typeof btoa === 'function'
+      ? btoa(svg)
+      : Buffer.from(svg, 'utf8').toString('base64'));
+  }
+
+  // Normalize any image-ish field into a usable web URL
+  function normalizePath(p) {
+    if (!p) return '';
+    if (/^(?:https?:)?\/\//i.test(p)) return p; // http(s) or protocol-relative
+    return p.startsWith('/') ? p : '/' + p;    // ensure web-rooted path
+  }
+
+  // Pick the best image src from a product row, or placeholder
+  function pickLogo(product) {
+    if (!product) return svgPlaceholder('?');
+    const cand = product.logo || product.image || product.image_url || product.image_path || '';
+    return cand ? normalizePath(cand) : svgPlaceholder(product.bank || product.name || '?');
+  }
+
+  // Attach a safe onerror handler to swap to placeholder if the image 404s
+  function attachImgFallback(imgEl, product) {
+    if (!imgEl) return;
+    imgEl.onerror = () => {
+      imgEl.onerror = null;
+      imgEl.src = svgPlaceholder(product?.bank || product?.name || '?');
+    };
+  }
 
   /* ---------- container finder ---------- */
   const containerSelectors = ['#products-container', '.products-grid', '.products-list'];
@@ -43,7 +81,11 @@
         <div class="sheet-body">
           <button class="sheet-close" aria-label="Close">✕</button>
           <div class="sheet-content">
-            <div class="sheet-left"><div class="sheet-image-wrap"><img src="" alt="product"></div></div>
+            <div class="sheet-left">
+              <div class="sheet-image-wrap">
+                <img src="" alt="product">
+              </div>
+            </div>
             <div class="sheet-right">
               <h2 class="sheet-title"></h2>
               <div class="sheet-bank-cat"></div>
@@ -70,7 +112,7 @@
     `;
     document.body.appendChild(sheet);
 
-    // cache nodes, defensive
+    // cache nodes
     const panel = sheet.querySelector('.sheet-panel');
     const backdrop = sheet.querySelector('.sheet-backdrop');
     const closeBtn = sheet.querySelector('.sheet-close');
@@ -88,61 +130,53 @@
     const qtyDec = sheet.querySelector('.qty-decr');
     let addBtn = sheet.querySelector('.sheet-add');
 
-    // helper to wire add button safely
     function wireAdd(product) {
-      // always fetch current addBtn node
       addBtn = sheet.querySelector('.sheet-add');
       if (!addBtn) return;
-      // remove previous listeners by replacing node with clone
       const newAdd = addBtn.cloneNode(true);
       addBtn.parentNode.replaceChild(newAdd, addBtn);
       addBtn = newAdd;
       addBtn.addEventListener('click', function () {
         const q = Math.max(1, Number(qtyInput.value || 1));
         if (typeof addToCart === 'function') {
-          addToCart(Object.assign({}, product, { qty: q }));
+          addToCart({ ...product, qty: q });
         } else {
           const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-          cart.push(Object.assign({}, product, { qty: q }));
+          cart.push({ ...product, qty: q });
           localStorage.setItem('cart', JSON.stringify(cart));
         }
-        // small feedback then close
         addBtn.textContent = '✔ Added';
         setTimeout(hide, 500);
       });
     }
 
-    // show/hide functions
     function show(product) {
       if (!product) return;
       try {
-        img.src = product.logo || '';
-        img.alt = product.name || '';
+        const src = pickLogo(product);
+        img.src = src;
+        attachImgFallback(img, product);
+        img.alt = product.name || 'product';
+
         title.textContent = product.name || '';
         bankCat.textContent = `${product.bank || ''} • ${product.category || ''}`;
         activation.textContent = (product.activation != null) ? `₹${product.activation}` : '—';
         security.textContent = (product.security != null) ? `₹${product.security}` : '—';
         tagcost.textContent = (product.tagcost != null) ? `₹${product.tagcost}` : '—';
         payout.textContent = product.payout || '—';
-        priceEl.textContent = product.price != null ? `₹${Number(product.price).toLocaleString()}` : '₹0';
+        priceEl.textContent = (product.price != null) ? `₹${Number(product.price).toLocaleString()}` : '₹0';
         desc.textContent = product.description || '';
         qtyInput.value = 1;
 
-        // wire qty controls
         qtyInc.onclick = () => qtyInput.value = Math.max(1, Number(qtyInput.value || 1) + 1);
         qtyDec.onclick = () => qtyInput.value = Math.max(1, Number(qtyInput.value || 1) - 1);
         qtyInput.oninput = () => { if (!qtyInput.value || Number(qtyInput.value) < 1) qtyInput.value = 1; };
 
-        // wire add
         wireAdd(product);
 
-        // show sheet with CSS transition
         sheet.style.display = '';
-        // ensure panel reset
         panel.classList.remove('panel-up');
         sheet.classList.remove('sheet-open');
-
-        // show next frame
         requestAnimationFrame(() => {
           sheet.classList.add('sheet-open');
           panel.classList.add('panel-up');
@@ -156,14 +190,12 @@
       try {
         panel.classList.remove('panel-up');
         sheet.classList.remove('sheet-open');
-        // reset after transition
         setTimeout(() => {
           sheet.style.display = 'none';
           panel.classList.remove('panel-up');
           sheet.classList.remove('sheet-open');
         }, 320);
-      } catch (err) {
-        // never crash
+      } catch {
         sheet.style.display = 'none';
       }
     }
@@ -177,7 +209,6 @@
     window.showProductSheet = show;
     window.hideProductSheet = hide;
 
-    // store
     window.__productSheet = { show, hide, sheet, panel };
     return window.__productSheet;
   }
@@ -193,12 +224,13 @@
     window._productIndex = window._productIndex || [];
     const idx = window._productIndex.push(product) - 1;
     card.setAttribute('data-product-index', String(idx));
-    try { card.dataset.product = JSON.stringify(product); } catch (e) { /* ignore */ }
+    try { card.dataset.product = JSON.stringify(product); } catch {}
+
+    const imgSrc = pickLogo(product);
 
     card.innerHTML = `
       <div class="product-image-wrap">
-        <img src="${escapeHtml(product.logo||'')}" alt="${escapeHtml(product.name||'')}">
-        <button class="add-overlay">ADD</button>
+        <img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(product.name||'')}" loading="lazy">
       </div>
       <div class="product-info">
         <div style="display:flex;justify-content:space-between;align-items:center">
@@ -210,20 +242,9 @@
       </div>
     `;
 
-    // add button
-    const btn = card.querySelector('.add-overlay');
-    if (btn) {
-      btn.addEventListener('click', function (ev) {
-        ev.stopPropagation();
-        if (typeof addToCart === 'function') addToCart(product);
-        else {
-          const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-          cart.push(product);
-          localStorage.setItem('cart', JSON.stringify(cart));
-          console.info('Added to cart (fallback localStorage)', product);
-        }
-      });
-    }
+    // attach runtime fallback for broken images
+    const img = card.querySelector('img');
+    attachImgFallback(img, product);
 
     return card;
   }
@@ -245,7 +266,7 @@
 
   /* ---------- loader & UI glue (ProductDB) ---------- */
   async function loadAndRender(opts = {}) {
-    const bank = opts.bank === undefined ? (document.body && document.body.dataset && document.body.dataset.bank) : opts.bank;
+    const bank = opts.bank === undefined ? (document.body?.dataset?.bank) : opts.bank;
     const category = opts.category || null;
     const q = opts.q || null;
     const limit = opts.limit || 0;
@@ -253,7 +274,7 @@
 
     try {
       container.innerHTML = '<div class="notice-card">Loading products…</div>';
-      const products = (window.ProductDB && typeof window.ProductDB.getAll === 'function')
+      const products = (window.ProductDB?.getAll)
         ? await window.ProductDB.getAll({ force: false, bank, category, q, limit })
         : [];
       renderProductsList(products, container);
@@ -276,7 +297,7 @@
   async function reloadAndUpdateUI() {
     const params = uiToParams();
     try {
-      const products = (window.ProductDB && typeof window.ProductDB.getAll === 'function')
+      const products = (window.ProductDB?.getAll)
         ? await window.ProductDB.getAll({ force: true, bank: params.bank, category: params.category, q: params.q })
         : [];
       const resultsCountEl = document.getElementById('resultsCount');
@@ -298,9 +319,8 @@
 
   /* ---------- init on DOM ready if products page ---------- */
   document.addEventListener('DOMContentLoaded', function () {
-    const isProductsPage = document.body && document.body.dataset && document.body.dataset.page === 'products';
+    const isProductsPage = document.body?.dataset?.page === 'products';
     if (!isProductsPage) return;
-    // ensure sheet created
     initSheet();
     reloadAndUpdateUI();
 
@@ -314,27 +334,23 @@
     if (catSel) catSel.addEventListener('change', () => reloadAndUpdateUI());
   });
 
-  /* ---------- delegated click: show sheet for any product card click ---------- */
+  /* ---------- delegated click: open sheet ---------- */
   document.addEventListener('click', function (e) {
     const card = e.target.closest && e.target.closest('article.product-card');
     if (!card) return;
-    // ignore add-overlay clicks
-    if (e.target.closest && e.target.closest('.add-overlay, .add-to-cart, .overlay-add, .btn.add-to-cart')) return;
 
-    // get product from index / dataset
     let prod = null;
     try {
       const idx = card.getAttribute('data-product-index');
       if (idx !== null && window._productIndex && window._productIndex[idx]) prod = window._productIndex[idx];
-    } catch (err) { prod = null; }
+    } catch { prod = null; }
     if (!prod && card.dataset && card.dataset.product) {
-      try { prod = JSON.parse(card.dataset.product); } catch (err) { prod = null; }
+      try { prod = JSON.parse(card.dataset.product); } catch { prod = null; }
     }
 
     if (prod) {
       try {
-        initSheet(); // ensure sheet exists
-        // open sheet (sheet API handles show/hide robustly)
+        initSheet();
         window.showProductSheet(prod);
       } catch (err) {
         console.error('open sheet failed', err);
@@ -342,6 +358,6 @@
     }
   }, false);
 
-  // expose debug API
+  // expose for debugging
   window.reloadAndUpdateUI = reloadAndUpdateUI;
 })();
