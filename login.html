@@ -30,7 +30,7 @@ document.querySelector('#loginForm').onsubmit = async (e) => {
   const r = await fetch('login.php', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({mpin})});
   const d = await r.json();
   if (!d.success) return say(d.error || 'Login failed');
-  location.href = 'index.php'; // or your dashboard path
+  location.href = 'partner_form.php'; // or your dashboard path
 };
 </script>
 </body>

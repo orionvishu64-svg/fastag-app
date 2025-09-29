@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../common_start.php'; 
 // Ensure session is started before any output
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

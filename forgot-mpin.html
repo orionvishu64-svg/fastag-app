@@ -15,6 +15,7 @@
     <button id="send">Send OTP</button>
     <div id="msg" class="err"></div>
     <p class="switch-link">
+      <!--Switch link to go to login page-->
         Remembered your M-Pin? <a href="login.html">Back to Login</a>
     </p>
   </div>
@@ -29,7 +30,7 @@
     <input id="mpin" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}">
     <label>Confirm mPIN</label>
     <input id="mpin2" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}">
-    <button id="set">Reset mPIN</button>
+    <button id="set">Reset mPIN</button><!--you can change your mpin by clicking it-->
   </div>
 <script>
 const $=s=>document.querySelector(s); const msg=t=>$('#msg').textContent=t||'';
