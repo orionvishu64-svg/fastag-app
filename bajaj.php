@@ -88,9 +88,9 @@
         </div>
     </section>
     <script src="productdb.js"></script>
-<script src="products.js"></script>
-<script src="bank-pages.js"></script>   <!-- if bank page needs it -->
-<script src="script.js"></script>       <!-- global utilities -->
-<?php include __DIR__ . '/includes/footer.php'; ?>
+    <script src="products.js"></script>
+    <script src="bank-pages.js"></script>   <!-- if bank page needs it -->
+    <script src="script.js"></script>       <!-- global utilities -->
+    <?php include __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>
