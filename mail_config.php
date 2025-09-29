@@ -2,37 +2,25 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// ✅ autoloader must be relative to THIS file
-require_once __DIR__ . '/vendor/autoload.php';
+$vendor = __DIR__.'/vendor/autoload.php';
+if (!is_readable($vendor)) { error_log('PHPMailer autoload missing'); throw new \RuntimeException('Mail setup error'); }
+require_once $vendor;
+
+$env = __DIR__.'/.env.php';
+if (!is_readable($env)) { error_log('Mail env missing: '.$env); throw new \RuntimeException('Mail config missing'); }
 
 function mailer(): PHPMailer {
-    $c = require __DIR__ . '/.env.php';
-
-    $mail = new PHPMailer(true);
-    $mail->isSMTP();
-
-    // IMPORTANT: use hostname (not IP) so TLS cert matches
-    $mail->Host = $c['SMTP_HOST']; // 'smtp.gmail.com'
-    $mail->SMTPAuth = true;
-    $mail->Username = $c['SMTP_USER'];
-    $mail->Password = $c['SMTP_PASS'];
-
-    if (strcasecmp($c['SMTP_SECURE'], 'SSL') === 0) {
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-        $mail->Port       = 465;
-    } else {
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
-    }
-
-    $mail->Timeout       = 10;
-    $mail->SMTPKeepAlive = true;
-    $mail->CharSet       = 'UTF-8';
-    $mail->setFrom($c['SMTP_FROM'], $c['SMTP_FROM_NAME']);
-
-    // Optional while debugging:
-    // $mail->SMTPDebug   = 2;
-    // $mail->Debugoutput = 'error_log';
-
-    return $mail;
+  $c = require __DIR__.'/.env.php';
+  $m = new PHPMailer(true);
+  $m->isSMTP();
+  $m->Host       = $c['SMTP_HOST'];
+  $m->SMTPAuth   = true;
+  $m->Username   = $c['SMTP_USERNAME'];
+  $m->Password   = $c['SMTP_PASSWORD'];
+  $m->SMTPSecure = $c['SMTP_SECURE']; // PHPMailer constant
+  $m->Port       = $c['SMTP_PORT'];
+  $m->setFrom($c['FROM_EMAIL'], $c['FROM_NAME'] ?? '');
+  if (!empty($c['REPLY_TO'])) $m->addReplyTo($c['REPLY_TO'], $c['FROM_NAME'] ?? '');
+  $m->isHTML(true);
+  return $m;
 }

@@ -1,5 +1,6 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
+header('Content-Type: application/json; charset=utf-8');
 const AUTH_COOKIE_NAME   = 'login_user';
 const AUTH_COOKIE_SECRET = 'CHANGE_ME_TO_A_LONG_RANDOM_SECRET_AT_LEAST_64_BYTES';
 const AUTH_COOKIE_TTL    = 60 * 60 * 24 * 120;
