@@ -132,69 +132,7 @@
                 <a href="contact.php" class="btn btn-secondary">Contact Us</a>
             </div>
         </div>
-    </section>
-    <style>
-    /* BEFORE: #loginOverlay { display: none; ... } */
-#loginOverlay {
-    display: flex; /* show overlay by default to prevent flash */
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0,0,0,0.6);
-    z-index: 99999;
-}
-/* existing iframe styles can remain */
-#loginOverlay iframe {
-    width: 400px;
-    height: 520px;
-    border: none;
-    border-radius: 6px;
-}
-
-</style>
-
-<div id="loginOverlay">
-    <iframe src="index.html"></iframe>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const overlay = document.getElementById('loginOverlay');
-
-  // Ask server for authoritative login state (don't trust localStorage alone)
-  fetch('check_login.php', { credentials: 'include', cache: 'no-store' })
-    .then(res => res.json())
-    .then(data => {
-      if (data && data.logged_in) {
-        // server says logged in -> hide overlay
-        overlay.style.display = 'none';
-        try {
-          localStorage.setItem('app_logged_in', '1');
-          localStorage.setItem('app_user', JSON.stringify({ id: data.user_id, name: data.name }));
-        } catch (e) {}
-      } else {
-        // not logged in -> keep overlay visible and ensure client state cleared
-        overlay.style.display = 'flex';
-        try {
-          localStorage.removeItem('app_logged_in');
-          localStorage.removeItem('app_user');
-        } catch (e) {}
-      }
-    })
-    .catch((err) => {
-      // on network or parse error, act conservative: require login
-      console.warn('Auth check failed', err);
-      overlay.style.display = 'flex';
-      try {
-        localStorage.removeItem('app_logged_in');
-        localStorage.removeItem('app_user');
-      } catch (e) {}
-    });
-});
-</script>
+    </section>  
     <script src="script.js"></script> 
 <?php include __DIR__ . '/includes/footer.php'; ?>
 </body>

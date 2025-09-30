@@ -41,8 +41,15 @@ h2 { font-size: 1.4rem; text-align: center; }
 .row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
   margin: 10px 0;
+}
+
+.tophead {
+    margin-bottom: 5px;  /* reduce space below the heading */
+    font-size: 22px;      /* optional: adjust size if needed */
+    font-weight: bold;    /* keep bold style */
+    text-align: center;   /* align center (if you want) */
 }
 
 /* Labels & inputs */

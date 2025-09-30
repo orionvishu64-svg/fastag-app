@@ -321,6 +321,18 @@ async function debugFetchJson(url, opts = {}) {
     });
   });
 
+  // Prefill Agent ID with saved GV Partner ID (if any)
+if (agentInput) {
+  fetch("get_gv_partner.php", { credentials: "same-origin" })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && data.gv_partner_id) {
+        agentInput.value = data.gv_partner_id;
+      }
+    })
+    .catch(err => console.warn("GV Partner prefill failed:", err));
+}
+
   // restrict agent input
   if (agentInput) {
     agentInput.addEventListener("input", function () {
