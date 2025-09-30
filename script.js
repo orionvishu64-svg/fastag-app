@@ -342,7 +342,7 @@ function updateLoginButton() {
     loginButton.setAttribute("href", "profile.php")
     loginButton.innerHTML = `<i class="far fa-user-circle"></i>`
   } else {
-    loginButton.setAttribute("href", "login.html")
+    loginButton.setAttribute("href", "index.html")
     loginButton.innerHTML = `<i class="far fa-user-circle"></i>`
   }
 } 
@@ -368,9 +368,9 @@ localStorage.removeItem("app_user")
 
     // Redirect to a safe page
     if (window.top) {
-      window.top.location.href = "index.php"
+      window.top.location.href = "index.html"
     } else {
-      window.location.href = "index.php"
+      window.location.href = "index.html"
     }
   })
 }
@@ -390,9 +390,9 @@ function wireProfileLogoutButton() {
       await safeFetch("logout.php", { credentials: "include" })
     } catch (_) {}
     if (window.top) {
-      window.top.location.href = "index.php"
+      window.top.location.href = "index.html"
     } else {
-      window.location.href = "index.php"
+      window.location.href = "index.html"
     }
   })
 }

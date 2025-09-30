@@ -1,3 +1,6 @@
+<?php
+require_once __DIR__ . '/common_start.php'; 
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

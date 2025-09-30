@@ -478,7 +478,7 @@ class CartManager {
         } else {
           // Not logged in → redirect to login, preserve return path
           const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
-          window.location.href = `login.html?return=${returnUrl}`;
+          window.location.href = `index.html?return=${returnUrl}`;
         }
       })
       .catch(err => {
@@ -489,7 +489,7 @@ class CartManager {
         }
         // Safe fallback: send user to login page
         const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
-        window.location.href = `login.html?return=${returnUrl}`;
+        window.location.href = `index.html?return=${returnUrl}`;
       });
   }
 

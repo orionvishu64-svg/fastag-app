@@ -1,13 +1,15 @@
 <?php
-session_start();
-require_once "db.php"; // your PDO connection with $pdo
+require_once __DIR__ . '/common_start.php';   // handles session_start once
+require_once __DIR__ . '/db.php';             // your PDO connection
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.html");
+// Ensure user is logged in
+if (empty($_SESSION['user']['id'])) {
+    header("Location: /login.php");
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
+// Define canonical user_id
+$user_id = (int)$_SESSION['user']['id'];
 
 // Messages
 $error_gv = "";
@@ -74,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $partner_count = $stmt2->fetchColumn();
 
         if ($gv_count > 0 || $partner_count > 0) {
-            header("Location: index.php");
+            header("Location: dashboard.php");
             exit();
         } else {
             $error_partner = "Please add at least one GV Partner ID or Partner record before proceeding.";

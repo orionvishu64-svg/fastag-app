@@ -59,7 +59,7 @@ async function handleGoogleResponse(response) {
       if (window.top) {
         window.top.location.href = "partner_form.php";
       } else {
-        window.location.href = "index.php";
+        window.location.href = "dashboard.php";
       }
     }
   } catch (err) {

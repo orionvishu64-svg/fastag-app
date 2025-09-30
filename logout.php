@@ -18,5 +18,5 @@ if (ini_get('session.use_cookies')) {
 setcookie(AUTH_COOKIE_NAME, '', time() - 3600, '/', '', !empty($_SERVER['HTTPS']), true);
 
 // Redirect to login (or return JSON)
-header('Location: login.html');
+header('Location: index.html');
 exit;

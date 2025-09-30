@@ -3,11 +3,10 @@ require_once 'common_start.php';
 require 'db.php';
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(["success" => false, "message" => "Not logged in"]);
+if ($userId <= 0) {
+    echo json_encode([]);
     exit;
 }
-
 $input = json_decode(file_get_contents("php://input"), true);
 $phone = isset($input['phone']) ? trim($input['phone']) : '';
 

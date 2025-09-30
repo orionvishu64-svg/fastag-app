@@ -1,14 +1,12 @@
 <?php
-require_once 'common_start.php';
+require_once __DIR__ . '/common_start.php';
 require 'db.php'; // PDO connection
 
-// Check login
-if (!isset($_SESSION['user_id'])) {
-    header("Location: index.php");
-    exit();
+if (empty($_SESSION['user']['id'])) {
+    header("Location: /login.php");
+    exit;
 }
-
-$user_id = $_SESSION['user_id'];
+$user_id = (int)$_SESSION['user']['id'];
 
 // Fetch orders for logged-in user
 $stmt = $pdo->prepare("SELECT o.id, o.amount, o.payment_method, o.status, o.created_at 

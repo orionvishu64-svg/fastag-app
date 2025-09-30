@@ -80,7 +80,7 @@
       </div>
 
       <div class="footer-links">
-        Already have an account? <a href="login.html">Sign In</a>
+        Already have an account? <a href="index.html">Sign In</a>
       </div>
     </form>
   </div>
@@ -165,7 +165,7 @@ $('#signupForm').onsubmit = async (e) => {
   });
   const d = await r.json();
   if (!d.success) return say(d.error || 'Signup failed');
-  location.href = 'login.html';
+  location.href = 'index.html';
 };
 
 // Wire your Google handler if needed

@@ -30,7 +30,7 @@ $cart_count = isset($_SESSION['cart_count']) ? (int) $_SESSION['cart_count'] : 0
   <div class="nav-container">
     <!-- Left side: Logo -->
     <div class="nav-logo">
-      <a href="index.php">
+      <a href="dashboard.php">
         <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png" alt="ApnaPayment">
       </a>
     </div>

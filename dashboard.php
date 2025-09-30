@@ -157,7 +157,7 @@
 </style>
 
 <div id="loginOverlay">
-    <iframe src="login.html"></iframe>
+    <iframe src="index.html"></iframe>
 </div>
 
 <script>

@@ -16,7 +16,7 @@
     <div id="msg" class="err"></div>
     <p class="switch-link">
       <!--Switch link to go to login page-->
-        Remembered your M-Pin? <a href="login.html">Back to Login</a>
+        Remembered your M-Pin? <a href="index.html">Back to Login</a>
     </p>
   </div>
   <div id="step2" style="display:none">
@@ -52,7 +52,7 @@ $('#set').onclick=async()=>{
   if(mpin!==mpin2) return msg('mPINs do not match');
   const r=await fetch('reset_mpin.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,mpin})});
   const d=await r.json(); if(!d.success) return msg(d.error||'Reset failed');
-  location.href='login.html';
+  location.href='index.html';
 };
 </script>
 </body>

@@ -55,9 +55,14 @@ if ($raw !== '') {
 }
 if (empty($input)) $input = $_POST;
 
-// prefer session user id
-session_start();
-$user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : (int)($input['user_id'] ?? 0);
+// --- get authenticated user ---
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$user_id = (int)($_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0);
+if ($user_id <= 0) {
+    json_exit_err('not_logged_in', 401, 'User not authenticated');
+}
 $address_id = (int)($input['address_id'] ?? 0);
 $payment_method = trim($input['payment_method'] ?? 'upi');
 $items = $input['items'] ?? [];

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login</title>
+  <link rel="stylesheet" href="signup.css">
+</head>
+<body>
+  <h2>Login</h2>
+  <form id="loginForm">
+    <label>Phone</label>
+    <input name="phone" inputmode="numeric" pattern="\d{10}" maxlength="10" required />
+    <label>M-PIN</label>
+    <input name="mpin" placeholder="XXX-XXX" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}" required />
+    <button type="submit" id="loginBtn">Login</button>
+  </form>
+
+  <p><a href="forgot-mpin.html">Forgot your mPIN?</a></p>
+  <div id="msg" style="color:#b00020"></div>
+
+  <p class="switch-link">
+    Don't have an account? <a href="signup.html">Sign Up</a>
+  </p>
+
+<script>
+const say = t => document.querySelector('#msg').textContent = t || '';
+
+document.querySelector('#loginForm').onsubmit = async (e) => {
+  e.preventDefault(); say('');
+  const fd    = new FormData(e.target);
+  const phone = (fd.get('phone') || '').trim();
+  const mpin  = (fd.get('mpin')  || '').trim();
+
+  if (!/^\d{10}$/.test(phone)) return say('Enter 10-digit phone');
+  if (!/^\d{4,6}$/.test(mpin))  return say('Invalid mPIN');
+
+  try {
+    const r = await fetch('/login.php', {               // absolute path
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, mpin })
+    });
+
+    const text = await r.text();                        // debug friendly
+    let d;
+    try { d = JSON.parse(text); }
+    catch { console.error('Non-JSON response:', text); return say('Server error'); }
+
+    if (!r.ok || !d.success) {
+      console.error('Login error:', d);
+      return say(d.error || 'Login failed');
+    }
+
+    // ✅ success — go to partner form
+    window.location.assign('/partner_form.php');        // absolute path
+  } catch (err) {
+    console.error(err);
+    say('Network error');
+  }
+};
+</script>
+
+</body>
+</html>
