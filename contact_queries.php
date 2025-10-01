@@ -2,14 +2,15 @@
 require_once 'common_start.php';
 require_once 'db.php';
 header('Content-Type: application/json');
-
+ 
 try {
-    // Require login
-    if (!isset($_SESSION['user_id'])) {
-        echo json_encode(['success' => false, 'message' => 'Please log in']);
-        exit;
-    }
-
+    
+// canonical user id
+$userId = (int) ( $_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0 );
+if ($userId <= 0) {
+    echo json_encode(['success' => false, 'message' => 'Please log in']);
+    exit;
+}
     // Decode JSON input
     $input = json_decode(file_get_contents('php://input'), true);
     if (!$input) {

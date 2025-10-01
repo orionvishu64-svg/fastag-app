@@ -9,8 +9,11 @@ $sessionCookieLifetime = 86400;
 /* create session dir if missing */
 if (!is_dir($sessionDir)) {
     @mkdir($sessionDir, 0700, true);
-    @chown($sessionDir, 'www-data');
-    @chgrp($sessionDir, 'www-data');
+    // Try to set owner/group if running as root; ignore failures
+    if (function_exists('posix_geteuid') && posix_geteuid() === 0) {
+        @chown($sessionDir, 'www-data');
+        @chgrp($sessionDir, 'www-data');
+    }
     @chmod($sessionDir, 0700);
 }
 
@@ -60,6 +63,13 @@ if (empty($_SESSION['user']) && !empty($_SESSION['user_id'])) {
     $_SESSION['user'] = ['id' => (int) $_SESSION['user_id']];
 }
 
+/* helper to get canonical user id */
+if (!function_exists('current_user_id')) {
+    function current_user_id(): int {
+        return (int) ($_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0);
+    }
+}
+
 /* try to secure sessions directory (create index.html to avoid listing) */
 if (is_dir($sessionDir) && is_writable($sessionDir)) {
     @file_put_contents($sessionDir . '/index.html', '<!-- block -->');
@@ -74,7 +84,8 @@ if (is_writable($debugDir)) {
     $sid = session_id() ?: '(no-id)';
     $uid = $_SESSION['user_id'] ?? '(no-user)';
     $remote = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-    @file_put_contents($debugTo, "[$now] IP:$remote SID:$sid UID:$uid PATH:{$_SERVER['REQUEST_URI']}\n", FILE_APPEND | LOCK_EX);
+    $req = $_SERVER['REQUEST_URI'] ?? '(no-uri)';
+    @file_put_contents($debugTo, "[$now] IP:$remote SID:$sid UID:$uid PATH:$req\n", FILE_APPEND | LOCK_EX);
 } else {
     // fallback log to PHP error log so you can see issues in server logs
     error_log("[common_start] storage dir not writable: $debugDir");

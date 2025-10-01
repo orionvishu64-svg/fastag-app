@@ -58,7 +58,7 @@ async function loadOpenTicket() {
 // --- Load closed tickets ---
 async function loadClosedTickets() {
   try {
-    const res = await fetch("get_closed_conversations.php", { credentials: "include" });
+    const res = await fetch("get_closed_conversation.php", { credentials: "include" });
     const data = await res.json();
     const container = document.getElementById("closedTicketsContainer");
     container.innerHTML = "<h3>Closed Tickets</h3>";

@@ -70,7 +70,10 @@ try {
         throw new Exception('Incorrect mPIN');
     }
 
-    // 4) Successful auth → create session user
+    // 4) Successful auth → regenerate session id (prevent fixation)
+    session_regenerate_id(true);
+
+    // 5) Create session user (set both canonical and legacy shapes)
     $_SESSION['user'] = [
         'id'         => (int)$u['id'],
         'name'       => $u['name'],
@@ -78,11 +81,13 @@ try {
         'phone'      => $u['phone'],
         'login_type' => $u['login_type'],
     ];
-    session_regenerate_id(true);
-$_SESSION['user_id'] = (int) ($_SESSION['user']['id'] ?? 0);
+    // LEGACY alias for older endpoints that check $_SESSION['user_id']
+    $_SESSION['user_id'] = (int)$u['id'];
 
+    // Optional: helpful activity marker
+    $_SESSION['last_activity'] = time();
 
-    // 5) Ensure the device is bound (issue/refresh cookie)
+    // 6) Ensure the device is bound (issue/refresh cookie)
     $payload = ['uid' => (int)$u['id'], 'exp' => time() + AUTH_COOKIE_TTL];
     setcookie(AUTH_COOKIE_NAME, sign_token($payload), [
         'expires'  => time() + AUTH_COOKIE_TTL,
@@ -92,7 +97,7 @@ $_SESSION['user_id'] = (int) ($_SESSION['user']['id'] ?? 0);
         'samesite' => 'Lax',
     ]);
 
-    // 6) Touch last-activity timestamp
+    // 7) Touch last-activity timestamp in DB
     $pdo->prepare('UPDATE users SET updated_at = NOW() WHERE id = ?')->execute([$u['id']]);
 
     echo json_encode(['success' => true]); exit;

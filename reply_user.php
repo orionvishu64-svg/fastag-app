@@ -1,11 +1,12 @@
 <?php
 require_once 'common_start.php';
-require_once __DIR__ . "/db.php";
+require_once 'db.php';
+header('Content-Type: application/json; charset=utf-8');
 
-header("Content-Type: application/json");
-
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(["success" => false, "message" => "Not logged in"]);
+// canonical user id
+$userId = (int) ( $_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0 );
+if ($userId <= 0) {
+    echo json_encode(['success' => false, 'message' => 'Please log in']);
     exit;
 }
 

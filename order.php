@@ -1,10 +1,16 @@
 <?php
 require_once 'common_start.php';
-require 'db.php';
+require_once 'db.php';
+header('Content-Type: application/json; charset=utf-8');
+
+$userId = (int) ( $_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0 );
+if ($userId <= 0) {
+    echo json_encode(['success' => false, 'message' => 'Please log in']);
+    exit;
+}
 
 $data = json_decode(file_get_contents("php://input"), true);
-
-if (!isset($data['user_id'], $data['items'], $data['total'], $data['method'])) {
+if (!isset($data['items'], $data['total'], $data['method'])) {
     echo json_encode(['success' => false, 'message' => 'Missing fields']);
     exit;
 }

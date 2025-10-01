@@ -3,7 +3,7 @@ require_once 'common_start.php';
 require_once 'db.php';
 
 header('Content-Type: application/json');
-
+ 
 // Accept either canonical session shape or legacy alias
 $userId = (int) ($_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0);
 
