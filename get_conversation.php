@@ -2,12 +2,41 @@
 // get_conversation.php
 require_once 'common_start.php';
 require_once __DIR__ . "/db.php";
+// socket_auth.php defines verify_socket_token() and session helpers
+require_once __DIR__ . '/socket_auth.php';
+
 header("Content-Type: application/json; charset=utf-8");
 
-// Accept either canonical session shape or legacy alias
-$userId = (int) ($_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0);
+// ---------------- Try token auth first ----------------
+$userId = 0;
+$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+if ($authHeader && preg_match('/Bearer\s+(.+)/i', $authHeader, $m)) {
+    $token = trim($m[1]);
+    $uid = verify_socket_token($token);
+    if ($uid > 0) {
+        $userId = $uid;
+        // optional: populate session so other code relying on $_SESSION sees the user
+        if (empty($_SESSION['user_id'])) $_SESSION['user_id'] = $uid;
+        if (empty($_SESSION['user']))     $_SESSION['user'] = ['id' => $uid];
+    }
+}
 
-// If not logged in, keep original behavior (return empty array)
+// Also accept token via GET param as a fallback for server-to-server calls (optional)
+if ($userId <= 0 && !empty($_GET['token'])) {
+    $uid = verify_socket_token($_GET['token']);
+    if ($uid > 0) {
+        $userId = $uid;
+        if (empty($_SESSION['user_id'])) $_SESSION['user_id'] = $uid;
+        if (empty($_SESSION['user']))     $_SESSION['user'] = ['id' => $uid];
+    }
+}
+
+// ---------------- Fallback: Session Auth ----------------
+if ($userId <= 0) {
+    $userId = (int) ($_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0);
+}
+
+// If not logged in, keep original behaviour (return empty array)
 if ($userId <= 0) {
     echo json_encode([]);
     exit;
@@ -20,7 +49,6 @@ try {
       WHERE user_id = ? AND status IN ('open','in_progress','closed')
       ORDER BY submitted_at DESC LIMIT 1
     ");
-    // USE canonical $userId (was using $_SESSION['user_id'])
     $stmt->execute([$userId]);
     $query = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -57,10 +85,11 @@ try {
 
 } catch (Exception $e) {
     http_response_code(500);
+    // Keep message generic for clients, but optionally log $e->getMessage() to error log
+    error_log("[get_conversation] Exception: " . $e->getMessage());
     echo json_encode([
         "success" => false,
-        "message" => "Server error",
-        "error" => $e->getMessage()
+        "message" => "Server error"
     ]);
     exit;
 }

@@ -44,7 +44,7 @@ try {
         'expires'  => time() + AUTH_COOKIE_TTL,
         'path'     => '/',
         'secure'   => !empty($_SERVER['HTTPS']),
-        'httponly' => true,
+        'httponly' => true, 
         'samesite' => 'Lax',
     ]);
 

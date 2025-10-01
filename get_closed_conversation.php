@@ -2,10 +2,37 @@
 // get_closed_conversation.php
 require_once 'common_start.php';
 require_once __DIR__ . "/db.php";
+require_once __DIR__ . '/socket_auth.php'; // for verify_socket_token()
 header("Content-Type: application/json; charset=utf-8");
 
-// Accept either canonical session shape or legacy alias
-$userId = (int) ($_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0);
+// ---------------- Token Auth ----------------
+$userId = 0;
+$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+if ($authHeader && preg_match('/Bearer\s+(.+)/i', $authHeader, $m)) {
+    $token = trim($m[1]);
+    $uid = verify_socket_token($token);
+    if ($uid > 0) {
+        $userId = $uid;
+        // optional: sync into session
+        if (empty($_SESSION['user_id'])) $_SESSION['user_id'] = $uid;
+        if (empty($_SESSION['user']))     $_SESSION['user'] = ['id' => $uid];
+    }
+}
+
+// optional: allow ?token=... in GET for debugging/server calls
+if ($userId <= 0 && !empty($_GET['token'])) {
+    $uid = verify_socket_token($_GET['token']);
+    if ($uid > 0) {
+        $userId = $uid;
+        if (empty($_SESSION['user_id'])) $_SESSION['user_id'] = $uid;
+        if (empty($_SESSION['user']))     $_SESSION['user'] = ['id' => $uid];
+    }
+}
+
+// ---------------- Fallback: Session Auth ----------------
+if ($userId <= 0) {
+    $userId = (int) ($_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0);
+}
 
 // If not logged in, keep original behavior (return empty array)
 if ($userId <= 0) {
@@ -35,7 +62,6 @@ try {
 
     // Collect all contact_query IDs and fetch replies in a single query
     $ids = array_column($queries, 'id');
-    // Build a placeholder list for PDO
     $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
     $replySql = "
@@ -74,10 +100,10 @@ try {
 
 } catch (Exception $e) {
     http_response_code(500);
+    error_log("[get_closed_conversation] Exception: " . $e->getMessage());
     echo json_encode([
         "success" => false,
-        "message" => "Server error",
-        "error" => $e->getMessage()
+        "message" => "Server error"
     ]);
     exit;
 }

@@ -1,6 +1,15 @@
 <?php
 // common_start.php (improved, drop-in)
 
+$envSecret = getenv('SOCKET_SECRET') ?: getenv('SOCKET_SECRET_LOCAL');
+if ($envSecret && is_string($envSecret) && strlen($envSecret) > 0) {
+    define('SOCKET_SECRET', $envSecret);
+} else {
+    // fallback: you may keep this during local dev, but remove before committing anywhere
+    // Replace the placeholder below with your generated secret if you must
+    define('SOCKET_SECRET', 'replace_this_with_a_long_random_hex_string');
+}
+
 /* Config */
 $sessionDir = __DIR__ . '/sessions';
 $sessionGcMaxLifetime = 86400;
@@ -16,7 +25,9 @@ if (!is_dir($sessionDir)) {
     }
     @chmod($sessionDir, 0700);
 }
-
+/* i don't know what should i do now i think today i have to go to ankit sir for api's url and keys
+   because i have to make perfectly work the login page and other things.
+*/
 /* compute secure flag and domain */
 $host = $_SERVER['HTTP_HOST'] ?? '';
 if (strpos($host, ':') !== false) $host = explode(':', $host, 2)[0];

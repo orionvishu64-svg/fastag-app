@@ -93,13 +93,13 @@ try {
         'expires'  => time() + AUTH_COOKIE_TTL,
         'path'     => '/',
         'secure'   => !empty($_SERVER['HTTPS']), // true only on HTTPS
-        'httponly' => true,
+        'httponly' => true, 
         'samesite' => 'Lax',
     ]);
 
     // 7) Touch last-activity timestamp in DB
     $pdo->prepare('UPDATE users SET updated_at = NOW() WHERE id = ?')->execute([$u['id']]);
-
+session_write_close();
     echo json_encode(['success' => true]); exit;
 
 } catch (Throwable $e) {
