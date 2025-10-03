@@ -18,8 +18,6 @@
     <div id="closedTicketsContainer"></div>
     <div id="openTicketContainer"></div>
   </main>
-
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script src="script.js"></script>
   <script src="conversation.js"></script>
 </body>

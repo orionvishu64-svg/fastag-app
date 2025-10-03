@@ -1,35 +1,18 @@
 <?php
-require_once 'common_start.php';
-require_once 'db.php';
-require_once __DIR__ . '/socket_auth.php'; // for verify_socket_token()
+// contact_replies.php — socket-free reply saver
+require_once __DIR__ . '/common_start.php';
+require_once __DIR__ . '/db.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
-// ---------------- Token Auth ----------------
-$userId = 0;
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-if ($authHeader && preg_match('/Bearer\s+(.+)/i', $authHeader, $m)) {
-    $token = trim($m[1]);
-    $uid = verify_socket_token($token);
-    if ($uid > 0) {
-        $userId = $uid;
-        // optional: sync into session for consistency
-        if (empty($_SESSION['user_id'])) $_SESSION['user_id'] = $uid;
-        if (empty($_SESSION['user']))     $_SESSION['user'] = ['id' => $uid];
-    }
-}
-
-// ---------------- Fallback: Session Auth ----------------
-if ($userId <= 0) {
-    $userId = (int) ($_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0);
-}
-
+// Session auth only
+$userId = (int) ($_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0);
 if ($userId <= 0) {
     echo json_encode(['success' => false, 'message' => 'Please log in']);
     exit;
 }
 
-// ---------------- Input ----------------
+// Input
 $input = json_decode(file_get_contents("php://input"), true);
 $queryId = isset($input['query_id']) ? (int)$input['query_id'] : 0;
 $message = trim($input['message'] ?? '');
@@ -39,8 +22,7 @@ if ($queryId <= 0 || $message === '') {
     exit;
 }
 
-// ---------------- Ownership check ----------------
-// use canonical $userId instead of raw $_SESSION
+// Ownership check
 $stmt = $pdo->prepare("SELECT id, status FROM contact_queries WHERE id = ? AND user_id = ? LIMIT 1");
 $stmt->execute([$queryId, $userId]);
 $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -54,7 +36,7 @@ if (!in_array($ticket['status'], ['open', 'in_progress'])) {
     exit;
 }
 
-// ---------------- Insert reply ----------------
+// Insert reply
 $ins = $pdo->prepare("
   INSERT INTO contact_replies (contact_query_id, reply_text, replied_at, is_admin)
   VALUES (?, ?, NOW(), 0)

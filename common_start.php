@@ -1,103 +1,109 @@
 <?php
-// common_start.php (improved, drop-in)
+declare(strict_types=1);
 
-$envSecret = getenv('SOCKET_SECRET') ?: getenv('SOCKET_SECRET_LOCAL');
-if ($envSecret && is_string($envSecret) && strlen($envSecret) > 0) {
-    define('SOCKET_SECRET', $envSecret);
-} else {
-    // fallback: you may keep this during local dev, but remove before committing anywhere
-    // Replace the placeholder below with your generated secret if you must
-    define('SOCKET_SECRET', 'replace_this_with_a_long_random_hex_string');
-}
+// common_start.php - safe include (guarded)
+if (defined('COMMON_START_INCLUDED')) return;
+define('COMMON_START_INCLUDED', true);
 
-/* Config */
-$sessionDir = __DIR__ . '/sessions';
-$sessionGcMaxLifetime = 86400;
-$sessionCookieLifetime = 86400;
+if (session_status() === PHP_SESSION_NONE) session_start();
 
-/* create session dir if missing */
-if (!is_dir($sessionDir)) {
-    @mkdir($sessionDir, 0700, true);
-    // Try to set owner/group if running as root; ignore failures
-    if (function_exists('posix_geteuid') && posix_geteuid() === 0) {
-        @chown($sessionDir, 'www-data');
-        @chgrp($sessionDir, 'www-data');
-    }
-    @chmod($sessionDir, 0700);
-}
-/* i don't know what should i do now i think today i have to go to ankit sir for api's url and keys
-   because i have to make perfectly work the login page and other things.
-*/
-/* compute secure flag and domain */
-$host = $_SERVER['HTTP_HOST'] ?? '';
-if (strpos($host, ':') !== false) $host = explode(':', $host, 2)[0];
-$domain = $host ?: '';
-$secure = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-           || ($_SERVER['SERVER_PORT'] ?? '') == 443);
+if (!defined('SESSION_USER_KEY')) define('SESSION_USER_KEY', 'user');
+if (!defined('ALLOW_REQUEST_USER_FALLBACK')) define('ALLOW_REQUEST_USER_FALLBACK', true);
+if (!defined('DEBUG_JSON_API')) define('DEBUG_JSON_API', false);
 
-/* ensure session path writable, else fallback to system temp */
-$finalSessionPath = $sessionDir;
-if (!is_writable($finalSessionPath)) {
-    $fallback = sys_get_temp_dir() . '/php_sessions_' . (int)getmyuid();
-    @mkdir($fallback, 0700, true);
-    if (is_writable($fallback)) {
-        $finalSessionPath = $fallback;
-        error_log("[common_start] using fallback session dir: $fallback");
-    } else {
-        error_log("[common_start] WARNING: neither $sessionDir nor $fallback is writable. Sessions may fail.");
+/** Return user array or null. Checks $_SESSION['user'], $_SESSION['user_id'], optional request fallback. */
+if (!function_exists('get_current_user')) {
+    function get_current_user(): ?array {
+        if (!empty($_SESSION[SESSION_USER_KEY]) && is_array($_SESSION[SESSION_USER_KEY])) {
+            return $_SESSION[SESSION_USER_KEY];
+        }
+        if (!empty($_SESSION['user_id'])) {
+            return ['id' => (int)$_SESSION['user_id']];
+        }
+        if (ALLOW_REQUEST_USER_FALLBACK && !empty($_REQUEST['user_id'])) {
+            return ['id' => (int)$_REQUEST['user_id']];
+        }
+        return null;
     }
 }
 
-/* apply settings */
-@ini_set('session.save_path', $finalSessionPath);
-@ini_set('session.gc_maxlifetime', (string)$sessionGcMaxLifetime);
-@ini_set('session.cookie_lifetime', (string)$sessionCookieLifetime);
-
-session_set_cookie_params([
-    'lifetime' => $sessionCookieLifetime,
-    'path'     => '/',
-    'domain'   => '',      // leave empty or set $domain if needed for cross-subdomain cookies
-    'secure'   => $secure,
-    'httponly' => true,
-    'samesite' => 'Lax',
-]);
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-/* normalize session keys so legacy files work */
-if (empty($_SESSION['user_id']) && !empty($_SESSION['user']['id'])) {
-    $_SESSION['user_id'] = (int) $_SESSION['user']['id'];
-}
-if (empty($_SESSION['user']) && !empty($_SESSION['user_id'])) {
-    $_SESSION['user'] = ['id' => (int) $_SESSION['user_id']];
-}
-
-/* helper to get canonical user id */
-if (!function_exists('current_user_id')) {
-    function current_user_id(): int {
-        return (int) ($_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0);
+/** Return current user id or null. */
+if (!function_exists('get_current_user_id')) {
+    function get_current_user_id(): ?int {
+        $u = get_current_user();
+        if ($u === null) return null;
+        if (isset($u['id'])) return (int)$u['id'];
+        if (isset($u['user_id'])) return (int)$u['user_id'];
+        return null;
     }
 }
 
-/* try to secure sessions directory (create index.html to avoid listing) */
-if (is_dir($sessionDir) && is_writable($sessionDir)) {
-    @file_put_contents($sessionDir . '/index.html', '<!-- block -->');
+/** Require login or send 401 JSON and exit. */
+if (!function_exists('require_login')) {
+    function require_login(): void {
+        if (get_current_user_id() === null) {
+            json_response(['success' => false, 'message' => 'Not authenticated'], 401);
+        }
+    }
 }
 
-/* session debug log (ensure parent folder exists and is writable) */
-$debugDir = __DIR__ . '/storage';
-@mkdir($debugDir, 0750, true);
-$debugTo = $debugDir . '/session_debug.log';
-if (is_writable($debugDir)) {
-    $now = date('Y-m-d H:i:s');
-    $sid = session_id() ?: '(no-id)';
-    $uid = $_SESSION['user_id'] ?? '(no-user)';
-    $remote = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-    $req = $_SERVER['REQUEST_URI'] ?? '(no-uri)';
-    @file_put_contents($debugTo, "[$now] IP:$remote SID:$sid UID:$uid PATH:$req\n", FILE_APPEND | LOCK_EX);
-} else {
-    // fallback log to PHP error log so you can see issues in server logs
-    error_log("[common_start] storage dir not writable: $debugDir");
+/** Send JSON and exit. */
+if (!function_exists('json_response')) {
+    function json_response($payload, int $status = 200): void {
+        if (!headers_sent()) {
+            http_response_code($status);
+            header('Content-Type: application/json; charset=utf-8');
+        }
+        if (DEBUG_JSON_API && is_array($payload)) {
+            $payload['_debug_time'] = microtime(true);
+        }
+        echo json_encode($payload);
+        exit;
+    }
+}
+
+/** Read JSON body (cached). */
+if (!function_exists('get_json_input')) {
+    function get_json_input(): array {
+        static $cached = null;
+        if ($cached !== null) return $cached;
+        $raw = file_get_contents('php://input');
+        if (!$raw) { $cached = []; return $cached; }
+        $dec = json_decode($raw, true);
+        $cached = (json_last_error() === JSON_ERROR_NONE && is_array($dec)) ? $dec : [];
+        return $cached;
+    }
+}
+
+/** Get request param from JSON body, POST, GET, then REQUEST. */
+if (!function_exists('request_param')) {
+    function request_param(string $key, $default = null) {
+        $json = get_json_input();
+        if (isset($json[$key])) return $json[$key];
+        if (isset($_POST[$key])) return $_POST[$key];
+        if (isset($_GET[$key])) return $_GET[$key];
+        if (isset($_REQUEST[$key])) return $_REQUEST[$key];
+        return $default;
+    }
+}
+
+/** Simple logger to PHP error log. */
+if (!function_exists('app_log')) {
+    function app_log(string $msg, $context = null): void {
+        if ($context !== null) {
+            $msg .= ' | ' . (is_string($context) ? $context : json_encode($context));
+        }
+        error_log('[app] ' . $msg);
+    }
+}
+
+/** Heuristic for AJAX/fetch requests. */
+if (!function_exists('is_ajax_request')) {
+    function is_ajax_request(): bool {
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') return true;
+        if (!empty($_SERVER['HTTP_ACCEPT']) &&
+            strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) return true;
+        return false;
+    }
 }

@@ -163,7 +163,6 @@
       </div>
     </div>
   </section>
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script src="contact_form.js"></script>
    <script src="script.js"></script>
 <?php include __DIR__ . '/includes/footer.php'; ?>
