@@ -1,225 +1,175 @@
-/* conversation.css */
+/* conversation.css — polished chat-like UI (keeps all IDs/classes unchanged) */
 
-/* Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+* { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: #f4f6f9;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  background: #f5f7fb;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 /* --- Header --- */
 header {
   position: sticky;
   top: 0;
-  background: linear-gradient(135deg, #0066cc, #0099ff);
+  background: linear-gradient(135deg, #0078ff, #00c6ff);
   color: #fff;
   padding: 14px 20px;
   z-index: 100;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.15);
 }
+header h2 { font-size: 1.2rem; font-weight: 600; }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-header h2 {
-  font-size: 1.3rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.back-link {
-  color: #fff;
-  text-decoration: none;
-  font-size: 0.95rem;
-  background: rgba(255,255,255,0.15);
-  padding: 6px 12px;
-  border-radius: 6px;
-  transition: background 0.3s ease;
-}
-.back-link:hover {
-  background: rgba(255,255,255,0.3);
-}
-
-/* --- Main (Scrollable area) --- */
+/* --- Main --- */
 main {
   flex: 1;
   overflow-y: auto;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  gap: 20px;
-  padding-bottom: 40px;
-  padding-top: 70px; /* 👈 push content down below sticky header */
+  gap: 18px;
 }
 
-
-/* Ensure tickets stack chronologically */
+/* Ticket Containers */
 #closedTicketsContainer, #openTicketContainer {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 18px;
 }
 
-/* Open ticket pinned to bottom */
-#openTicketContainer {
-  margin-top: auto;
-  margin-bottom: 20px;
-}
-
-/* --- Ticket card styling --- */
+/* Ticket cards */
 .ticket {
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-  transition: transform 0.2s ease;
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  transition: transform .15s ease;
 }
-.ticket:hover {
-  transform: translateY(-2px);
-}
+.ticket:hover { transform: translateY(-2px); }
 
-/* Closed tickets = warm sand */
+/* Closed tickets */
 #closedTicketsContainer .ticket {
-  background: #fdf6ec;
-  border: 1px solid #e0c9a6;
+  background: #fff8f1;
+  border: 1px solid #f0d8b4;
 }
 
-/* Open ticket = cool blue */
+/* Open tickets */
 #openTicketContainer .ticket {
-  background: linear-gradient(135deg, #d8f3ff, #eafaff);
+  background: #f0faff;
   border: 1px solid #b8e3f0;
 }
 
-/* Ticket title */
+/* Ticket titles */
 .ticket h4 {
   margin-bottom: 8px;
-  font-size: 1.1rem;
-  color: #333;
+  font-size: 1rem;
+  color: #1e293b;
+  font-weight: 600;
 }
 
 /* Ticket message */
 .ticket p {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   font-size: 0.95rem;
-  line-height: 1.5;
-  color: #444;
+  color: #334155;
 }
 
-/* --- Messages container --- */
+/* --- Conversation Thread --- */
 #openThread {
   max-height: 55vh;
   overflow-y: auto;
-  margin-top: 10px;
-  padding-right: 5px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin-top: 12px;
 }
 
 /* Base message bubble */
 .message {
-  padding: 10px 14px;
-  border-radius: 12px;
+  padding: 8px 12px 20px 12px; /* bottom space for timestamp */
+  border-radius: 14px;
   font-size: 0.9rem;
-  max-width: 75%;
+  max-width: 70%;
   word-wrap: break-word;
+  line-height: 1.3;
   position: relative;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
   animation: fadeInUp 0.25s ease;
 }
 
-/* User messages (align right, green tone) */
+/* User messages (right) */
 .message.user {
-  background: #dcf8c6;
-  border-top-right-radius: 4px;
   align-self: flex-end;
+  background: linear-gradient(135deg, #c3f7c8, #aef5b7);
+  border-top-right-radius: 6px;
   text-align: left;
-  border-left: 4px solid #34c759;
 }
 
-/* Admin messages (align left, blue tone) */
+/* Admin messages (left) */
 .message.admin {
-  background: #e7efff;
-  border-top-left-radius: 4px;
   align-self: flex-start;
+  background: linear-gradient(135deg, #e2ebff, #d4e3ff);
+  border-top-left-radius: 6px;
   text-align: left;
-  border-left: 4px solid #007aff;
 }
 
-/* Meta info (time etc.) */
-.meta {
+/* Timestamp inside bubble */
+.message .meta {
+  position: absolute;
+  bottom: 4px;
+  right: 8px;
   font-size: 0.7rem;
-  color: #666;
-  margin-top: 4px;
-  display: block;
+  color: rgba(0,0,0,0.55);
+}
+
+/* Closed ticket replies container */
+.ticket .replies {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 /* --- Reply Form --- */
 #replyForm {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
-  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
 }
-
 #replyMessage {
   flex: 1;
-  min-height: 38px; /* smaller height */
-  max-height: 100px;
-  resize: none;
-  padding: 8px 10px;
+  min-height: 40px;
+  padding: 10px 12px;
+  border-radius: 10px;
   border: 1px solid #ccc;
-  border-radius: 8px;
   font-size: 0.9rem;
-  line-height: 1.3;
-  transition: border 0.2s ease, box-shadow 0.2s ease;
+  resize: none;
 }
-
 #replyMessage:focus {
-  border-color: #0077cc;
-  box-shadow: 0 0 5px rgba(0,119,204,0.2);
   outline: none;
+  border-color: #0078ff;
+  box-shadow: 0 0 6px rgba(0,120,255,0.2);
 }
-
 #replyForm button {
   background: linear-gradient(135deg, #007aff, #00c6ff);
   color: #fff;
   border: none;
-  padding: 8px 14px; /* smaller button */
-  border-radius: 8px;
+  padding: 8px 14px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 500;
-  transition: background 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0,122,255,0.2);
 }
-
 #replyForm button:hover {
-  background: linear-gradient(135deg, #0066cc, #0099ff);
   transform: translateY(-2px);
 }
 
-#replyForm button:active {
-  transform: scale(0.96);
-}
-
-/* --- Animation for messages --- */
+/* Animation */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(5px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
