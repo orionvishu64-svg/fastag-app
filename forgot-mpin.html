@@ -8,16 +8,28 @@
   <style>.ok{display:none;color:green;font-weight:600}.err{color:#b00020}</style>
 </head>
 <body>
-  <h2 class="tophead">Forgot mPIN</h2>
+  <div class="auth-layout">
+    <aside class="info-card" aria-hidden="true">
+      <div class="info-inner">
+        <h2>Reset your mPIN</h2>
+        <p class="info-desc">We'll send a verification code to your phone so you can set a new mPIN.<br><br>Quick and secure recovery.</p>
+      </div>
+    </aside>
+
+    <div class="form-column">
+
   <div id="step1">
+    <h2 class="tophead">Forgot mPIN</h2>
     <label>Phone</label>
-    <input id="phone" pattern="\d{10}" />
-    <button id="send">Send OTP</button>
+    <input id="phone" pattern="\d{10}" name="phone" inputmode="numeric" maxlength="10" required />
+    <div class="row">
+        <span class="spacer-label"></span>
+        <button id="send" class="small" type="button">Send OTP</button>
+      </div>
     <div id="msg" class="err"></div>
-    <p class="switch-link">
-      <!--Switch link to go to login page-->
+    <div class="footer-links">
         Remembered your M-Pin? <a href="index.html">Back to Login</a>
-    </p>
+      </div>
   </div>
   <div id="step2" style="display:none">
     <label>Enter OTP</label>
@@ -55,5 +67,8 @@ $('#set').onclick=async()=>{
   location.href='index.html';
 };
 </script>
+
+    </div>
+  </div>
 </body>
 </html>

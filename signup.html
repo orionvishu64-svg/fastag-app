@@ -15,7 +15,15 @@
   </style>
 </head>
 <body>
-  <h2>New User : Signup</h2>
+  <div class="auth-layout">
+    <aside class="info-card" aria-hidden="true">
+      <div class="info-inner">
+        <h2>Create your account</h2>
+        <p class="info-desc">Sign up quickly — we'll verify your phone/email with a one-time code.<br><br>No cards required. Privacy-first. Fast setup.</p>
+      </div>
+    </aside>
+
+    <div class="form-column">
   <div class="overlay">
     <form id="signupForm" class="auth-card">
       <h2 class="header">Create an Account</h2>
@@ -172,5 +180,8 @@ $('#signupForm').onsubmit = async (e) => {
 // Wire your Google handler if needed
 $('#googleBtn').onclick = () => { location.href = 'google-auth.js'; };
 </script>
+
+    </div>
+  </div>
 </body>
 </html>

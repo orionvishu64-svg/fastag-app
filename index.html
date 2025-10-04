@@ -7,7 +7,15 @@
   <link rel="stylesheet" href="signup.css">
 </head>
 <body>
-  <h2 class="tophead">Please Login To Proceed</h2>
+  <div class="auth-layout">
+    <aside class="info-card" aria-hidden="true">
+      <div class="info-inner">
+        <h2>Welcome back</h2>
+        <p class="info-desc">Sign in to continue to your account and access secure services.<br><br>Modern security, fast checkout, and instant notifications.</p>
+      </div>
+    </aside>
+
+    <div class="form-column">
   <div>
   <form id="loginForm">
     <label>Phone</label>
@@ -16,13 +24,14 @@
     <input name="mpin" placeholder="XXX-XXX" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}" required />
     <button type="submit" id="loginBtn">Login</button>
   </form>
-
-  <p><a href="forgot-mpin.html">Forgot your mPIN?</a></p>
+<div class="footer-links">
+  <a href="forgot-mpin.html">Forgot your mPIN?</a>
   <div id="msg" style="color:#b00020"></div>
+</div>  
 
-  <p class="switch-link">
-    Don't have an account? <a href="signup.html">Sign Up</a>
-  </p>
+  <div class="footer-links">
+        Don't have an account? <a href="signup.html">Sign Up</a>
+      </div>
 </div>
 <script>
 const say = t => document.querySelector('#msg').textContent = t || '';
@@ -62,5 +71,8 @@ document.querySelector('#loginForm').onsubmit = async (e) => {
 };
 </script>
 
+
+    </div>
+  </div>
 </body>
 </html>
