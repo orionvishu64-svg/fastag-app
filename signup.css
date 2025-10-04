@@ -238,7 +238,7 @@ button.cont-secondary {
 @media (max-width:520px){
   label { min-width:80px; font-size:14px; }
   .info-card .info-inner { padding:18px; font-size:14px; }
-  .form-column > form { padding:16px; }
+  .form-column > form { padding:18px; }
 }
 
 /* ---------- Notes ----------
