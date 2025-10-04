@@ -154,7 +154,7 @@
             </form>
 
             <div style="margin-top:20px; text-align:center;">
-              <button onclick="window.location.href='conversation.php'">
+              <button  style="color: #1e75daff; hover: #100750ff;" class="btn btn-secondary" onclick="window.location.href='conversations_list.php'">
                 🗨️ View All Conversations
               </button>
             </div>

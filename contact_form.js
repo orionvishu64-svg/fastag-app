@@ -48,13 +48,19 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        if (successBox) successBox.style.display = "block";
-        if (ticketRef) ticketRef.textContent = data.ticket_id;
-        contactForm.reset();
-      } else {
-        alert("Failed to create ticket: " + (data.message || "Unknown error"));
-      }
+  if (successBox) successBox.style.display = "block";
+  if (ticketRef) ticketRef.textContent = data.ticket_id;
+  contactForm.reset();
+  // Redirect user to conversation page for this ticket
+  // Make sure the ticket_id in response is the same "public" id used by conversation.php
+  if (data.ticket_id) {
+    window.location.href = `/conversation.php?ticket_id=${encodeURIComponent(data.ticket_id)}`;
+  }
+} else {
+  alert("Failed to create ticket: " + (data.message || "Unknown error"));
+}
     })
+
     .catch(err => {
       console.error("❌ Failed to submit query:", err);
       alert("Network error while submitting query.");
