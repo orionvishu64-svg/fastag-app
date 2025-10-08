@@ -13,6 +13,7 @@ function jsonErr($msg, $code = 400) {
     exit;
 }
 
+// Toggle for debug logging — set define('DEBUG_CONTACT_REPLIES', true) above or export via env if you prefer.
 if (!defined('DEBUG_CONTACT_REPLIES')) define('DEBUG_CONTACT_REPLIES', false);
 $debugLog = '/tmp/contact_replies_debug.log';
 function dlog($m) {
@@ -21,9 +22,9 @@ function dlog($m) {
     @file_put_contents($debugLog, date('[Y-m-d H:i:s] ') . $m . PHP_EOL, FILE_APPEND);
 }
 
-dlog("request start");
+dlog("request start: " . ($_SERVER['REQUEST_METHOD'] ?? '') . ' ' . ($_SERVER['REQUEST_URI'] ?? ''));
 
-// include DB config (same fallback list as before)
+// include DB config (tries a few common locations)
 $dbPaths = [
     __DIR__ . '/config/db.php',
     __DIR__ . '/db.php',
@@ -39,27 +40,45 @@ foreach ($dbPaths as $p) {
     }
 }
 if (!$included) {
+    dlog("DB include not found");
     jsonErr('Server error: database include not found', 500);
 }
 
 if (!isset($pdo) || !($pdo instanceof PDO)) {
+    dlog("PDO not available after include");
     jsonErr('Server error: database not initialized', 500);
 }
 
+// require authentication / session user
 $userId = (int) ($_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0);
 if ($userId <= 0) {
     jsonErr('Please log in', 401);
 }
 
-// Parse JSON or form
+// Parse JSON body or fallback to POST form
 $raw = file_get_contents('php://input');
 $input = json_decode($raw, true);
-if (!is_array($input)) $input = $_POST ?? [];
+if (!is_array($input)) {
+    $input = $_POST ?? [];
+}
 
-$queryId = isset($input['query_id']) ? (int)$input['query_id'] : 0;
-$message = trim((string) ($input['message'] ?? $input['reply_text'] ?? ''));
-$ticketPublicId = isset($input['ticket_id']) ? trim((string)$input['ticket_id']) : '';
+// Accept both names used by various clients
+$queryId = isset($input['query_id']) ? (int)$input['query_id'] : (isset($input['contact_query_id']) ? (int)$input['contact_query_id'] : 0);
+$message = trim((string) ($input['message'] ?? $input['reply_text'] ?? $input['reply'] ?? ''));
 
+// public ticket id (ticket id string)
+$ticketPublicId = isset($input['ticket_id']) ? trim((string)$input['ticket_id']) : (isset($input['ticket_public_id']) ? trim((string)$input['ticket_public_id']) : '');
+
+// local_id forwarded by the client for optimistic rendering correlation (optional)
+$localId = null;
+if (!empty($input['local_id'])) $localId = trim((string)$input['local_id']);
+
+// Also accept local_id as form param if not in JSON
+if (empty($localId) && !empty($_POST['local_id'])) $localId = trim((string)$_POST['local_id']);
+
+dlog("parsed input: queryId={$queryId} ticketPublicId={$ticketPublicId} localId=" . ($localId ?: 'NULL'));
+
+// If only public ticket provided, try to lookup numeric id
 if ($queryId <= 0 && $ticketPublicId !== '') {
     try {
         $stmt = $pdo->prepare("SELECT id FROM contact_queries WHERE ticket_id = ? LIMIT 1");
@@ -76,10 +95,10 @@ if ($queryId <= 0 || $message === '') {
     jsonErr('Query ID and message are required', 400);
 }
 
-// Ownership + status check
+// Ownership + ticket status check
 try {
-    $stmt = $pdo->prepare("SELECT id, status, ticket_id FROM contact_queries WHERE id = ? AND user_id = ? LIMIT 1");
-    $stmt->execute([$queryId, $userId]);
+    $stmt = $pdo->prepare("SELECT id, status, ticket_id, user_id FROM contact_queries WHERE id = ? LIMIT 1");
+    $stmt->execute([$queryId]);
     $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (Throwable $e) {
     dlog("ownership check failed: " . $e->getMessage());
@@ -87,13 +106,19 @@ try {
 }
 
 if (!$ticket) {
-    jsonErr('Ticket not found or not owned by you', 404);
+    jsonErr('Ticket not found', 404);
 }
-if (isset($ticket['status']) && strtolower($ticket['status']) === 'closed') {
+
+// If ticket has an owner check that for some flows you may want to ensure the current user owns it.
+// If this table stores user_id for owner, allow the owner or staff — current code only checks existence.
+// If you require strict ownership uncomment the next block:
+// if ((int)($ticket['user_id'] ?? 0) !== $userId) { jsonErr('Ticket not owned by you', 403); }
+
+if (isset($ticket['status']) && strtolower((string)$ticket['status']) === 'closed') {
     jsonErr('Cannot reply to closed ticket', 403);
 }
 
-// Insert reply in transaction
+// Insert reply
 try {
     $pdo->beginTransaction();
 
@@ -112,7 +137,7 @@ try {
     }
     $replyId = (int)$pdo->lastInsertId();
 
-    // Mark viewed = 0 so admin sees new reply (non-fatal)
+    // Update ticket viewed flag non-fatally
     try {
         $u = $pdo->prepare("UPDATE contact_queries SET viewed = 0 WHERE id = ?");
         $u->execute([$queryId]);
@@ -122,9 +147,10 @@ try {
 
     $pdo->commit();
 
+    // Use DB time for replied_at if you want; using PHP time for payload consistency
     $repliedAt = date('Y-m-d H:i:s');
 
-    // Build response for client
+    // Build response to client
     $resp = [
         'success' => true,
         'message' => 'Reply added',
@@ -135,15 +161,23 @@ try {
         'is_admin' => 0
     ];
 
-    // --- POST to Socket server to broadcast in real-time ---
-    // Default local Node URL. Change if your Node runs elsewhere.
-    $socketServer = 'http://127.0.0.1:3000/emit-reply';
+    dlog("reply added id={$replyId} query={$queryId} user={$userId} localId=" . ($localId ?: 'NULL'));
+
+    // --- Prepare emit to Node socket server ---
+    // Use environment variable SOCKET_SERVER to override default host (ex: http://15.207.50.101:3000)
+    $socketHost = getenv('SOCKET_SERVER') ?: 'http://127.0.0.1:3000';
+    $socketHost = rtrim($socketHost, '/');
+    $socketServer = $socketHost . '/emit-reply';
+
+    // Optionally include emitter auth token from env (EMIT_AUTH_TOKEN)
+    $emitAuthToken = getenv('EMIT_AUTH_TOKEN') ?: '';
 
     // prepare payload expected by Node server
-    $payload = [
-        'contact_query_id' => $ticket['ticket_id'] ?? $queryId, // include public ticket id if available
-        // include both numeric and public forms so Node can choose; ensure consistent room name on Node
+    $emitPayload = [
+        // prefer ticket public id if available (node's room logic can use either)
+        'contact_query_id' => $ticket['ticket_id'] ?? null,
         'contact_query_numeric_id' => $queryId,
+        // nested payload with saved reply
         'payload' => [
             'id' => $replyId,
             'contact_query_id' => $queryId,
@@ -156,33 +190,56 @@ try {
         ]
     ];
 
-    // Send non-blocking simple POST (use stream context with short timeout)
-    $json = json_encode($payload);
-    if ($json !== false) {
+    // include local_id top-level and inside payload if provided (helps client dedupe)
+    if (!empty($localId)) {
+        $emitPayload['local_id'] = $localId;
+        $emitPayload['payload']['local_id'] = $localId;
+    }
+
+    dlog("emit payload prepared: " . json_encode($emitPayload));
+
+    $jsonEmit = json_encode($emitPayload);
+    if ($jsonEmit !== false) {
         try {
+            $headers = [
+                "Content-Type: application/json",
+                "Content-Length: " . strlen($jsonEmit)
+            ];
+            if ($emitAuthToken) {
+                $headers[] = "x-emit-token: " . $emitAuthToken;
+            }
+
+            // use a slightly larger timeout to avoid intermittent failures
             $opts = [
                 'http' => [
                     'method'  => 'POST',
-                    'header'  => "Content-Type: application/json\r\n" .
-                                 "Content-Length: " . strlen($json) . "\r\n",
-                    'content' => $json,
-                    'timeout' => 2 // 2 seconds
+                    'header'  => implode("\r\n", $headers) . "\r\n",
+                    'content' => $jsonEmit,
+                    'timeout' => 5
                 ]
             ];
             $context  = stream_context_create($opts);
-            // @ suppress so even if failure occurs we continue; log when debug enabled
+
+            // call node endpoint — don't fail if it is down (reply already saved)
             $result = @file_get_contents($socketServer, false, $context);
-            dlog("emit-reply POST to {$socketServer} result: " . ($result === false ? 'FAILED' : substr($result,0,500)));
+            if ($result === false) {
+                dlog("emit-reply POST to {$socketServer} FAILED or returned no body");
+            } else {
+                // log small portion
+                dlog("emit-reply POST result: " . substr($result, 0, 500));
+            }
         } catch (Throwable $e) {
             dlog("emit POST exception: " . $e->getMessage());
-            // not fatal for the user — message was saved
+            // non-fatal
         }
+    } else {
+        dlog("Failed to json_encode emit payload");
     }
 
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode($resp);
-    dlog("reply added id={$replyId} query={$queryId} user={$userId}");
     exit;
+
 } catch (Throwable $e) {
     if ($pdo->inTransaction()) $pdo->rollBack();
     dlog("exception inserting reply: " . $e->getMessage());

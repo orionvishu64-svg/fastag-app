@@ -1,9 +1,3 @@
-/* conversation.js — fixed to always use ticket_id when available
-   - If window.TICKET_PUBLIC_ID is provided, calls /get_conversation.php?ticket_id=...
-   - Otherwise falls back to latest-ticket-for-session behaviour (original)
-   - Robust error handling and safe JSON parsing
-*/
-
 (() => {
   const ENDPOINT_GET_CONV = '/get_conversation.php';          // GET ?ticket_id=...
   const ENDPOINT_GET_CLOSED = '/get_closed_conversation.php';
