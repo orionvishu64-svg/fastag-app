@@ -104,8 +104,8 @@ try {
 
   <!-- socket.io and your existing scripts -->
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/js/chat-socket.js"></script>
   <script src="script.js"></script>
   <script src="conversation.js"></script>
-  <script src="/js/chat-socket.js"></script>
 </body>
 </html>
