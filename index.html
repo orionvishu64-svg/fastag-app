@@ -11,67 +11,79 @@
     <aside class="info-card" aria-hidden="true">
       <div class="info-inner">
         <h2>Welcome back</h2>
-        <p class="info-desc">Sign in to continue to your account and access secure services.<br><br>Modern security, fast checkout, and instant notifications.</p>
+        <p class="info-desc">
+          Sign in to continue to your account and access secure services.<br><br>
+          Modern security, fast checkout, and instant notifications.
+        </p>
       </div>
     </aside>
 
     <div class="form-column">
-  <div>
-  <form id="loginForm">
-    <label>Phone</label>
-    <input name="phone" inputmode="numeric" pattern="\d{10}" maxlength="10" required />
-    <label>M-PIN</label>
-    <input name="mpin" placeholder="XXX-XXX" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}" required />
-    <button type="submit" id="loginBtn">Login</button>
-  </form>
-<div class="footer-links">
-  <a href="forgot-mpin.html">Forgot your mPIN?</a>
-  <div id="msg" style="color:#b00020"></div>
-</div>  
+      <div>
+        <form id="loginForm">
+          <label>Phone</label>
+          <input name="phone" inputmode="numeric" pattern="\d{10}" maxlength="10" required />
+          <label>M-PIN</label>
+          <input name="mpin" placeholder="XXX-XXX" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}" required />
+          <button type="submit" id="loginBtn">Login</button>
+        </form>
 
-  <div class="footer-links">
-        Don't have an account? <a href="signup.html">Sign Up</a>
+        <div class="footer-links">
+          <a href="forgot-mpin.html">Forgot your mPIN?</a>
+          <div id="msg" style="color:#b00020"></div>
+        </div>  
+
+        <div class="footer-links">
+          Don't have an account? <a href="signup.html">Sign Up</a>
+        </div>
       </div>
-</div>
-<script>
-const say = t => document.querySelector('#msg').textContent = t || '';
 
-document.querySelector('#loginForm').onsubmit = async (e) => {
-  e.preventDefault(); say('');
-  const fd    = new FormData(e.target);
-  const phone = (fd.get('phone') || '').trim();
-  const mpin  = (fd.get('mpin')  || '').trim();
+      <script>
+      const say = t => document.querySelector('#msg').textContent = t || '';
 
-  if (!/^\d{10}$/.test(phone)) return say('Enter 10-digit phone');
-  if (!/^\d{4,6}$/.test(mpin))  return say('Invalid mPIN');
+      document.querySelector('#loginForm').onsubmit = async (e) => {
+        e.preventDefault();
+        say('');
+        const fd    = new FormData(e.target);
+        const phone = (fd.get('phone') || '').trim();
+        const mpin  = (fd.get('mpin')  || '').trim();
 
-  try {
-    const r = await fetch('/login.php', {               // absolute path
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone, mpin })
-    });
+        if (!/^\d{10}$/.test(phone)) return say('Enter 10-digit phone');
+        if (!/^\d{4,6}$/.test(mpin))  return say('Invalid mPIN');
 
-    const text = await r.text();                        // debug friendly
-    let d;
-    try { d = JSON.parse(text); }
-    catch { console.error('Non-JSON response:', text); return say('Server error'); }
+        try {
+          const r = await fetch('/login.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, mpin })
+          });
 
-    if (!r.ok || !d.success) {
-      console.error('Login error:', d);
-      return say(d.error || 'Login failed');
-    }
+          const text = await r.text();
+          let d;
+          try { d = JSON.parse(text); }
+          catch {
+            console.error('Non-JSON response:', text);
+            return say('Server error');
+          }
 
-    // ✅ success — go to partner form
-    window.location.assign('/partner_form.php');        // absolute path
-  } catch (err) {
-    console.error(err);
-    say('Network error');
-  }
-};
-</script>
+          if (!r.ok || !d.success) {
+            console.error('Login error:', d);
+            return say(d.error || 'Login failed');
+          }
 
+          // ✅ success — redirect conditionally
+          if (d.partner_required) {
+            window.location.assign('/partner_form.php');
+          } else {
+            window.location.assign('/dashboard.php');
+          }
 
+        } catch (err) {
+          console.error(err);
+          say('Network error');
+        }
+      };
+      </script>
     </div>
   </div>
 </body>

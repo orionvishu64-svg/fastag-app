@@ -137,11 +137,11 @@ $err = function_exists('flash_get') ? flash_get('error') : null;
       <label for="profile-name">Name</label>
       <input id="profile-name" name="name" type="text" value="<?= h($user['name'] ?? '') ?>" required>
 
-      <label for="profile-email">Email (readonly)</label>
+      <label for="profile-email">Email</label>
       <input id="profile-email" name="email" type="email" value="<?= h($user['email'] ?? '') ?>" readonly>
 
       <label for="profile-phone">Phone</label>
-      <input id="profile-phone" name="phone" type="tel" value="<?= h($user['phone'] ?? '') ?>">
+      <input id="profile-phone" name="phone" type="tel" value="<?= h($user['phone'] ?? '') ?>" readonly>
 
       <div class="form-actions">
         <button id="profile-save-btn" class="btn btn-primary" type="submit">Update Profile</button>

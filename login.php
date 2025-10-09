@@ -93,16 +93,39 @@ try {
         'expires'  => time() + AUTH_COOKIE_TTL,
         'path'     => '/',
         'secure'   => !empty($_SERVER['HTTPS']), // true only on HTTPS
-        'httponly' => true, 
+        'httponly' => true,
         'samesite' => 'Lax',
     ]);
 
     // 7) Touch last-activity timestamp in DB
     $pdo->prepare('UPDATE users SET updated_at = NOW() WHERE id = ?')->execute([$u['id']]);
-session_write_close();
-    echo json_encode(['success' => true]); exit;
+    session_write_close();
+
+    // --- NEW: determine whether partner form is required for this user ---
+    $partner_required = false;
+    try {
+        // Count gv_partners and partners rows for this user.
+        $stmt1 = $pdo->prepare('SELECT COUNT(*) FROM gv_partners WHERE user_id = ?');
+        $stmt1->execute([(int)$u['id']]);
+        $gv_count = (int) $stmt1->fetchColumn();
+
+        $stmt2 = $pdo->prepare('SELECT COUNT(*) FROM partners WHERE user_id = ?');
+        $stmt2->execute([(int)$u['id']]);
+        $partner_count = (int) $stmt2->fetchColumn();
+
+        // Require partner form only if both tables have zero rows for this user.
+        $partner_required = ($gv_count === 0 && $partner_count === 0);
+    } catch (Throwable $ex) {
+        // If DB check fails, log error and default to not forcing partner form (safer for login continuity).
+        error_log('login.php: partner check failed for user '.$u['id'].' — '.$ex->getMessage());
+        $partner_required = false;
+    }
+
+    echo json_encode(['success' => true, 'partner_required' => $partner_required]);
+    exit;
 
 } catch (Throwable $e) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]); exit;
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    exit;
 }
