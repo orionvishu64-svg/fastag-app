@@ -1,29 +1,20 @@
-(if (window.__chatSocketAlreadyInitialized) { console.warn("chat-socket.js already initialized; skipping duplicate load."); return; }
-window.__chatSocketAlreadyInitialized = true;
-window.__chatSocketInitCount = (window.__chatSocketInitCount || 0) + 1;
-console.log("chat-socket.js init count:", window.__chatSocketInitCount);
-
-)
 // chat-socket.js - robust client for ticket chat (replace /var/www/html/js/chat-socket.js)
-// Paste this full file replacing the old one.
-
 (function () {
   'use strict';
 
-  // --- Config (can be overridden by page) ---
+  // config overrides
   const SOCKET_SERVER = (typeof window.SOCKET_SERVER_URL !== 'undefined' && window.SOCKET_SERVER_URL)
     ? String(window.SOCKET_SERVER_URL).replace(/\/$/, '')
-    : ''; // empty -> same origin /socket.io proxy
-
+    : '';
   const PUBLIC_TICKET = (window.TICKET_PUBLIC_ID || '').toString().trim();
   const CURRENT_USER_ID = (typeof window.CURRENT_USER_ID !== 'undefined') ? window.CURRENT_USER_ID : null;
+  let contactQueryId = null;
 
   if (!PUBLIC_TICKET) {
     console.error('chat-socket: Missing PUBLIC_TICKET (window.TICKET_PUBLIC_ID)');
     return;
   }
 
-  // --- Helpers ---
   function log(...a) { console.log('chat-socket:', ...a); }
   function warn(...a) { console.warn('chat-socket:', ...a); }
   function err(...a) { console.error('chat-socket:', ...a); }
@@ -36,38 +27,24 @@ console.log("chat-socket.js init count:", window.__chatSocketInitCount);
   function normText(s) {
     if (!s) return '';
     return s.toString()
-      .replace(/^[^A-Za-z0-9]*/,'')
-      .replace(/^[A-Za-z0-9_#-]+:\s*/,'')
-      .toLowerCase()
-      .replace(/[^\w\s]/g, ' ')
+      .replace(/^[^\w]*/,'')
       .replace(/\s+/g, ' ')
       .trim()
-      .slice(0, 300);
+      .slice(0, 500)
+      .toLowerCase();
   }
 
   function genLocalId() {
     return `local_${Date.now().toString(36)}_${Math.floor(Math.random()*90000+10000).toString(36)}`;
   }
 
-  // --- Dedupe set (keys) ---
-  const seen = new Set();
-  function messageKey(msg) {
-    // If server-side id exists, build a stable key that does NOT depend on timestamp
-    const id = msg.id || msg.reply_id || msg.reply_db_id || '';
-    const local = msg.local_id || msg.localId || msg.localid || '';
-    if (id) {
-      // stable key based on id + local if present
-      return `${String(id)}|${String(local)}`;
-    }
-    // fallback: use normalized text plus timestamp (less stable)
-    const text = (msg.reply_text || msg.message || '').toString().replace(/\s+/g, ' ').slice(0, 200);
-    const ts = msg.replied_at || msg.created_at || msg.timestamp || '';
-    return `NOID|${local}|${text}|${ts}`;
-  }
-  function markSeen(msg) { const k = messageKey(msg); if (k) { seen.add(k); if (seen.size > 5000) { const arr = Array.from(seen).slice(-2000); seen.clear(); arr.forEach(x => seen.add(x)); } } }
-  function isSeen(msg) { const k = messageKey(msg); return !!k && seen.has(k); }
+  // seen store
+  const seenIds = new Set();
+  const seenLocal = new Set();
+  const seenHashes = new Set();
+  const localMap = new Map(); // local_id -> node (optimistic)
 
-  // --- Container discovery ---
+  // container search
   const CONTAINER_SELECTORS = [
     '#chat-messages',
     '#messages_container',
@@ -87,25 +64,12 @@ console.log("chat-socket.js init count:", window.__chatSocketInitCount);
       try {
         const el = document.querySelector(sel);
         if (el) return el;
-      } catch (e) { /* ignore bad selector */ }
+      } catch (e) {}
     }
     return null;
   }
 
-  function waitForContainer(timeoutMs = 3000) {
-    return new Promise((resolve, reject) => {
-      const existing = findContainerOnce();
-      if (existing) return resolve(existing);
-      const obs = new MutationObserver(() => {
-        const el = findContainerOnce();
-        if (el) { obs.disconnect(); resolve(el); }
-      });
-      obs.observe(document.body, { childList: true, subtree: true });
-      setTimeout(() => { obs.disconnect(); const el = findContainerOnce(); if (el) resolve(el); else reject(new Error('container not found')); }, timeoutMs);
-    });
-  }
-
-  // Build a small index of nodes from current DOM (replyId/localId/text/ts)
+  // build index of existing DOM replies (used to mark seen)
   function buildDOMIndex() {
     const idx = [];
     for (const sel of CONTAINER_SELECTORS) {
@@ -115,100 +79,91 @@ console.log("chat-socket.js init count:", window.__chatSocketInitCount);
         const nodes = Array.from(container.children || []);
         for (const n of nodes) {
           if (!container.contains(n)) continue;
-          // read reply id or local id attributes produced by our client
           const replyId = n.dataset && (n.dataset.replyId || n.dataset.reply_id) ? (n.dataset.replyId || n.dataset.reply_id) : null;
-          const localId = n.dataset && n.dataset.localId ? n.dataset.localId : null;
-          const bubble = (n.querySelector && (n.querySelector('.bubble') || n.querySelector('.message') || n.querySelector('.text')));
+          const localId = n.dataset && (n.dataset.localId || n.dataset.local_id || n.dataset.localid) ? (n.dataset.localId || n.dataset.local_id || n.dataset.localid) : null;
+          const bubble = (n.querySelector && (n.querySelector('.bubble') || n.querySelector('.message') || n.querySelector('.text') || n.querySelector('.chat-message')));
           const rawText = bubble ? (bubble.textContent || '') : (n.textContent || '');
-          const tsEl = (n.querySelector && (n.querySelector('.ts') || n.querySelector('time') || n.querySelector('.time')));
+          const tsEl = (n.querySelector && (n.querySelector('.ts') || n.querySelector('time') || n.querySelector('.time') || n.querySelector('.meta')));
           const rawTs = tsEl ? (tsEl.textContent || tsEl.innerText || '') : '';
           const normalized = normText(rawText);
           if (!normalized) continue;
           idx.push({ sel, node: n, text: normalized, ts: rawTs ? rawTs.toString().trim() : '', localId: localId || null, replyId: replyId || null });
         }
-      } catch (e) { /* ignore */ }
+      } catch (e) {}
     }
     return idx;
   }
 
+  // create node that matches server markup (class=reply, .meta, .text)
   function createMessageNode(msg, { localId } = {}) {
     const el = document.createElement('div');
     const isAdmin = Number(msg.is_admin) === 1;
-    el.className = isAdmin ? 'msg admin' : 'msg user';
+    el.className = isAdmin ? 'reply admin' : 'reply user';
     if (msg.id || msg.reply_id) el.setAttribute('data-reply-id', String(msg.id || msg.reply_id));
     if (localId) el.setAttribute('data-local-id', String(localId));
     const who = isAdmin ? (msg.admin_identifier || 'Admin') : (msg.user_name || 'You');
-    const txt = msg.reply_text || msg.message || '';
+    const txt = msg.reply_text || msg.message || msg.text || '';
     const ts = msg.replied_at || msg.created_at || new Date().toISOString();
-    el.innerHTML = `<div class="bubble"><strong>${escapeHtml(who)}:</strong> ${escapeHtml(txt)}</div><div class="ts">${escapeHtml(ts)}</div>`;
+    el.innerHTML = `<div class="meta">${escapeHtml(who)} | ${escapeHtml(String(ts))}</div><div class="text chat-message" data-text="${escapeHtml(String(txt).slice(0,200))}" data-ts="${escapeHtml(String(ts))}">${escapeHtml(txt)}</div>`;
     return el;
   }
 
-  function appendToChat(msg, opts = {}) {
-    try {
-      if (isSeen(msg)) return false;
-      const container = findContainerOnce();
-      if (!container) {
-        warn('chat-socket: messages container not found (tried selectors)');
-        return false;
-      }
-      // Avoid appending the same DOM node object twice
-      if (msg._appendedNode && container.contains(msg._appendedNode)) {
-        markSeen(msg);
-        return false;
-      }
-      const node = createMessageNode(msg, { localId: opts.localId || null });
-      container.appendChild(node);
-      container.scrollTop = container.scrollHeight;
-      // mark seen using messageKey (prefers id/local)
-      const toMark = Object.assign({}, msg);
-      if (opts.localId) toMark.local_id = opts.localId;
-      markSeen(toMark);
-      // store reference on the msg object to avoid double-appending same object in memory
-      msg._appendedNode = node;
-      return true;
-    } catch (e) {
-      err('appendToChat error', e);
-      return false;
-    }
-  }
-
-  // Mark existing DOM nodes as seen (important to avoid initial fetch duplicates)
   function markSeenFromDOMIndex() {
     const index = buildDOMIndex();
-    let count = 0;
     for (const item of index) {
       const fake = { reply_text: item.text, replied_at: item.ts };
       if (item.replyId) fake.reply_id = item.replyId;
       if (item.localId) fake.local_id = item.localId;
-      markSeen(fake);
-      count++;
+      // mark by id/local/hash
+      if (fake.reply_id) seenIds.add(String(fake.reply_id));
+      if (fake.local_id) seenLocal.add(String(fake.local_id));
+      if (item.text) seenHashes.add(item.text);
     }
-    return count;
+    return index.length;
   }
 
-  // Check if incoming server message matches something already in DOM/optimistic
+  function isSeen(msg) {
+    const id = msg.id || msg.reply_id || msg.reply_db_id || null;
+    const local = msg.local_id || msg.localId || msg.localid || null;
+    if (id && seenIds.has(String(id))) return true;
+    if (local && seenLocal.has(String(local))) return true;
+    const h = normText(msg.reply_text || msg.message || msg.text || '');
+    if (h && seenHashes.has(h)) return true;
+    return false;
+  }
+
+  // incoming message fuzzy match against existing DOM (local id, reply-id, or fuzzy text+ts)
   function incomingMatchesExisting(msg) {
-    // 1) local_id exact match (most reliable)
+    // local id match
     const local = msg.local_id || msg.localId || msg.localid;
     if (local) {
-      const el = document.querySelector(`[data-local-id="${CSS.escape(String(local))}"]`);
-      if (el) {
-        // update reply-id if server provided one
-        if (msg.id || msg.reply_id) el.setAttribute('data-reply-id', String(msg.id || msg.reply_id));
-        markSeen(msg);
-        return true;
+      try {
+        const el = document.querySelector(`[data-local-id="${CSS.escape(String(local))}"]`);
+        if (el) {
+          if (msg.id || msg.reply_id) el.setAttribute('data-reply-id', String(msg.id || msg.reply_id));
+          seenLocal.add(String(local));
+          if (msg.id || msg.reply_id) seenIds.add(String(msg.id || msg.reply_id));
+          return true;
+        }
+      } catch (e) {
+        const el = document.querySelector(`[data-local-id="${String(local)}"]`);
+        if (el) { if (msg.id || msg.reply_id) el.setAttribute('data-reply-id', String(msg.id || msg.reply_id)); seenLocal.add(String(local)); return true; }
       }
     }
 
-    // 2) server id exact match (use stable key)
+    // db id match
     const id = msg.id || msg.reply_id || msg.reply_db_id;
     if (id) {
-      const el = document.querySelector(`[data-reply-id="${CSS.escape(String(id))}"]`);
-      if (el) { markSeen(msg); return true; }
+      try {
+        const el = document.querySelector(`[data-reply-id="${CSS.escape(String(id))}"]`);
+        if (el) { seenIds.add(String(id)); return true; }
+      } catch (e) {
+        const el = document.querySelector(`[data-reply-id="${String(id)}"]`);
+        if (el) { seenIds.add(String(id)); return true; }
+      }
     }
 
-    // 3) fallback fuzzy match by normalized text + timestamp within delta
+    // fuzzy text+ts matching against DOM index
     const index = buildDOMIndex();
     const replyNorm = normText(msg.reply_text || msg.message || '');
     const replyTs = (msg.replied_at || msg.created_at || '').toString().trim();
@@ -218,22 +173,53 @@ console.log("chat-socket.js init count:", window.__chatSocketInitCount);
       const shortPartial = replyNorm.split(' ').slice(0,4).join(' ');
       if (d.text.includes(replyNorm) || replyNorm.includes(d.text) || (shortPartial && d.text.includes(shortPartial))) {
         if (replyTs && d.ts) {
-          const t1 = Date.parse(replyTs);
-          const t2 = Date.parse(d.ts);
-          if (!isNaN(t1) && !isNaN(t2)) {
-            if (Math.abs(t1 - t2) <= 15000) { markSeen(msg); return true; } // 15s tolerance
-          } else {
-            markSeen(msg); return true;
+          const t1 = Date.parse(replyTs), t2 = Date.parse(d.ts);
+          if (!isNaN(t1) && !isNaN(t2) && Math.abs(t1 - t2) <= 15000) { 
+            // match
+            if (msg.id) seenIds.add(String(msg.id));
+            if (msg.local_id) seenLocal.add(String(msg.local_id));
+            seenHashes.add(replyNorm);
+            return true;
           }
         } else {
-          if (replyNorm.length > 4) { markSeen(msg); return true; }
+          if (replyNorm.length > 4) { 
+            if (msg.id) seenIds.add(String(msg.id));
+            if (msg.local_id) seenLocal.add(String(msg.local_id));
+            seenHashes.add(replyNorm);
+            return true;
+          }
         }
       }
     }
     return false;
   }
 
-  // --- Socket + init flow ---
+  // append (and mark seen) - uses server-like markup
+  function appendToChat(msg, opts = {}) {
+    try {
+      if (isSeen(msg)) return false;
+      const container = findContainerOnce();
+      if (!container) {
+        warn('chat-socket: messages container not found (tried selectors)');
+        return false;
+      }
+      const node = createMessageNode(msg, { localId: opts.localId || null });
+      container.appendChild(node);
+      container.scrollTop = container.scrollHeight;
+
+      // mark sees
+      const id = msg.id || msg.reply_id || msg.reply_db_id;
+      const local = opts.localId || msg.local_id || msg.localId || msg.localid;
+      const h = normText(msg.reply_text || msg.message || msg.text || '');
+      if (id) seenIds.add(String(id));
+      if (local) { seenLocal.add(String(local)); if (opts.localId) localMap.set(String(local), node); }
+      if (h) seenHashes.add(h);
+      msg._appendedNode = node;
+      return true;
+    } catch (e) { err('appendToChat error', e); return false; }
+  }
+
+  // lookup numeric id for join
   async function lookupContactQueryId() {
     try {
       const url = `/lookup_ticket_id.php?ticket_id=${encodeURIComponent(PUBLIC_TICKET)}&json=1`;
@@ -250,141 +236,182 @@ console.log("chat-socket.js init count:", window.__chatSocketInitCount);
 
   async function init() {
     try {
-      await waitForContainer(2500);
-      log('messages container present (or will be found).');
-    } catch (e) {
-      warn('messages container not found quickly; continuing.');
-    }
+      // wait for container briefly
+      const container = findContainerOnce();
+      if (!container) {
+        // don't block; allow page to load HTML. markSeenFromDOMIndex will still find nodes if present later.
+        log('chat-socket: messages container not immediately available (continuing).');
+      }
 
-    // Mark existing server-rendered DOM messages as seen so we don't re-append them
-    const marked = markSeenFromDOMIndex();
-    if (marked) log('chat-socket: marked existing DOM messages as seen:', marked);
+      const markedCount = markSeenFromDOMIndex();
+      if (markedCount) log('chat-socket: marked existing DOM messages as seen:', markedCount);
 
-    const contact_query_id = await lookupContactQueryId();
-    if (contact_query_id) log('Resolved contact_query_id:', contact_query_id);
+      // resolve numeric contact_query_id if available
+      const resolved = await lookupContactQueryId();
+      if (resolved) {
+        contactQueryId = resolved;
+        log('Resolved contact_query_id:', contactQueryId);
+      }
 
-    const ioOpts = { transports: ['websocket','polling'], reconnection: true, reconnectionAttempts: Infinity, reconnectionDelay: 2000, withCredentials: true };
-    if (!SOCKET_SERVER) ioOpts.path = ioOpts.path || '/socket.io';
-    const socket = SOCKET_SERVER ? io(SOCKET_SERVER, ioOpts) : io(ioOpts);
+      const ioOpts = { transports: ['websocket','polling'], reconnection: true, reconnectionAttempts: Infinity, reconnectionDelay: 2000, withCredentials: true };
+      if (!SOCKET_SERVER) ioOpts.path = ioOpts.path || '/socket.io';
+      const socket = SOCKET_SERVER ? io(SOCKET_SERVER, ioOpts) : io(ioOpts);
 
-    socket.on('connect', () => {
-      log('CONNECTED -> socket.id:', socket.id);
-      const joinPayload = { contact_query_id: contact_query_id, ticket_public_id: PUBLIC_TICKET, user_type: 'user', user_id: CURRENT_USER_ID || null };
-      try { socket.emit('join_ticket', joinPayload); log('Emitted join_ticket for:', joinPayload); } catch (e) { warn('join_ticket emit failed', e); }
-    });
+      socket.on('connect', () => {
+        log('CONNECTED -> socket.id:', socket.id);
+        const joinPayload = {
+          contact_query_id: contactQueryId || null,
+          ticket_public_id: PUBLIC_TICKET,
+          user_type: 'user',
+          user_id: CURRENT_USER_ID || null
+        };
+        try {
+          socket.emit('join_ticket', joinPayload);
+          log('Emitted join_ticket for:', joinPayload);
+        } catch (e) { warn('join_ticket emit failed', e); }
+      });
 
-    socket.on('reconnect', (n) => {
-      log('RECONNECTED -> re-emitting join_ticket', n);
-      try { socket.emit('join_ticket', { contact_query_id: contact_query_id, ticket_public_id: PUBLIC_TICKET, user_type: 'user', user_id: CURRENT_USER_ID || null }); } catch (e) { warn('rejoin failed', e); }
-    });
+      socket.on('reconnect', (n) => {
+        log('RECONNECTED -> re-emitting join_ticket', n);
+        try {
+          socket.emit('join_ticket', {
+            contact_query_id: contactQueryId || null,
+            ticket_public_id: PUBLIC_TICKET,
+            user_type: 'user',
+            user_id: CURRENT_USER_ID || null
+          });
+        } catch (e) { warn('rejoin failed', e); }
+      });
 
-    socket.on('reconnect_attempt', (n) => log('reconnect attempt:', n));
-    socket.on('connect_error', (e) => warn('connect_error:', e && e.message ? e.message : e));
-    socket.on('disconnect', (reason) => warn('socket disconnected:', reason));
+      socket.on('reconnect_attempt', (n) => log('reconnect attempt:', n));
+      socket.on('connect_error', (e) => warn('connect_error:', e && e.message ? e.message : e));
+      socket.on('disconnect', (reason) => warn('socket disconnected:', reason));
 
-    // Load initial thread and append only unseen replies
-    try {
-      const t = await fetch(`/get_conversation.php?ticket_id=${encodeURIComponent(PUBLIC_TICKET)}&json=1`, { credentials: 'include', headers: { Accept: 'application/json' } });
-      if (!t.ok) throw new Error('Load conversation HTTP ' + t.status);
-      const json = await t.json().catch(()=>null);
-      if (!json) { warn('get_conversation returned no JSON'); }
-      else {
-        const replies = Array.isArray(json.replies) ? json.replies : (Array.isArray(json) ? json : []);
-        let appended = 0, skipped = 0;
-        // build index of current DOM for matching
-        const currentIndex = buildDOMIndex();
-
-        for (const r of replies) {
-          if (isSeen(r)) { skipped++; continue; }
-          let exists = false;
-          if (r.id || r.reply_id) {
-            const el = document.querySelector(`[data-reply-id="${CSS.escape(String(r.id || r.reply_id))}"]`);
-            if (el) exists = true;
-          }
-          if (!exists) {
-            const norm = normText(r.reply_text || r.message || '');
-            const ts = (r.replied_at || r.created_at || '').toString().trim();
-            for (const d of currentIndex) {
-              if (!norm) break;
-              const shortPartial = norm.split(' ').slice(0,4).join(' ');
-              if (d.text.includes(norm) || norm.includes(d.text) || (shortPartial && d.text.includes(shortPartial))) {
-                if (ts && d.ts) {
-                  const t1 = Date.parse(ts), t2 = Date.parse(d.ts);
-                  if (!isNaN(t1) && !isNaN(t2) && Math.abs(t1 - t2) <= 15000) { exists = true; break; }
-                } else {
-                  if (norm.length > 4) { exists = true; break; }
+      // initial server-side fetch of conversation (append only unseen)
+      try {
+        const t = await fetch(`/get_conversation.php?ticket_id=${encodeURIComponent(PUBLIC_TICKET)}&json=1`, { credentials: 'include', headers: { Accept: 'application/json' } });
+        if (!t.ok) throw new Error('Load conversation HTTP ' + t.status);
+        const json = await t.json().catch(()=>null);
+        if (!json) { warn('get_conversation returned no JSON'); }
+        else {
+          const replies = Array.isArray(json.replies) ? json.replies : (Array.isArray(json) ? json : []);
+          let appended = 0, skipped = 0;
+          const currentIndex = buildDOMIndex();
+          for (const r of replies) {
+            if (isSeen(r)) { skipped++; continue; }
+            // check DOM id presence
+            let exists = false;
+            const rid = r.id || r.reply_id;
+            if (rid) {
+              try {
+                const el = document.querySelector(`[data-reply-id="${CSS.escape(String(rid))}"]`);
+                if (el) exists = true;
+              } catch (e) {
+                const el = document.querySelector(`[data-reply-id="${String(rid)}"]`);
+                if (el) exists = true;
+              }
+            }
+            if (!exists) {
+              // fuzzy compare with currentIndex
+              const norm = normText(r.reply_text || r.message || '');
+              const ts = (r.replied_at || r.created_at || '').toString().trim();
+              for (const d of currentIndex) {
+                if (!norm) break;
+                const shortPartial = norm.split(' ').slice(0,4).join(' ');
+                if (d.text.includes(norm) || norm.includes(d.text) || (shortPartial && d.text.includes(shortPartial))) {
+                  if (ts && d.ts) {
+                    const t1 = Date.parse(ts), t2 = Date.parse(d.ts);
+                    if (!isNaN(t1) && !isNaN(t2) && Math.abs(t1 - t2) <= 15000) { exists = true; break; }
+                  } else {
+                    if (norm.length > 4) { exists = true; break; }
+                  }
                 }
               }
             }
+            if (exists) { seenIds.add(String(r.id || r.reply_id || '')); skipped++; continue; }
+            if (appendToChat(r)) appended++; else { skipped++; if (r.id) seenIds.add(String(r.id)); }
           }
-          if (exists) { markSeen(r); skipped++; continue; }
-          if (appendToChat(r)) appended++; else markSeen(r);
-        }
-        log('initial fetch - appended:', appended, 'skipped/seen:', skipped);
+          log('initial fetch - appended:', appended, 'skipped/seen:', skipped);
 
-        if (json.hasOwnProperty('can_reply') && !json.can_reply) {
-          const input = document.getElementById('chat-input');
-          const btn = document.getElementById('chat-send');
-          if (input) { input.disabled = true; input.placeholder = 'This conversation is closed.'; }
-          if (btn) btn.disabled = true;
+          if (json.hasOwnProperty('can_reply') && !json.can_reply) {
+            const input = document.getElementById('chat-input');
+            const btn = document.getElementById('chat-send');
+            if (input) { input.disabled = true; input.placeholder = 'This conversation is closed.'; }
+            if (btn) btn.disabled = true;
+          }
         }
+      } catch (e) {
+        warn('Failed to load conversation:', e);
       }
+
+      // server pushes
+      socket.on('new_message', (msg) => {
+        try {
+          // If this message corresponds to an optimistic local node, reconcile (prefer local id match)
+          const lid = msg.local_id || msg.localId || msg.localid || null;
+          if (lid && localMap.has(String(lid))) {
+            const el = localMap.get(String(lid));
+            // attach reply id if present
+            if (msg.id || msg.reply_id) el.setAttribute('data-reply-id', String(msg.id || msg.reply_id));
+            // update text + meta if needed
+            const tEl = el.querySelector && el.querySelector('.text');
+            const mEl = el.querySelector && el.querySelector('.meta');
+            if (tEl && (msg.reply_text || msg.message)) tEl.textContent = msg.reply_text || msg.message;
+            if (mEl) mEl.textContent = (msg.user_name || 'You') + ' | ' + (msg.replied_at || msg.created_at || '');
+            // mark seen and cleanup
+            if (msg.id) seenIds.add(String(msg.id));
+            seenLocal.add(String(lid));
+            localMap.delete(String(lid));
+            if (msg.reply_text) seenHashes.add(normText(msg.reply_text));
+            return;
+          }
+
+          // if already matches an existing DOM element, skip
+          if (incomingMatchesExisting(msg)) {
+            log('chat-socket: skipped server-echo new_message (matched DOM/local/id)');
+            return;
+          }
+          // otherwise append
+          appendToChat(msg);
+        } catch (e) { err('new_message handler error', e); }
+      });
+
+      socket.on('error_message', (e) => warn('socket error_message:', e));
+
+      // expose
+      window.__chatSocket = socket;
+      window.__chatSeen = { seenIds, seenLocal, seenHashes, localMap };
     } catch (e) {
-      warn('Failed to load conversation:', e);
+      err('init error', e);
+    }
+  }
+
+  // send function used by UI
+  window.sendChatMessage = function (text) {
+    if (!text || typeof text !== 'string') return;
+    const localId = genLocalId();
+    const payload = {
+      contact_query_id: contactQueryId || null,
+      ticket_public_id: PUBLIC_TICKET,
+      is_admin: 0,
+      admin_identifier: null,
+      user_id: CURRENT_USER_ID || null,
+      reply_text: text,
+      local_id: localId
+    };
+
+    // optimistic render with localId
+    const appended = appendToChat(Object.assign({}, payload, { replied_at: new Date().toISOString() }), { localId });
+    if (appended) localMap.set(String(localId), (function(){ return document.querySelector(`[data-local-id="${localId}"]`); })());
+
+    try {
+      window.__chatSocket && window.__chatSocket.emit && window.__chatSocket.emit('send_message', payload);
+    } catch (e) {
+      warn('socket.emit(send_message) failed:', e);
     }
 
-    // server pushes
-    socket.on('new_message', (msg) => {
-      try {
-        if (incomingMatchesExisting(msg)) {
-          log('chat-socket: skipped server-echo new_message (matched existing DOM/local_id/id)');
-          return;
-        }
-        appendToChat(msg);
-      } catch (e) { err('new_message handler error', e); }
-    });
-
-    socket.on('error_message', (e) => warn('socket error_message:', e));
-
-    // Expose socket for debug
-    window.__chatSocket = socket;
-    window.__chatSeen = seen;
-
-    // Expose send function (UI should call)
-    window.sendChatMessage = function (text) {
-      if (!text || typeof text !== 'string') return;
-      const localId = genLocalId();
-      const payload = {
-        contact_query_id: null,
-        ticket_public_id: PUBLIC_TICKET,
-        is_admin: 0,
-        admin_identifier: null,
-        user_id: CURRENT_USER_ID || null,
-        reply_text: text,
-        local_id: localId
-      };
-
-      // optimistic render with localId
-      appendToChat(Object.assign({}, payload, { replied_at: new Date().toISOString() }), { localId });
-
-      try {
-        window.__chatSocket && window.__chatSocket.emit && window.__chatSocket.emit('send_message', payload);
-      } catch (e) {
-        warn('socket.emit(send_message) failed:', e);
-      }
-
-      // If your UI also POSTs to backend (contact_replies.php) ensure it sends the same local_id
-      // Example (uncomment if you want this auto-post here):
-      /*
-      fetch('/contact_replies.php', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query_id: /* numeric id if available * /, message: text, local_id: localId, ticket_id: PUBLIC_TICKET })
-      }).then(r=>r.json()).then(j=>console.log('saved', j)).catch(e=>console.error(e));
-      */
-    };
-  }
+    // If the UI also posts to backend, include local_id and origin_socket_id as appropriate.
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
