@@ -47,14 +47,14 @@
       <!-- Email: OTP entry row -->
       <div class="row" id="emailOtpRow" style="display:none">
         <label style="width:130px">Email OTP</label>
-        <input id="emailOtp" inputmode="numeric" maxlength="6" pattern="\d{6}" placeholder="6-digit code" />
+        <input required id="emailOtp" inputmode="numeric" maxlength="6" pattern="\d{6}" placeholder="6-digit code" />
         <button class="small" id="verifyEmailOtp" type="button">Verify</button>
       </div>
 
       <!-- Phone input -->
       <div class="row">
         <label style="width:130px">Phone</label>
-        <input name="phone" inputmode="numeric" maxlength="10" pattern="\d{10}" placeholder="10-digit number" />
+        <input name="phone" inputmode="numeric" maxlength="10" pattern="\d{10}" required placeholder="10-digit number" />
         <span id="phoneTick" class="ok">✓ Verified</span>
       </div>
       <!-- Phone: Send OTP button row -->
@@ -65,7 +65,7 @@
       <!-- Phone: OTP entry row -->
       <div class="row" id="phoneOtpRow" style="display:none">
         <label style="width:130px">Phone OTP</label>
-        <input id="phoneOtp" inputmode="numeric" maxlength="6" pattern="\d{6}" placeholder="6-digit code" />
+        <input id="phoneOtp" inputmode="numeric" maxlength="6" pattern="\d{6}" placeholder="6-digit code" required />
         <button class="small" id="verifyPhoneOtp" type="button">Verify</button>
       </div>
 
