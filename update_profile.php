@@ -18,7 +18,7 @@ set_error_handler(function($severity, $message, $file, $line){
     throw new ErrorException($message, 0, $severity, $file, $line);
 });
 
-// get PDO fallback
+// get PDO fallback (keeps original behavior)
 if (!function_exists('get_db_pdo')) {
     function get_db_pdo(): PDO {
         if (function_exists('db')) {
@@ -47,7 +47,7 @@ if (!function_exists('get_db_pdo')) {
     }
 }
 
-// JSON helpers
+// JSON helpers (kept)
 function json_err($msg, $code = 400) {
     http_response_code($code);
     echo json_encode(['success' => false, 'message' => $msg]);
@@ -65,12 +65,14 @@ if ($user_id <= 0) json_err('Not authenticated', 401);
 $pdo = get_db_pdo();
 $action = trim((string)($_POST['action'] ?? ''));
 
-// optional CSRF check
+// optional CSRF check (preserve your existing hook)
 if (function_exists('verify_csrf')) {
     try { verify_csrf(); } catch (Throwable $e) { json_err('Invalid request token', 403); }
 }
 
-// 1.1) update_partner
+// ---------------------------
+// update_partner (edit existing) - uses table param
+// ---------------------------
 if ($action === 'update_partner') {
     $table = $_POST['table'] ?? '';
     $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
@@ -92,6 +94,7 @@ if ($action === 'update_partner') {
         foreach ($whitelist[$table] as $col) {
             if (array_key_exists($col, $_POST)) {
                 $val = trim((string)$_POST[$col]);
+                // optional: add more validation per column if needed
                 $set[] = "`$col` = ?";
                 $params[] = ($val === '') ? null : $val;
             }
@@ -110,41 +113,54 @@ if ($action === 'update_partner') {
     }
 }
 
-// 1.2) create_partner (insert into partners)
+// ---------------------------
+// create_partner (supports 'partners' & 'gv_partners')
+// ---------------------------
 if ($action === 'create_partner') {
-    $bank_name = trim((string)($_POST['bank_name'] ?? ''));
-    $partner_id = trim((string)($_POST['partner_id'] ?? ''));
-    $name = trim((string)($_POST['name'] ?? ''));
-    if ($bank_name === '' || $partner_id === '') {
-        json_err('Bank name and Partner ID are required', 400);
-    }
+    $table = $_POST['table'] ?? 'partners';
+    if (!in_array($table, ['partners', 'gv_partners'], true)) json_err('Invalid table', 400);
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO partners (user_id, bank_name, partner_id, name, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())");
-        $stmt->execute([$user_id, $bank_name, $partner_id, $name !== '' ? $name : null]);
-        $newId = (int)$pdo->lastInsertId();
+        if ($table === 'gv_partners') {
+            $gv_partner_id = trim((string)($_POST['gv_partner_id'] ?? ''));
+            $name = trim((string)($_POST['name'] ?? ''));
+            if ($gv_partner_id === '') json_err('GV Partner ID required', 400);
+            if (!preg_match('/^[A-Za-z0-9\-_]+$/', $gv_partner_id)) json_err('GV Partner ID invalid', 400);
 
-        // fetch created_at to show on the card
-        $stmt2 = $pdo->prepare("SELECT created_at FROM partners WHERE id = ? AND user_id = ?");
-        $stmt2->execute([$newId, $user_id]);
-        $createdAt = $stmt2->fetchColumn();
+            $stmt = $pdo->prepare("INSERT INTO gv_partners (user_id, gv_partner_id, name, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())");
+            $stmt->execute([$user_id, $gv_partner_id, $name !== '' ? $name : null]);
+            $newId = (int)$pdo->lastInsertId();
 
-        json_ok('Partner added', [
-            'partner' => [
-                'id' => $newId,
-                'bank_name' => $bank_name,
-                'partner_id' => $partner_id,
-                'name' => $name,
-                'created_at' => $createdAt,
-            ]
-        ]);
+            $stmt2 = $pdo->prepare("SELECT id, gv_partner_id, name, created_at FROM gv_partners WHERE id = ? AND user_id = ? LIMIT 1");
+            $stmt2->execute([$newId, $user_id]);
+            $row = $stmt2->fetch(PDO::FETCH_ASSOC);
+            json_ok('GV Partner added', ['partner' => $row]);
+        } else {
+            $bank_name = trim((string)($_POST['bank_name'] ?? ''));
+            $partner_id = trim((string)($_POST['partner_id'] ?? ''));
+            $name = trim((string)($_POST['name'] ?? ''));
+            if ($bank_name === '' || $partner_id === '') json_err('Bank name and Partner ID are required', 400);
+
+            if (mb_strlen($bank_name) > 100 || mb_strlen($partner_id) > 100) json_err('Input too long', 400);
+
+            $stmt = $pdo->prepare("INSERT INTO partners (user_id, bank_name, partner_id, name, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())");
+            $stmt->execute([$user_id, $bank_name, $partner_id, $name !== '' ? $name : null]);
+            $newId = (int)$pdo->lastInsertId();
+
+            $stmt2 = $pdo->prepare("SELECT id, bank_name, partner_id, name, created_at FROM partners WHERE id = ? AND user_id = ? LIMIT 1");
+            $stmt2->execute([$newId, $user_id]);
+            $row = $stmt2->fetch(PDO::FETCH_ASSOC);
+            json_ok('Partner added', ['partner' => $row]);
+        }
     } catch (Throwable $e) {
         error_log('update_profile.create_partner: ' . $e->getMessage());
         json_err('Error adding partner', 500);
     }
 }
 
-// 2) profile_update (update user name + phone only — email not changed)
+// ---------------------------
+// profile_update (update user name + phone only — email not changed)
+// ---------------------------
 if ($action === 'profile_update') {
     $raw_name = trim((string)($_POST['name'] ?? ''));
     $phone = trim((string)($_POST['phone'] ?? ''));
@@ -156,13 +172,11 @@ if ($action === 'profile_update') {
         $params = [];
         $parts[] = "name = ?";
         $params[] = $raw_name;
-        // phone optional
         if ($phone !== '') { $parts[] = "phone = ?"; $params[] = $phone; }
         $params[] = $user_id;
         $sql = "UPDATE users SET " . implode(', ', $parts) . " WHERE id = ?";
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
-        // respond with reload flag so client can refresh to reflect server state
         json_ok('Profile updated', ['reload' => true]);
     } catch (Throwable $e) {
         error_log('update_profile.profile_update: ' . $e->getMessage());
@@ -170,7 +184,9 @@ if ($action === 'profile_update') {
     }
 }
 
-// 3) save_address (insert/update)
+// ---------------------------
+// save_address (insert/update)
+// ---------------------------
 if ($action === 'save_address') {
     $house_no = trim((string)($_POST['house_no'] ?? ''));
     $landmark = trim((string)($_POST['landmark'] ?? ''));
