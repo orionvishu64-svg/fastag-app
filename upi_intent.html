@@ -1,84 +1,184 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>UPI Payment</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; padding: 18px; }
+    .info { margin: 12px 0; color: #333; }
+    .status { margin-top: 16px; font-weight: 600; }
+    .small { font-size: 0.9rem; color: #666; }
+    button { background:#6a00ff;color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer; }
+    a.fallback { display:inline-block;margin-top:8px; }
+  </style>
 </head>
 <body>
+  <h2>Redirecting to UPI</h2>
+  <div class="info">
+    <div>Amount: <span id="amountText">—</span></div>
+    <div>Order ID: <span id="orderText">—</span></div>
+    <div>Txn Ref: <span id="txnText">—</span></div>
+    <div class="small">If the UPI app does not open automatically, use the manual link below.</div>
+  </div>
 
-  <h2>Redirecting to UPI...</h2>
-  <p>If you are not redirected, <a id="upi-link" href="#">click here</a>.</p>
-  <p id="statusMsg"></p>
+  <a id="upiManual" class="fallback" href="#" target="_blank">Open UPI (manual)</a>
 
-  <script>
-    // Read params from ?amount=&address_id=&order_id=
-    const params = new URLSearchParams(location.search);
-    const rawAmount = params.get("amount") || "";
-    const addressId = params.get("address_id") || "";
-    const orderId   = params.get("order_id") || "";
+  <div style="margin-top:18px;">
+    <div id="status" class="status">Starting payment...</div>
+  </div>
 
-    // Merchant UPI details
-    const upiId = "8905078169@hdfcbank";
-    const name  = "Vishwas Barnwal";
+  <!-- Dev/demo helper: mark paid manually (INSECURE: for local testing only) -->
+  <div style="margin-top:14px;">
+    <button id="demoPaidBtn" type="button">(Demo) I paid — mark order paid</button>
+  </div>
 
-    // Validate amount
-    const amountNum = Number(rawAmount);
-    const validAmount = !isNaN(amountNum) && amountNum > 0 ? amountNum.toFixed(2) : null;
-    if (!validAmount) {
-      alert("Invalid amount for UPI payment.");
+<script>
+(async function(){
+  // --- CONFIG: replace this with your real merchant VPA for production ---
+  const MERCHANT_VPA = 'MERCHANT_VPA_HERE'; // e.g. 'merchant@hdfcbank' - REPLACE ME
+  const MERCHANT_NAME = 'Your Merchant Name'; // shown in payer's app
+
+  // --- read params from querystring ---
+  const params = new URLSearchParams(location.search);
+  const rawAmount = params.get('amount') || '';
+  const addressId = params.get('address_id') || '';
+  // optional: if your place_order needs user id or token, include auth headers as needed
+  document.getElementById('amountText').textContent = rawAmount ? rawAmount : '—';
+
+  // --- validate amount ---
+  const amountNum = Number(rawAmount);
+  const amount = (!isNaN(amountNum) && amountNum > 0) ? amountNum.toFixed(2) : null;
+  if (!amount) {
+    document.getElementById('status').textContent = 'Invalid amount — cannot continue.';
+    return;
+  }
+
+  // --- Step 1: create order on server (returns order_id and ideally txnRef) ---
+  document.getElementById('status').textContent = 'Creating order on server...';
+  let orderId = null;
+  let txnRef = null;
+
+  try {
+    const body = new URLSearchParams();
+    body.append('amount', amount);
+    if (addressId) body.append('address_id', addressId);
+    body.append('payment_method', 'upi'); // optional, helps server know the flow
+
+    const res = await fetch('place_order.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString()
+    });
+    const data = await res.json();
+    if (!data || !data.success) {
+      throw new Error(data && data.error ? data.error : 'place_order failed');
+    }
+    orderId = data.order_id || data.id || null;
+    // server should ideally return txnRef; fallback to transaction_id if provided or generate a controlled fallback
+    txnRef = data.txnRef || data.transaction_id || null;
+
+    // fallback: generate a non-secure local txnRef only if server didn't give one
+    if (!txnRef) {
+      // WARNING: fallback txnRef is only for demo/local testing; prefer server-generated txnRef.
+      txnRef = 'TXN' + Date.now();
+      console.warn('Server did not return txnRef. Using local fallback (demo only):', txnRef);
     }
 
-    
-    // Generate txn ref
-    const txnRef = "TXN" + Date.now();
+    document.getElementById('orderText').textContent = orderId || 'none';
+    document.getElementById('txnText').textContent = txnRef;
+  } catch (err) {
+    document.getElementById('status').textContent = 'Failed to create order: ' + (err.message || err);
+    return;
+  }
 
-    // Build UPI URL
-    const tn = `Order Payment`.slice(0, 40);
-    const upiUrl =
-      `upi://pay` +
-      `?pa=${encodeURIComponent(upiId)}` +
-      `&pn=${encodeURIComponent(name)}` +
-      `&tr=${encodeURIComponent(txnRef)}` +
-      `&tn=${encodeURIComponent(tn)}` +
-      `&am=${encodeURIComponent(validAmount)}` +
-      `&cu=INR`;
+  // --- Build UPI URI ---
+  if (!MERCHANT_VPA || MERCHANT_VPA === 'MERCHANT_VPA_HERE') {
+    document.getElementById('status').textContent = 'Warning: MERCHANT_VPA not set. Replace MERCHANT_VPA in this file with your real VPA.';
+  }
 
-    // Manual link
-    document.getElementById("upi-link").href = upiUrl;
+  const tn = `Order ${orderId}`.slice(0, 40);
+  const upiUri = `upi://pay`
+    + `?pa=${encodeURIComponent(MERCHANT_VPA)}`
+    + `&pn=${encodeURIComponent(MERCHANT_NAME)}`
+    + `&tr=${encodeURIComponent(txnRef)}`
+    + `&tn=${encodeURIComponent(tn)}`
+    + `&am=${encodeURIComponent(amount)}`
+    + `&cu=INR`;
 
-    // Auto redirect to UPI app
-    setTimeout(() => {
-      try { window.location.href = upiUrl; } catch (e) {}
-    }, 300);
+  // show manual link and log
+  const manual = document.getElementById('upiManual');
+  manual.href = upiUri;
+  manual.textContent = 'Open UPI (manual) — ' + upiUri;
+  console.log('UPI URI:', upiUri);
 
-    function confirmPayment(success = true) {
-      if (success) {
-        fetch("verify_payment.php?order_id=" + orderId)
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              try { localStorage.removeItem("cart"); } catch(_) {}
-              if (data.redirect) {
-                window.location.href = data.redirect + "?order_id=" + orderId;
-              } else {
-                document.getElementById("statusMsg").textContent =
-                  "Payment successful, but no redirect URL.";
-              }
-            } else {
-              document.getElementById("statusMsg").textContent =
-                "Verification failed: " + data.message;
-            }
-          })
-          .catch(() => {
-            document.getElementById("statusMsg").textContent =
-              "Error verifying payment. Please try again.";
-          });
+  // --- Auto redirect to UPI app ---
+  document.getElementById('status').textContent = 'Opening UPI app...';
+  // Wait a bit to let user see the page on slow devices
+  setTimeout(() => {
+    try {
+      window.location.href = upiUri;
+    } catch(e) {
+      console.warn('Redirect to UPI failed', e);
+    }
+  }, 300);
+
+  // --- Poll server for payment status (verify_payment.php reads DB) ---
+  async function pollVerify(attempt = 0) {
+    const maxAttempts = 30; // 30 * delay (2s) = 60s total
+    const delay = 2000;
+    if (!orderId) return;
+    try {
+      const r = await fetch('verify_payment.php?order_id=' + encodeURIComponent(orderId), {cache: 'no-store'});
+      const d = await r.json();
+      // expected response shape: { success: boolean, status: 'pending'|'paid'|'failed', ... }
+      if (d && (d.status === 'paid' || d.payment_status === 'paid' || d.success === true)) {
+        document.getElementById('status').textContent = 'Payment confirmed. Redirecting to success page...';
+        try { localStorage.removeItem('cart'); } catch(_) {}
+        // redirect to order success page or show success
+        window.location.href = 'order_success.php?order_id=' + encodeURIComponent(orderId);
+        return;
       } else {
-        document.getElementById("statusMsg").textContent =
-          "Payment failed or cancelled. Your cart is safe.";
+        // still pending
+        document.getElementById('status').textContent = 'Payment pending — checking again... (attempt ' + (attempt+1) + ')';
       }
+    } catch (e) {
+      console.warn('verify fetch error', e);
+      document.getElementById('status').textContent = 'Network error while verifying. Will retry...';
     }
-  </script>
+    if (attempt < maxAttempts) {
+      setTimeout(() => pollVerify(attempt + 1), delay);
+    } else {
+      document.getElementById('status').textContent = 'Verification timed out. If you paid, contact support with Transaction Ref: ' + txnRef;
+    }
+  }
+
+  // start polling after redirect (give app time to process)
+  setTimeout(() => pollVerify(0), 3000);
+
+  // --- Demo: insecure manual mark-paid for local testing only ---
+  document.getElementById('demoPaidBtn').addEventListener('click', async function(){
+    if (!confirm('This will mark the order as PAID on the server (demo only). Do you want to continue?')) return;
+    try {
+      // demo_mark_paid.php must be created by you and used only in dev environment
+      const r = await fetch('demo_mark_paid.php', {
+        method: 'POST',
+        headers: {'Content-Type':'application/x-www-form-urlencoded'},
+        body: 'order_id=' + encodeURIComponent(orderId) + '&transaction_id=' + encodeURIComponent('DEMO-' + Date.now())
+      });
+      const d = await r.json();
+      if (d && d.success) {
+        document.getElementById('status').textContent = 'Order marked paid (demo).';
+        setTimeout(()=>{ window.location.href = 'order_success.php?order_id=' + encodeURIComponent(orderId); }, 600);
+      } else {
+        document.getElementById('status').textContent = 'Demo mark paid failed: ' + (d.error || 'unknown');
+      }
+    } catch (err) {
+      document.getElementById('status').textContent = 'Demo request failed: ' + err.message;
+    }
+  });
+
+})();
+</script>
 </body>
 </html>

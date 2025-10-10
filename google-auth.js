@@ -1,5 +1,5 @@
-//Load when Google script is ready
-
+// google-auth.js
+// Load when Google script is ready
 window.onload = function () {
   google.accounts.id.initialize({
     client_id: "#",
@@ -28,6 +28,17 @@ window.onload = function () {
   }
 };
 
+// Safe fetch helper (falls back to window.fetch)
+async function safeFetch(url, opts = {}) {
+  opts.credentials = opts.credentials || 'include';
+  try {
+    return await fetch(url, opts);
+  } catch (e) {
+    // Re-throw so callers can handle
+    throw e;
+  }
+}
+
 // Google callback
 async function handleGoogleResponse(response) {
   try {
@@ -49,20 +60,40 @@ async function handleGoogleResponse(response) {
       }),
     });
 
-    const data = await res.json();
-    alert(data.message);
-
-    if (data.success) {
-       const userToStore = data.user || { email, name };
-      localStorage.setItem("user", JSON.stringify(userToStore));
-      localStorage.removeItem("userEmail");
-      if (window.top) {
-        window.top.location.href = "partner_form.php";
-      } else {
-        window.location.href = "dashboard.php";
-      }
+    if (!res.ok) {
+      // try to read JSON error if present
+      let errText = 'Google login failed';
+      try { const t = await res.json(); if (t && t.error) errText = t.error; } catch(_) {}
+      alert(errText);
+      return;
     }
+
+    const data = await res.json();
+
+    if (!data.success) {
+      alert(data.message || 'Google login failed.');
+      return;
+    }
+
+    // store a lightweight user snapshot for UI (not source-of-truth)
+    const userToStore = data.user || { email, name };
+    try { localStorage.setItem("user", JSON.stringify(userToStore)); } catch (e) {}
+
+    // Let client-side listeners know we've logged in
+    try { window.dispatchEvent(new CustomEvent('app:login', { detail: data.user || userToStore })); } catch (e) {}
+
+    // If server tells us partner form is required, redirect there; otherwise go to dashboard.
+    // The server may return `partner_required: true` (as in your login.php).
+    const redirectTo = (data.partner_required ? "partner_form.php" : (data.redirect || "dashboard.php"));
+    // Use top-level navigation when possible
+    if (window.top && window.top !== window) {
+      window.top.location.href = redirectTo;
+    } else {
+      window.location.href = redirectTo;
+    }
+
   } catch (err) {
+    console.error('Google login error', err);
     alert("Google login failed.");
   }
 }

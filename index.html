@@ -4,6 +4,46 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login</title>
+
+  <!-- No-flash: hide body until auth check completes -->
+  <style>
+    html[data-auth-checked="false"] body { visibility: hidden; }
+  </style>
+
+  <!-- Early auth check: runs before page content is visible -->
+  <script>
+    (function(){
+      // mark as not yet checked
+      document.documentElement.setAttribute('data-auth-checked', 'false');
+
+      async function reveal() {
+        document.documentElement.setAttribute('data-auth-checked', 'true');
+      }
+
+      (async function(){
+        try {
+          const res = await fetch('/check_login.php', { credentials: 'include', cache: 'no-store' });
+          if (res.ok) {
+            const j = await res.json();
+            if (j && j.logged_in) {
+              // Let other scripts know (optional)
+              try { window.dispatchEvent(new CustomEvent('app:login', { detail: j.user })); } catch (e) {}
+              // If server requests partner form, follow it; otherwise go to dashboard
+              const redirectTo = j.partner_required ? '/partner_form.php' : '/dashboard.php';
+              window.location.href = redirectTo;
+              return;
+            }
+          }
+        } catch (e) {
+          // ignore errors, reveal login
+          console.warn('auth check failed', e);
+        }
+        // not logged in: reveal the page
+        reveal();
+      })();
+    })();
+  </script>
+
   <link rel="stylesheet" href="signup.css">
 </head>
 <body>
@@ -54,6 +94,7 @@
         try {
           const r = await fetch('/login.php', {
             method: 'POST',
+            credentials: 'include',            // <- ensure cookie is set/sent
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ phone, mpin })
           });
@@ -70,6 +111,9 @@
             console.error('Login error:', d);
             return say(d.error || 'Login failed');
           }
+
+          // Notify other scripts that login occurred
+          try { window.dispatchEvent(new CustomEvent('app:login', { detail: d.user || null })); } catch (e) {}
 
           // ✅ success — redirect conditionally
           if (d.partner_required) {

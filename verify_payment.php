@@ -1,7 +1,7 @@
 <?php
 // verify_payment.php
 require_once __DIR__ . '/common_start.php';
-require_once __DIR__ . 'db.php';
+require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/lib/admin_ship_api.php';
 
 // Example: you receive POST with order_id and gateway status

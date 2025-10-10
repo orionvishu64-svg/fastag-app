@@ -2,7 +2,7 @@
 // login.php — mPIN login with cookie-first, then email/phone fallback
 require_once __DIR__ . '/common_start.php';
 require_once __DIR__ . '/db.php';             // must expose $pdo (PDO)
-require_once __DIR__ . '/config_auth.php';    // AUTH_COOKIE_* + sign/verify helpers
+require_once __DIR__ . '/config_auth.php';    // functions: createAuthToken(), verifyAuthToken(), setAuthCookie(), clearAuthCookie()
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 if (!headers_sent()) {
@@ -33,15 +33,31 @@ try {
     }
 
     // 1) Try device-bound cookie first (fast path)
-    $token   = $_COOKIE[AUTH_COOKIE_NAME] ?? '';
-    $payload = $token ? verify_token($token) : null;
-
+    $rawCookieToken = $_COOKIE[AUTH_COOKIE_NAME] ?? '';
     $u = null;
 
-    if ($payload && isset($payload['uid'])) {
-        $stmt = $pdo->prepare('SELECT id, name, email, phone, login_type, mpin_hash FROM users WHERE id = ? LIMIT 1');
-        $stmt->execute([(int)$payload['uid']]);
-        $u = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    if ($rawCookieToken) {
+        // verifyAuthToken(..., rotate=false) returns user_id (int) on success, false on failure
+        $verifyUid = verifyAuthToken($pdo, $rawCookieToken, $rotate = false);
+        if ($verifyUid !== false && is_int($verifyUid)) {
+            // fetch user by id
+            $stmt = $pdo->prepare('SELECT id, name, email, phone, login_type, mpin_hash FROM users WHERE id = ? LIMIT 1');
+            $stmt->execute([(int)$verifyUid]);
+            $u = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+
+            if ($u) {
+                // rotate token for safety: create new token and set cookie
+                $newRaw = createAuthToken($pdo, (int)$u['id'], AUTH_COOKIE_TTL);
+                setAuthCookie($newRaw, AUTH_COOKIE_TTL);
+            } else {
+                // If user not found, clear cookie
+                clearAuthCookie();
+                $u = null;
+            }
+        } else {
+            // invalid cookie -> clear it
+            clearAuthCookie();
+        }
     }
 
     // 2) If no valid cookie path, fallback to email/phone login
@@ -87,15 +103,9 @@ try {
     // Optional: helpful activity marker
     $_SESSION['last_activity'] = time();
 
-    // 6) Ensure the device is bound (issue/refresh cookie)
-    $payload = ['uid' => (int)$u['id'], 'exp' => time() + AUTH_COOKIE_TTL];
-    setcookie(AUTH_COOKIE_NAME, sign_token($payload), [
-        'expires'  => time() + AUTH_COOKIE_TTL,
-        'path'     => '/',
-        'secure'   => !empty($_SERVER['HTTPS']), // true only on HTTPS
-        'httponly' => true,
-        'samesite' => 'Lax',
-    ]);
+    // 6) Ensure the device is bound (issue/refresh cookie) — create auth token and set cookie
+    $rawTokenForClient = createAuthToken($pdo, (int)$u['id'], AUTH_COOKIE_TTL);
+    setAuthCookie($rawTokenForClient, AUTH_COOKIE_TTL);
 
     // 7) Touch last-activity timestamp in DB
     $pdo->prepare('UPDATE users SET updated_at = NOW() WHERE id = ?')->execute([$u['id']]);
