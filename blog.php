@@ -61,7 +61,7 @@ $totalPages = (int)ceil($total / $limit);
               $read_time = htmlspecialchars($post['read_time'] ?? '1 min');
             ?>
             <article class="post-card">
-              <a class="post-link" href="post.php?slug=<?php echo urlencode($slug); ?>">
+              <a class="post-link" href="blog_post.php?slug=<?php echo urlencode($slug); ?>">
                 <div class="post-image">
                   <img loading="lazy" src="<?php echo $img; ?>" alt="<?php echo $title; ?>">
                 </div>
