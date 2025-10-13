@@ -4,7 +4,7 @@ require_once __DIR__ . '/db.php';             // your PDO connection
 
 // Ensure user is logged in
 if (empty($_SESSION['user']['id'])) {
-    header("Location: /login.php");
+    header("Location: /index.html");
     exit();
 }
 

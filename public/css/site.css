@@ -1,0 +1,265 @@
+/* ==========================================================================
+   site.css  –  Global user-facing styles for Fastag Website
+   ========================================================================== */
+
+/* RESET & BASE ------------------------------------------------------------ */
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background: #f5f6f8;
+  color: #222;
+  scroll-behavior: smooth;
+}
+a { color: #1976d2; text-decoration: none; }
+a:hover { text-decoration: underline; }
+img { max-width: 100%; height: auto; border: 0; }
+button, input, select, textarea {
+  font-family: inherit;
+  outline: none;
+}
+hr {
+  border: none;
+  height: 1px;
+  background: #e0e0e0;
+  margin: 20px 0;
+}
+
+/* LAYOUT WRAPPER ---------------------------------------------------------- */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  padding: 20px;
+}
+
+/* TYPOGRAPHY -------------------------------------------------------------- */
+h1, h2, h3, h4, h5 {
+  font-weight: 600;
+  color: #222;
+}
+p {
+  color: #444;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 10px 0;
+}
+.small-muted {
+  color: #777;
+  font-size: 0.9rem;
+}
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+/* BUTTONS ---------------------------------------------------------------- */
+.btn, .back-btn {
+  display: inline-block;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.96rem;
+  text-decoration: none;
+  user-select: none;
+}
+.btn:hover, .back-btn:hover { filter: brightness(0.95); }
+.btn:active, .back-btn:active { transform: translateY(1px); }
+
+.btn-primary {
+  background: #1976d2;
+  color: #fff;
+}
+.btn-secondary {
+  background: #6c757d;
+  color: #fff;
+}
+.btn-success {
+  background: #28a745;
+  color: #fff;
+}
+.btn-danger {
+  background: #dc3545;
+  color: #fff;
+}
+.btn-outline {
+  border: 2px solid #1976d2;
+  color: #1976d2;
+  background: transparent;
+}
+.btn-outline:hover {
+  background: #1976d2;
+  color: #fff;
+}
+
+/* FORMS ------------------------------------------------------------------ */
+.form-group {
+  margin-bottom: 16px;
+}
+label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #333;
+}
+input[type=text],
+input[type=email],
+input[type=number],
+input[type=password],
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #fff;
+  color: #222;
+  transition: border-color 0.2s ease;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: #1976d2;
+}
+
+/* PINCODE CHECK WIDGET --------------------------------------------------- */
+.pincode-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+}
+.pincode-box input {
+  max-width: 120px;
+  text-align: center;
+}
+#pincode-status {
+  font-size: 0.95rem;
+  color: #555;
+  min-height: 22px;
+}
+
+/* TOAST (used by showToast in JS) --------------------------------------- */
+#global-toast {
+  position: fixed;
+  right: 12px;
+  top: 12px;
+  z-index: 9999;
+}
+#global-toast div {
+  background: #2e7d32;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  margin-top: 8px;
+  font-weight: 600;
+  animation: fadeIn 0.25s ease;
+}
+#global-toast div.error { background: #c62828; }
+#global-toast div.warn  { background: #f57c00; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* TRACKING TIMELINE (global, reused on order_details) -------------------- */
+.tracking-timeline {
+  position: relative;
+  margin: 16px 0;
+  padding-left: 42px;
+  border-left: 3px solid #e0e0e0;
+}
+.tracking-step {
+  position: relative;
+  margin-bottom: 24px;
+}
+.tracking-step:last-child { margin-bottom: 0; }
+.tracking-step .icon {
+  position: absolute;
+  left: -61px;
+  top: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #555;
+}
+.tracking-step.active .icon {
+  background: #1976d2;
+  color: #fff;
+  border-color: #1976d2;
+}
+.tracking-step .details p {
+  margin: 0;
+  font-weight: 600;
+  color: #222;
+}
+.tracking-step .details small {
+  color: #777;
+  font-size: 0.9rem;
+}
+
+/* RETURN MODAL ----------------------------------------------------------- */
+#return-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+#return-modal .modal-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 540px;
+  width: 100%;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
+#return-modal h3 { margin-top: 0; }
+#return-modal textarea {
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  padding: 10px;
+  resize: vertical;
+  font-size: 1rem;
+}
+#return-modal .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* UTILITIES -------------------------------------------------------------- */
+.mt-8 { margin-top: 8px; }
+.mb-8 { margin-bottom: 8px; }
+.text-success { color: #28a745; }
+.text-danger { color: #c62828; }
+.text-muted { color: #777; }
+.center { text-align: center; }
+
+/* RESPONSIVE ------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .container { padding: 14px; }
+  .btn, .back-btn { padding: 8px 12px; font-size: 0.92rem; }
+  .tracking-step .icon { left: -50px; width: 36px; height: 36px; font-size: 16px; }
+  .tracking-timeline { padding-left: 36px; }
+}

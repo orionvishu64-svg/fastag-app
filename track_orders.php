@@ -3,7 +3,7 @@ require_once __DIR__ . '/common_start.php';
 require 'db.php'; // PDO connection
 
 if (empty($_SESSION['user']['id'])) {
-    header("Location: /login.php");
+    header("Location: /index.html");
     exit;
 }
 $user_id = (int)$_SESSION['user']['id'];

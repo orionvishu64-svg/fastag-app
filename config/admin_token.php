@@ -1,5 +1,5 @@
 <?php
-// config/admin_token.php
+// config/admin_token.php 
 // Server-only config: admin host and token used to authenticate to admin APIs.
 // IMPORTANT: do NOT expose this to the browser. Keep with chmod 640.
 
