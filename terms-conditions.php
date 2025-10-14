@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terms & Conditions - Apna Payment Services</title>
     <meta name="description" content="Read our comprehensive Terms & Conditions for FASTag services provided by Apna Payment Services Private Limited.">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="terms-conditions.css">
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <link rel="stylesheet" href="/public/css/terms-conditions.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -292,8 +292,8 @@
             </div>
         </div>
     </main>
-    <script src="script.js"></script>
-    <script src="terms-conditions.js"></script>
+    <script src="/public/js/script.js"></script>
+    <script src="/public/js/terms-conditions.js"></script>
 <?php include __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>

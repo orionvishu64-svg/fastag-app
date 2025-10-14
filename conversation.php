@@ -50,7 +50,7 @@ try {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Conversation — <?= $ticket_id_public ?></title>
-  <link rel="stylesheet" href="conversation.css">
+  <link rel="stylesheet" href="/public/css/conversation.css">
 </head>
 <body>
   <header>
@@ -104,8 +104,8 @@ try {
 
   <!-- socket.io and your existing scripts -->
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <script src="/js/chat-socket.js"></script>
-  <script src="script.js"></script>
-  <script src="conversation.js"></script>
+  <script src="/public/js/chat-socket.js"></script>
+  <script src="/public/js/script.js"></script>
+  <script src="/public/js/conversation.js"></script>
 </body>
 </html>

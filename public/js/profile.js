@@ -1,4 +1,4 @@
-// profile.js — inline slide-down editor + AJAX profile/address + ADD PARTNER (chooser)
+// /public/js/profile.js — inline slide-down editor + AJAX profile/address + ADD PARTNER (chooser)
 document.addEventListener('DOMContentLoaded', function () {
 
   // --- tiny toast ---

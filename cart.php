@@ -7,9 +7,9 @@ require_once 'common_start.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopping Cart - Apna Payment Services</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="theme.css">
-    <link rel="stylesheet" href="cart.css">
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <link rel="stylesheet" href="/public/css/theme.css">
+    <link rel="stylesheet" href="/public/css/cart.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
@@ -120,9 +120,9 @@ require_once 'common_start.php';
             </div>
         </div>
     </section>
-    <script src="js/auth-sync.js"></script>
-    <script src="script.js"></script>
-    <script src="cart.js"></script>
+    <script src="/public/js/auth-sync.js"></script>
+    <script src="/public/js/script.js"></script>
+    <script src="/public/js/cart.js"></script>
 <?php include __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>

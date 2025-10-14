@@ -1,4 +1,4 @@
-// chat-socket.js - robust client for ticket chat (replace /var/www/html/js/chat-socket.js)
+// chat-socket.js - robust client for ticket chat (replace /var/www/html/public/js/chat-socket.js)
 (function () {
   'use strict';
 

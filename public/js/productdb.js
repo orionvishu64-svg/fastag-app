@@ -1,4 +1,4 @@
-/* productdb.js — rewritten
+/* /public/js/productdb.js — rewritten
  * - Fetches products from /get_products.php
  * - Normalizes fields (incl. IMAGE → LOGO mapping)
  * - Session cache (load + save) for unfiltered lists

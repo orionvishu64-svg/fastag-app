@@ -8,9 +8,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FASTag Products - Apna Payment Services</title>
 
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="theme.css" />
-  <link rel="stylesheet" href="products.css" />
+  <link rel="stylesheet" href="/public/css/styles.css" />
+  <link rel="stylesheet" href="/public/css/theme.css" />
+  <link rel="stylesheet" href="/public/css/products.css" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
 
   <noscript>
@@ -123,9 +123,9 @@
 </main>
 
 <!-- Defer scripts to ensure DOM is ready -->
-<script src="script.js" defer></script>
-<script src="productdb.js" defer></script>
-<script src="products.js" defer></script>
+<script src="/public/js/script.js" defer></script>
+<script src="/public/js/productdb.js" defer></script>
+<script src="/public/js/products.js" defer></script>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
 </body>

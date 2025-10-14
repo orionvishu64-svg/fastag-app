@@ -116,8 +116,8 @@ $err = function_exists('flash_get') ? flash_get('error') : null;
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Your Profile</title>
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="profile.css">
+<link rel="stylesheet" href="/public/css/styles.css">
+<link rel="stylesheet" href="/public/css/profile.css">
 </head>
 <body class="profile-page">
 <?php include __DIR__ . '/includes/header.php'; ?>
@@ -252,9 +252,9 @@ $err = function_exists('flash_get') ? flash_get('error') : null;
 
   </section>
 </main>
-<script src="js/auth-sync.js"></script>
-<script src="script.js"></script>
-<script src="profile.js" defer></script>
+<script src="/public/js/auth-sync.js"></script>
+<script src="/public/js/script.js"></script>
+<script src="/public/js/profile.js" defer></script>
 <?php include __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>

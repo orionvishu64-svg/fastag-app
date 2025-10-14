@@ -54,8 +54,8 @@ if (!empty($post['tag'])) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title><?php echo $title; ?> - FASTag Blog</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="blog.css">
+  <link rel="stylesheet" href="/public/css/styles.css">
+  <link rel="stylesheet" href="/public/css/blog.css">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
@@ -153,6 +153,6 @@ document.addEventListener('click', function(e){
 </script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
-<script src="script.js"></script>
+<script src="/public/js/script.js"></script>
 </body>
 </html>

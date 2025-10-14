@@ -23,9 +23,9 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Track Orders</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="theme.css">
-    <link rel="stylesheet" href="track_orders.css">
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <link rel="stylesheet" href="/public/css/theme.css">
+    <link rel="stylesheet" href="/public/css/track_orders.css">
 </head>
 <body>
     <div class="orders-container">
@@ -44,7 +44,7 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <p><strong>Payment Method:</strong> <?= ucfirst($order['payment_method']) ?></p>
                     </div>
                     <div class="order-footer">
-                        <a href="order_details.php?order_id=<?= $order['id']; ?>" class="view-all">View All</a>
+                        <a href="order_details.php?order_id=<?= $order['id']; ?>" class="view-all"> > </a>
                     </div>
                 </div>
             <?php endforeach; ?>

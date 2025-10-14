@@ -1,4 +1,4 @@
-/* bank-pages.js
+/* /public/js/bank-pages.js
  *
  * Logic for bank-specific pages (SBI, Bajaj, Kotak, IDFC, etc.)
  * - Detects bank for the page
@@ -16,7 +16,7 @@
 
 (function () {
   if (!window.ProductDB || !window.reloadProducts) {
-    console.error('bank-pages.js requires productdb.js and products.js');
+    console.error('/public/js/bank-pages.js requires productdb.js and products.js');
     return;
   }
 

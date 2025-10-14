@@ -1,4 +1,4 @@
-/* products.js — single-file renderer + Blinkit-style bottom sheet (rewritten)
+/* /public/js/products.js — single-file renderer + Blinkit-style bottom sheet (rewritten)
    - Renders products into #products-container / .products-grid
    - Image handling fixed: pickLogo() supports logo/image/image_url/image_path + SVG placeholder fallback
    - Clicking a product card opens the full-screen sheet

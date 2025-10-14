@@ -54,7 +54,7 @@ function esc($s) { return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITU
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Order #<?php echo esc($order_id); ?> — Details</title>
-<link rel="stylesheet" href="/order_details.css">
+<link rel="stylesheet" href="/public/css/order_details.css">
 </head>
 <body>
 <div class="order-details-container">
@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function(){
     var submitBtn = document.getElementById('submit-return');
     if (submitBtn) submitBtn.addEventListener('click', function(){ submitReturnRequest(); });
 
-    // Load timeline via AJAX (site.js -> loadTracking expects timeline items containing created_at, status, location, awb)
+    // Load timeline via AJAX (/public/js/site.js -> loadTracking expects timeline items containing created_at, status, location, awb)
     if (typeof loadTracking === 'function') {
         loadTracking(ORDER_ID);
         // optional polling for updates

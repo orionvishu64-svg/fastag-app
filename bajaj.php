@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bajaj FASTag - Vehicle Categories | Apna Payment Services</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="bank-pages.css">
-    <link rel="stylesheet" href="products.css">
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <link rel="stylesheet" href="/public/css/bank-pages.css">
+    <link rel="stylesheet" href="/public/css/products.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body data-bank="Bajaj">
@@ -87,10 +87,10 @@
             </div>
         </div>
     </section>
-    <script src="productdb.js"></script>
-    <script src="products.js"></script>
-    <script src="bank-pages.js"></script>   <!-- if bank page needs it -->
-    <script src="script.js"></script>       <!-- global utilities -->
+    <script src="/public/js/productdb.js"></script>
+    <script src="/public/js/products.js"></script>
+    <script src="/public/js/bank-pages.js"></script>   <!-- if bank page needs it -->
+    <script src="/public/js/script.js"></script>       <!-- global utilities -->
     <?php include __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>

@@ -1,4 +1,4 @@
-// js/auth-sync.js
+// public/js/auth-sync.js
 (function () {
   // Auto-detect base path: if your site runs under /fastag_website/ keep that,
   // otherwise CHECK_URL will fall back to '/check_login.php'.

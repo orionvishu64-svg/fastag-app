@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Us - Apna Payment Services</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="about.css">
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <link rel="stylesheet" href="/public/css/about.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
@@ -217,7 +217,7 @@
             </div>
         </div>
     </section>
-    <script src="script.js"></script>
+    <script src="/public/js/script.js"></script>
 <?php include __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>
