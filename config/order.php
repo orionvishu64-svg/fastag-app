@@ -1,6 +1,6 @@
 <?php
-require_once 'common_start.php';
-require_once 'db.php';
+require_once __DIR__ . '/common_start.php';
+require_once __DIR__ . '/db.php';
 header('Content-Type: application/json; charset=utf-8');
 
 $userId = (int) ( $_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? 0 );
@@ -34,7 +34,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     echo "<td>{$row['total_amount']}</td>";
     echo "<td>{$row['status']}</td>";
     echo "<td>
-            <a href='order_details.php?order_id={$row['order_id']}' class='btn btn-info'>
+            <a href='/order_details.php?order_id={$row['order_id']}' class='btn btn-info'>
                 View Details
             </a>
           </td>";

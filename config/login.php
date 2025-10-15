@@ -1,5 +1,5 @@
 <?php
-// login.php — mPIN login with cookie-first, then email/phone fallback
+// /config/login.php — mPIN login with cookie-first, then email/phone fallback
 require_once __DIR__ . '/common_start.php';
 require_once __DIR__ . '/db.php';             // must expose $pdo (PDO)
 require_once __DIR__ . '/config_auth.php';    // functions: createAuthToken(), verifyAuthToken(), setAuthCookie(), clearAuthCookie()
@@ -127,7 +127,7 @@ try {
         $partner_required = ($gv_count === 0 && $partner_count === 0);
     } catch (Throwable $ex) {
         // If DB check fails, log error and default to not forcing partner form (safer for login continuity).
-        error_log('login.php: partner check failed for user '.$u['id'].' — '.$ex->getMessage());
+        error_log('/login.php: partner check failed for user '.$u['id'].' — '.$ex->getMessage());
         $partner_required = false;
     }
 

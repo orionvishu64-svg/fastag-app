@@ -1,7 +1,7 @@
 <?php
 // get_closed_conversation.php
 require_once __DIR__ . '/common_start.php';
-require_once __DIR__ . "/db.php";
+require_once __DIR__ . '/db.php';
 
 header("Content-Type: application/json; charset=utf-8");
 

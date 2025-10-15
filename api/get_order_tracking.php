@@ -10,12 +10,12 @@
 header('Content-Type: application/json; charset=utf-8');
 
 // include common_start (session helpers) if available
-$common = __DIR__ . '/../common_start.php';
+$common = __DIR__ . '/../config/common_start.php';
 if (file_exists($common)) require_once $common;
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/../config/db.php';
 
 $order_id = intval($_GET['order_id'] ?? 0);
 if ($order_id <= 0) {

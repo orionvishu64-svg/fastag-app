@@ -2,9 +2,9 @@
 // invoice.php - robust invoice rendering (joins users + addresses)
 //
 // Usage: /invoice.php?order_id=NN
-require_once __DIR__ . '/common_start.php';
+require_once __DIR__ . '/config/common_start.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/config/db.php';
 
 // helper
 function esc($s) { return htmlspecialchars((string)$s, ENT_QUOTES|ENT_SUBSTITUTE, 'UTF-8'); }

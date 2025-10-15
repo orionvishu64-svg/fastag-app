@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/db.php'; // must define $pdo
+require_once __DIR__ . '/config/db.php'; // must define $pdo
 
 // Pagination
 $limit = 9;

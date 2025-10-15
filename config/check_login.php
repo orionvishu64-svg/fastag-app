@@ -1,5 +1,5 @@
 <?php
-// check_login.php
+// /config/check_login.php
 require_once __DIR__ . '/common_start.php';
 require_once __DIR__ . '/db.php';           // should provide $pdo (PDO)
 require_once __DIR__ . '/config_auth.php';  // functions: verifyAuthToken(), setAuthCookie(), clearAuthCookie(), etc.
@@ -107,7 +107,7 @@ try {
     exit;
 
 } catch (Throwable $e) {
-    error_log('check_login.php error: ' . $e->getMessage());
+    error_log('/check_login.php error: ' . $e->getMessage());
     // Be conservative on error — don't reveal internals
     http_response_code(500);
     echo json_encode(['logged_in' => false, 'error' => 'Server error']);

@@ -1,5 +1,5 @@
 <?php
-// config_auth.php
+// /config_auth.php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 // NOTE: Some callers included this file for AJAX endpoints; keep header if desired.

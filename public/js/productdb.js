@@ -39,7 +39,7 @@ const ProductDB = (function () {
     return json;
   }
 
-  // Build URL for get_products.php with optional params
+  // Build URL for /config/get_products.php with optional params
   function buildProductsUrl({ bank, category, q, limit } = {}) {
     const params = new URLSearchParams();
     if (bank) params.append('bank', bank);
@@ -47,7 +47,7 @@ const ProductDB = (function () {
     if (q) params.append('q', q);
     if (limit) params.append('limit', String(limit));
     const qs = params.toString();
-    return 'get_products.php' + (qs ? `?${qs}` : '');
+    return '/../config/get_products.php' + (qs ? `?${qs}` : '');
   }
 
   // Turn any image-ish column into a usable web URL

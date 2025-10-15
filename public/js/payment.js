@@ -135,7 +135,7 @@ async function debugFetchJson(url, opts = {}) {
       return;
     }
 
-    fetch("get_user.php", { credentials: "same-origin" })
+    fetch("config/get_user.php", { credentials: "same-origin" })
       .then(r => r.json())
       .then(({ success, user: u }) => {
         if (success && isValidPhone(u && u.phone)) {
@@ -164,7 +164,7 @@ async function debugFetchJson(url, opts = {}) {
         phoneInput.focus();
         return;
       }
-      fetch("save_phone.php", {
+      fetch("config/save_phone.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
@@ -203,7 +203,7 @@ async function debugFetchJson(url, opts = {}) {
   orderTotalEl && (orderTotalEl.textContent = String(total));
 
   // load addresses
-  fetch("get_addresses.php", { credentials: "same-origin" })
+  fetch("config/get_addresses.php", { credentials: "same-origin" })
     .then(res => res.json())
     .then(data => {
       if (!addressesContainer) return;
@@ -250,7 +250,7 @@ async function debugFetchJson(url, opts = {}) {
         return;
       }
 
-      fetch("save_address.php", {
+      fetch("config/save_address.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
@@ -260,7 +260,7 @@ async function debugFetchJson(url, opts = {}) {
         .then((data) => {
           if (data.success) {
             alert("Address added!");
-            return fetch("get_addresses.php", { credentials: "same-origin" })
+            return fetch("config/get_addresses.php", { credentials: "same-origin" })
               .then((r) => r.json())
               .then((data2) => {
                 if (!addressesContainer) return;
@@ -323,7 +323,7 @@ async function debugFetchJson(url, opts = {}) {
 
   // Prefill Agent ID with saved GV Partner ID (if any)
 if (agentInput) {
-  fetch("get_gv_partner.php", { credentials: "same-origin" })
+  fetch("config/get_gv_partner.php", { credentials: "same-origin" })
     .then(res => res.json())
     .then(data => {
       if (data.success && data.gv_partner_id) {

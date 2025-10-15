@@ -21,8 +21,8 @@ function json_exit_err($msg, $code = 500, $detail = null) {
 }
 
 // --- includes and sanity checks ---
-$common = __DIR__ . '/common_start.php';
-$dbconf = __DIR__ . '/db.php';
+$common = __DIR__ . '/config/common_start.php';
+$dbconf = __DIR__ . '/config/db.php';
 $adminapi = __DIR__ . '/lib/admin_ship_api.php';
 
 if (!file_exists($common)) json_exit_err('server_error', 500, 'missing common_start.php');
@@ -35,7 +35,7 @@ require_once $adminapi;
 
 // verify $pdo
 if (!isset($pdo) || !($pdo instanceof PDO)) {
-    json_exit_err('server_error', 500, 'PDO not initialized (db.php must define $pdo)');
+    json_exit_err('server_error', 500, 'PDO not initialized (/config/db.php must define $pdo)');
 }
 
 // verify admin_api_post function exists (used later)

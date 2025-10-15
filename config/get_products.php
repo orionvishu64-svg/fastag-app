@@ -1,7 +1,7 @@
 <?php
 // get_products.php
-require_once 'common_start.php';
-require_once 'db.php';
+require_once __DIR__ . '/common_start.php';
+require_once __DIR__ . '/db.php';
 
 header('Content-Type: application/json');
 

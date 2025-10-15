@@ -3,8 +3,8 @@
 // Shows a single ticket (open or closed) based on ?ticket_id=TCK-...
 // Requires: common_start.php that provides session and $pdo (PDO instance).
 
-require_once __DIR__ . '/common_start.php';
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/config/common_start.php';
+require_once __DIR__ . '/config/db.php';
 
 $public_ticket_id = trim((string)($_GET['ticket_id'] ?? ''));
 

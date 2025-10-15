@@ -1,7 +1,7 @@
 <?php
 // conversations_list.php
 
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/config/db.php';
 header('Content-Type: text/html; charset=utf-8');
 
 // fetch open and closed conversations

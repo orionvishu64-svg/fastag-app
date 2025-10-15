@@ -128,7 +128,7 @@
             <h3>Ready to Skip the Toll Queues?</h3>
             <p>Join millions of satisfied customers who save time and money with FASTag</p>
             <div class="cta-buttons">
-                <a href="product.php" class="btn btn-primary">Order Now</a>
+                <a href="products.php" class="btn btn-primary">Order Now</a>
                 <a href="contact.php" class="btn btn-secondary">Contact Us</a>
             </div>
         </div>

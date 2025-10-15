@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const ticketRef = document.getElementById("ticketRef");
 
   // Prefill user details
-  fetch("get_user.php", { credentials: "include" })
+  fetch("/config/get_user.php", { credentials: "include" })
     .then(res => res.json())
     .then(data => {
       if (data.success && data.user) {
@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Send query to backend
-    fetch("contact_queries.php", {
+    fetch("/config/contact_queries.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

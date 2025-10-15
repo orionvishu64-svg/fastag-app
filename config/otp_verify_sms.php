@@ -1,5 +1,5 @@
 <?php
-// otp_verify_sms.php — verifies a 2Factor SMS OTP and marks the session as verified
+// /otp_verify_sms.php — verifies a 2Factor SMS OTP and marks the session as verified
 require_once __DIR__ . '/common_start.php';
 if (!headers_sent()) {
     header('Content-Type: application/json; charset=utf-8');

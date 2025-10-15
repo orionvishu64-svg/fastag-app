@@ -123,20 +123,20 @@
     }
   }, 300);
 
-  // --- Poll server for payment status (verify_payment.php reads DB) ---
+  // --- Poll server for payment status (/config/verify_payment.php reads DB) ---
   async function pollVerify(attempt = 0) {
     const maxAttempts = 30; // 30 * delay (2s) = 60s total
     const delay = 2000;
     if (!orderId) return;
     try {
-      const r = await fetch('verify_payment.php?order_id=' + encodeURIComponent(orderId), {cache: 'no-store'});
+      const r = await fetch('/config/verify_payment.php?order_id=' + encodeURIComponent(orderId), {cache: 'no-store'});
       const d = await r.json();
       // expected response shape: { success: boolean, status: 'pending'|'paid'|'failed', ... }
       if (d && (d.status === 'paid' || d.payment_status === 'paid' || d.success === true)) {
         document.getElementById('status').textContent = 'Payment confirmed. Redirecting to success page...';
         try { localStorage.removeItem('cart'); } catch(_) {}
         // redirect to order success page or show success
-        window.location.href = 'order_success.php?order_id=' + encodeURIComponent(orderId);
+        window.location.href = 'order_placed.php?order_id=' + encodeURIComponent(orderId);
         return;
       } else {
         // still pending
@@ -169,7 +169,7 @@
       const d = await r.json();
       if (d && d.success) {
         document.getElementById('status').textContent = 'Order marked paid (demo).';
-        setTimeout(()=>{ window.location.href = 'order_success.php?order_id=' + encodeURIComponent(orderId); }, 600);
+        setTimeout(()=>{ window.location.href = 'order_placed.php?order_id=' + encodeURIComponent(orderId); }, 600);
       } else {
         document.getElementById('status').textContent = 'Demo mark paid failed: ' + (d.error || 'unknown');
       }

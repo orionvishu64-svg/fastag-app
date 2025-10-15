@@ -48,7 +48,7 @@ async function handleGoogleResponse(response) {
 
     // Determine page type
     const isSignup = !!document.getElementById("google-signup");
-    const endpoint = isSignup ? "register.php" : "login.php";
+    const endpoint = isSignup ? "/config/register.php" : "/config/login.php";
 
     const res = await safeFetch(endpoint, {
       method: "POST",
@@ -83,7 +83,7 @@ async function handleGoogleResponse(response) {
     try { window.dispatchEvent(new CustomEvent('app:login', { detail: data.user || userToStore })); } catch (e) {}
 
     // If server tells us partner form is required, redirect there; otherwise go to dashboard.
-    // The server may return `partner_required: true` (as in your login.php).
+    // The server may return `partner_required: true` (as in your /config/login.php).
     const redirectTo = (data.partner_required ? "partner_form.php" : (data.redirect || "dashboard.php"));
     // Use top-level navigation when possible
     if (window.top && window.top !== window) {

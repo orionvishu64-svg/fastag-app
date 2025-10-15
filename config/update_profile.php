@@ -1,15 +1,15 @@
 <?php
-// update_profile.php - JSON API for profile, address, partner updates
+// /update_profile.php - JSON API for profile, address, partner updates
 declare(strict_types=1);
-require_once 'common_start.php';
-require_once 'db.php';
+require_once __DIR__ . '/common_start.php';
+require_once __DIR__ . '/db.php';
 
 header('Content-Type: application/json; charset=utf-8');
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 // Error handling -> JSON
 set_exception_handler(function($e){
-    error_log('update_profile.php uncaught: ' . $e->getMessage());
+    error_log('/update_profile.php uncaught: ' . $e->getMessage());
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Server error.']);
     exit;
@@ -43,7 +43,7 @@ if (!function_exists('get_db_pdo')) {
             return $pdo_local;
         }
 
-        throw new RuntimeException('No PDO available. Ensure db.php provides db() or global $pdo.');
+        throw new RuntimeException('No PDO available. Ensure /db.php provides db() or global $pdo.');
     }
 }
 

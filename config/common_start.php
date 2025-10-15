@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-// common_start.php - safe include (guarded)
+// /common_start.php - safe include (guarded)
 if (defined('COMMON_START_INCLUDED')) return;
 define('COMMON_START_INCLUDED', true);
 

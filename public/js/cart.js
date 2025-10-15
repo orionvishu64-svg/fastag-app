@@ -464,7 +464,7 @@ class CartManager {
     }
 
     // Check server-side session to verify login (more reliable than localStorage)
-    fetch('get_user.php', { credentials: 'same-origin' })
+    fetch('/config/get_user.php', { credentials: 'same-origin' })
       .then(r => r.json())
       .then(data => {
         if (checkoutBtn) {

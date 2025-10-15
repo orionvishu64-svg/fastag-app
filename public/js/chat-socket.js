@@ -222,7 +222,7 @@
   // lookup numeric id for join
   async function lookupContactQueryId() {
     try {
-      const url = `/lookup_ticket_id.php?ticket_id=${encodeURIComponent(PUBLIC_TICKET)}&json=1`;
+      const url = `/config/lookup_ticket_id.php?ticket_id=${encodeURIComponent(PUBLIC_TICKET)}&json=1`;
       const res = await fetch(url, { credentials: 'include', headers: { Accept: 'application/json' } });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const j = await res.json().catch(()=>null);
@@ -289,7 +289,7 @@
 
       // initial server-side fetch of conversation (append only unseen)
       try {
-        const t = await fetch(`/get_conversation.php?ticket_id=${encodeURIComponent(PUBLIC_TICKET)}&json=1`, { credentials: 'include', headers: { Accept: 'application/json' } });
+        const t = await fetch(`/config/get_conversation.php?ticket_id=${encodeURIComponent(PUBLIC_TICKET)}&json=1`, { credentials: 'include', headers: { Accept: 'application/json' } });
         if (!t.ok) throw new Error('Load conversation HTTP ' + t.status);
         const json = await t.json().catch(()=>null);
         if (!json) { warn('get_conversation returned no JSON'); }

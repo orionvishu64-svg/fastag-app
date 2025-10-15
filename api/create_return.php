@@ -5,13 +5,13 @@
 header('Content-Type: application/json; charset=utf-8');
 
 // prefer common_start helpers if present
-$common = __DIR__ . '/../common_start.php';
+$common = __DIR__ . '/../config/common_start.php';
 if (file_exists($common)) require_once $common;
 
 // Ensure session is started
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../lib/admin_ship_api.php';
 
 // determine current user id (robust fallback chain)

@@ -22,7 +22,7 @@
 
       (async function(){
         try {
-          const res = await fetch('/check_login.php', { credentials: 'include', cache: 'no-store' });
+          const res = await fetch('config/check_login.php', { credentials: 'include', cache: 'no-store' });
           if (res.ok) {
             const j = await res.json();
             if (j && j.logged_in) {
@@ -92,7 +92,7 @@
         if (!/^\d{4,6}$/.test(mpin))  return say('Invalid mPIN');
 
         try {
-          const r = await fetch('/login.php', {
+          const r = await fetch('config/login.php', {
             method: 'POST',
             credentials: 'include',            // <- ensure cookie is set/sent
             headers: { 'Content-Type': 'application/json' },

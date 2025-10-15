@@ -1,5 +1,5 @@
 <?php
-// contact_replies.php — robust reply saver with Node emit
+// /contact_replies.php — robust reply saver with Node emit
 declare(strict_types=1);
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -26,7 +26,7 @@ dlog("request start: " . ($_SERVER['REQUEST_METHOD'] ?? '') . ' ' . ($_SERVER['R
 
 // include DB config (tries a few common locations)
 $dbPaths = [
-    __DIR__ . '/config/db.php',
+    __DIR__ . '/../config/db.php',
     __DIR__ . '/db.php',
     __DIR__ . '/includes/db.php'
 ];

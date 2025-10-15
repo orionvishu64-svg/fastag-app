@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../common_start.php'; 
+require_once __DIR__ . '/../config/common_start.php'; 
 // Ensure session is started before any output
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -166,7 +166,7 @@ $cart_count = isset($_SESSION['cart_count']) ? (int) $_SESSION['cart_count'] : 0
 
 (async function(){
   try {
-    const res = await fetch('/check_login.php', { credentials: 'same-origin', cache: 'no-store' });
+    const res = await fetch('/../config/check_login.php', { credentials: 'same-origin', cache: 'no-store' });
     if (res.ok) {
       const json = await res.json();
       if (json.logged_in) {

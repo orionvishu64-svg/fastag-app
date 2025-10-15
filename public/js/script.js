@@ -363,7 +363,7 @@ localStorage.removeItem("userEmail")
 localStorage.removeItem("app_logged_in")
 localStorage.removeItem("app_user")
       // Invalidate server session
-      await safeFetch("logout.php", { credentials: "include" })
+      await safeFetch("config/logout.php", { credentials: "include" })
     } catch (_) {}
 
     // Redirect to a safe page
@@ -387,7 +387,7 @@ function wireProfileLogoutButton() {
     try {
       localStorage.removeItem("user")
       localStorage.removeItem("userEmail")
-      await safeFetch("logout.php", { credentials: "include" })
+      await safeFetch("config/logout.php", { credentials: "include" })
     } catch (_) {}
     if (window.top) {
       window.top.location.href = "index.html"

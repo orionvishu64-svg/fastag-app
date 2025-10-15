@@ -1,8 +1,9 @@
 <?php
 // profile.php - cleaned, no overlay, AJAX profile/address/partner updates
 declare(strict_types=1);
-require_once 'common_start.php';
-require_once 'db.php';
+require_once __DIR__ . '/config/common_start.php';
+require_once __DIR__ . '/config/db.php';
+
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 
@@ -25,7 +26,7 @@ if (!function_exists('get_db_pdo')) {
         }
         global $pdo;
         if ($pdo instanceof PDO) return $pdo;
-        throw new RuntimeException('No PDO available. Ensure db.php exposes db() or $pdo.');
+        throw new RuntimeException('No PDO available. Ensure /config/db.php exposes db() or $pdo.');
     }
 }
 function redirect_profile(){ header('Location: profile.php'); exit; }
@@ -116,8 +117,8 @@ $err = function_exists('flash_get') ? flash_get('error') : null;
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Your Profile</title>
-<link rel="stylesheet" href="/public/css/styles.css">
-<link rel="stylesheet" href="/public/css/profile.css">
+<link rel="stylesheet" href="public/css/styles.css">
+<link rel="stylesheet" href="public/css/profile.css">
 </head>
 <body class="profile-page">
 <?php include __DIR__ . '/includes/header.php'; ?>
@@ -252,9 +253,9 @@ $err = function_exists('flash_get') ? flash_get('error') : null;
 
   </section>
 </main>
-<script src="/public/js/auth-sync.js"></script>
-<script src="/public/js/script.js"></script>
-<script src="/public/js/profile.js" defer></script>
+<script src="public/js/auth-sync.js"></script>
+<script src="public/js/script.js"></script>
+<script src="public/js/profile.js" defer></script>
 <?php include __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>

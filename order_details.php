@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/common_start.php';
-require 'db.php';
+require_once __DIR__ . '/config/common_start.php';
+require_once __DIR__ . '/config/db.php';
 
 // ✅ Match track_orders.php session logic
 if (empty($_SESSION['user']['id'])) {

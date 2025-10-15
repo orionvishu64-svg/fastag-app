@@ -1,5 +1,5 @@
 <?php
-require_once 'common_start.php';
+require_once 'config/common_start.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">

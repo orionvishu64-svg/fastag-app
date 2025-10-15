@@ -1,5 +1,5 @@
 <?php
-// logout.php — secure logout with cookie + DB cleanup
+// /logout.php — secure logout with cookie + DB cleanup
 require_once __DIR__ . '/common_start.php';
 require_once __DIR__ . '/db.php';            // must expose $pdo
 require_once __DIR__ . '/config_auth.php';   // for AUTH_COOKIE_NAME, clearAuthTokenByRaw(), clearAuthCookie(), etc.
@@ -42,7 +42,7 @@ try {
     exit;
 
 } catch (Throwable $e) {
-    error_log('logout.php error: ' . $e->getMessage());
+    error_log('/logout.php error: ' . $e->getMessage());
     // Fallback logout if something fails
     clearAuthCookie();
     header('Location: index.html');

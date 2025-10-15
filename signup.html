@@ -112,7 +112,7 @@ $('#sendEmailOtp').onclick = async () => {
   say('');
   const email = $('[name=email]').value.trim();
   if (!email) return say('Enter email first');
-  const r = await fetch('otp_send_email.php', {
+  const r = await fetch('/config/otp_send_email.php', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ email })
   });
@@ -123,7 +123,7 @@ $('#sendEmailOtp').onclick = async () => {
 $('#verifyEmailOtp').onclick = async () => {
   const email = $('[name=email]').value.trim();
   const code  = $('#emailOtp').value.trim();
-  const r = await fetch('otp_verify_email.php', {
+  const r = await fetch('/config/otp_verify_email.php', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ email, code })
   });
@@ -137,7 +137,7 @@ $('#sendPhoneOtp').onclick = async () => {
   say('');
   const phone = $('[name=phone]').value.trim();
   if (phone && !/^\d{10}$/.test(phone)) return say('Enter 10-digit phone');
-  const r = await fetch('otp_send_sms.php', {
+  const r = await fetch('/config/otp_send_sms.php', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ phone })
   });
@@ -148,7 +148,7 @@ $('#sendPhoneOtp').onclick = async () => {
 $('#verifyPhoneOtp').onclick = async () => {
   const phone = $('[name=phone]').value.trim();
   const code  = $('#phoneOtp').value.trim();
-  const r = await fetch('otp_verify_sms.php', {
+  const r = await fetch('/config/otp_verify_sms.php', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ phone, code })
   });
@@ -168,7 +168,7 @@ $('#signupForm').onsubmit = async (e) => {
   if (!/^\d{4,6}$/.test(mpin)) return say('mPIN must be 4–6 digits');
   if (mpin !== mpin2) return say('mPINs do not match');
 
-  const r = await fetch('register.php', {
+  const r = await fetch('/config/register.php', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ name, email, phone, mpin })
   });

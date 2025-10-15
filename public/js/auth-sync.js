@@ -1,9 +1,9 @@
 // public/js/auth-sync.js
 (function () {
   // Auto-detect base path: if your site runs under /fastag_website/ keep that,
-  // otherwise CHECK_URL will fall back to '/check_login.php'.
+  // otherwise CHECK_URL will fall back to '/config/check_login.php'.
   const BASE = (location.pathname.indexOf('/fastag_website/') === 0) ? '/fastag_website' : '';
-  const CHECK_URL = BASE + '/check_login.php';
+  const CHECK_URL = BASE + '/config/check_login.php';
 
   const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 min
   const FOCUS_DEBOUNCE_MS = 300;

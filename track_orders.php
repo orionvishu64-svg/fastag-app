@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/common_start.php';
-require 'db.php'; // PDO connection
+require_once __DIR__ . '/config/common_start.php';
+require 'config/db.php'; // PDO connection
 
 if (empty($_SESSION['user']['id'])) {
     header("Location: /index.html");
@@ -44,7 +44,7 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <p><strong>Payment Method:</strong> <?= ucfirst($order['payment_method']) ?></p>
                     </div>
                     <div class="order-footer">
-                        <a href="order_details.php?order_id=<?= $order['id']; ?>" class="view-all"> > </a>
+                        <a href="/order_details.php?order_id=<?= $order['id']; ?>" class="view-all"> > </a>
                     </div>
                 </div>
             <?php endforeach; ?>

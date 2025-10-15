@@ -1,6 +1,6 @@
 <?php
-require_once 'common_start.php';
-require 'db.php';
+require_once __DIR__ . '/common_start.php';
+require_once __DIR__ . '/db.php';
 header('Content-Type: application/json'); // Use your db connection file
 
 $data = json_decode(file_get_contents("php://input"), true);

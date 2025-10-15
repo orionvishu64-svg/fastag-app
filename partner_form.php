@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/common_start.php';   // handles session_start once
-require_once __DIR__ . '/db.php';             // your PDO connection
+require_once __DIR__ . '/config/common_start.php';   // handles session_start once
+require_once __DIR__ . '/config/db.php';             // your PDO connection
 
 // Ensure user is logged in
 if (empty($_SESSION['user']['id'])) {

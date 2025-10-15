@@ -6,15 +6,15 @@
 header('Content-Type: application/json; charset=utf-8');
 
 // include common_start if present
-$common = __DIR__ . '/common_start.php';
+$common = __DIR__ . '/config/common_start.php';
 if (file_exists($common)) {
     require_once $common;
 }
 
 // require DB (tries two common locations)
-$dbfile = __DIR__ . '/../db.php';
+$dbfile = __DIR__ . '/../config/db.php';
 if (!file_exists($dbfile)) {
-    $dbfile = __DIR__ . '/../../db.php';
+    $dbfile = __DIR__ . '/../../config/db.php';
 }
 if (!file_exists($dbfile)) {
     http_response_code(500);

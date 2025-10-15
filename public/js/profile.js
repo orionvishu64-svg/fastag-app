@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const csrf = getCsrf(); if (csrf) fd.append('csrf_token', csrf);
 
       try {
-        const json = await postForm('update_profile.php', fd);
+        const json = await postForm('config/update_profile.php', fd);
         if (json.success) {
           flash(json.message || 'Profile updated', true);
           if (json.reload) setTimeout(() => location.reload(), 600);
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const csrf = getCsrf(); if (csrf) fd.append('csrf_token', csrf);
 
       try {
-        const json = await postForm('update_profile.php', fd);
+        const json = await postForm('config/update_profile.php', fd);
         if (json.success) {
           flash(json.message || 'Address saved', true);
           setTimeout(() => location.reload(), 500);
@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const csrf = getCsrf(); if (csrf) fd.append('csrf_token', csrf);
 
         try {
-          const json = await postForm('update_profile.php', fd);
+          const json = await postForm('config/update_profile.php', fd);
           if (json.success) {
             const titleEl = card.querySelector('.partner-title');
             const editBtn = card.querySelector('.edit-partner-btn');
@@ -349,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function () {
           }
 
           try {
-            const res = await postForm('update_profile.php', fd);
+            const res = await postForm('config/update_profile.php', fd);
             if (res && res.success && res.partner) {
               const p = res.partner;
               const card = document.createElement('div');

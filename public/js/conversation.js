@@ -1,7 +1,7 @@
 (() => {
-  const ENDPOINT_GET_CONV = '/get_conversation.php';          // GET ?ticket_id=...
-  const ENDPOINT_GET_CLOSED = '/get_closed_conversation.php';
-  const ENDPOINT_ADD_REPLY = '/contact_replies.php';          // POST { ticket_id|query_id, message }
+  const ENDPOINT_GET_CONV = '/config/get_conversation.php';          // GET ?ticket_id=...
+  const ENDPOINT_GET_CLOSED = '/config/get_closed_conversation.php';
+  const ENDPOINT_ADD_REPLY = '/config/contact_replies.php';          // POST { ticket_id|query_id, message }
 
   // ===== Utility Functions =====
   async function safeFetchJson(url, opts = {}) {
