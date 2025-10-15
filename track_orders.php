@@ -1,22 +1,80 @@
 <?php
-require_once __DIR__ . '/config/common_start.php';
-require 'config/db.php'; // PDO connection
+// track_orders.php
+// Drop-in replacement — uses your existing includes and DB schema.
+// BACKUP your original file before replacing.
 
+require_once __DIR__ . '/config/common_start.php';
+require 'config/db.php'; // expects $pdo (PDO instance)
+
+// Ensure user logged-in (your system uses $_SESSION['user']['id'])
 if (empty($_SESSION['user']['id'])) {
     header("Location: /index.html");
     exit;
 }
-$user_id = (int)$_SESSION['user']['id'];
+$user_id = (int) $_SESSION['user']['id'];
 
-// Fetch orders for logged-in user
-$stmt = $pdo->prepare("SELECT o.id, o.amount, o.payment_method, o.status, o.created_at 
-                       FROM orders o 
-                       WHERE o.user_id = :uid
-                       ORDER BY o.created_at DESC");
-$stmt->execute(['uid' => $user_id]);
-$orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+function e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
+
+// Fetch user's recent orders (use the exact columns from your schema)
+$orders = [];
+try {
+    $stmt = $pdo->prepare("
+        SELECT id, user_id, address_id, payment_method, transaction_id, amount,
+               shipping_amount, awb, label_url, delhivery_status, manifest_id,
+               payment_status, status, created_at, updated_at, expected_delivery_date
+        FROM orders
+        WHERE user_id = :uid
+        ORDER BY created_at DESC
+        LIMIT 200
+    ");
+    $stmt->execute([':uid' => $user_id]);
+    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $ex) {
+    error_log("track_orders.php: failed fetching orders for user {$user_id}: " . $ex->getMessage());
+    $orders = [];
+}
+
+// If a specific order is requested, fetch preview data (items + tracking)
+$order_preview = null;
+$order_items = [];
+$order_tracking = [];
+if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
+    $oid = (int) $_GET['order_id'];
+    try {
+        $os = $pdo->prepare("SELECT * FROM orders WHERE id = :oid AND user_id = :uid LIMIT 1");
+        $os->execute([':oid' => $oid, ':uid' => $user_id]);
+        $order_preview = $os->fetch(PDO::FETCH_ASSOC);
+
+        if ($order_preview) {
+            // items (order_items table)
+            $it = $pdo->prepare("
+                SELECT id, order_id, bank, product_name, quantity, price, product_id
+                FROM order_items
+                WHERE order_id = :oid
+            ");
+            $it->execute([':oid' => $oid]);
+            $order_items = $it->fetchAll(PDO::FETCH_ASSOC);
+
+            // tracking timeline (order_tracking table)
+            $tr = $pdo->prepare("
+                SELECT id, order_id, location, updated_at
+                FROM order_tracking
+                WHERE order_id = :oid
+                ORDER BY updated_at DESC
+                LIMIT 200
+            ");
+            $tr->execute([':oid' => $oid]);
+            $order_tracking = $tr->fetchAll(PDO::FETCH_ASSOC);
+        }
+    } catch (Exception $e) {
+        error_log("track_orders.php: error loading order {$oid}: " . $e->getMessage());
+        $order_preview = null;
+        $order_items = [];
+        $order_tracking = [];
+    }
+}
 ?>
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -28,29 +86,131 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="/public/css/track_orders.css">
 </head>
 <body>
-    <div class="orders-container">
-        <a href="cart.php" class="back-btn">⬅ Go Back</a>
-        <h1>Your Orders</h1>
-        <?php if (count($orders) > 0): ?>
-            <?php foreach ($orders as $order): ?>
-                <div class="order-card">
-                    <div class="order-header">
-                        <span>Order ID: <strong>#<?= $order['id'] ?></strong></span>
-                        <span class="order-status"><?= ucfirst($order['status']) ?></span>
+  <main class="container">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">APS</div>
+        <div>
+          <h1>My Orders</h1>
+          <p class="lead">All orders — shipping & tracking info</p>
+        </div>
+      </div>
+      <div class="controls">
+        <small class="lead">Signed in as <strong><?= e($_SESSION['user']['email'] ?? $_SESSION['user']['name'] ?? 'User') ?></strong></small>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="left">
+        <div class="card">
+          <h2>Recent Orders</h2>
+
+          <?php if (empty($orders)): ?>
+            <div class="no-orders">No orders found for your account.</div>
+          <?php else: ?>
+            <div class="orders-list">
+              <?php foreach ($orders as $o): ?>
+                <article class="order-card">
+                  <div class="order-meta">
+                    <div class="order-id">#<?= e($o['id']) ?> <?= isset($o['transaction_id']) ? '• TXN:' . e($o['transaction_id']) : '' ?></div>
+                    <div class="order-date"><?= e(date('d M, Y H:i', strtotime($o['created_at']))) ?></div>
+                  </div>
+
+                  <div class="order-info">
+                    <div class="order-amount"><?= '₹ ' . number_format($o['amount'], 2) ?></div>
+                    <div class="order-status"><?= e(ucwords(str_replace('_',' ', $o['status'] ?? '')) ) ?></div>
+                    <div class="small label">Delhivery: <?= e($o['delhivery_status'] ?? 'N/A') ?></div>
+                  </div>
+
+                  <div class="order-actions">
+                    <a class="btn small" href="track_orders.php?order_id=<?= (int)$o['id'] ?>">View</a>
+
+                    <?php if (!empty($o['awb'])): ?>
+                      <!-- preserve your courier AWB usage exactly -->
+                      <button class="btn small ghost" onclick="window.open('https://www.delhivery.com/track?waybill=<?= e($o['awb']) ?>','_blank')">Track AWB</button>
+                      <button class="btn small" onclick="navigator.clipboard && navigator.clipboard.writeText('<?= e($o['awb']) ?>').then(()=>alert('AWB copied'))">Copy AWB</button>
+                    <?php endif; ?>
+                  </div>
+                </article>
+              <?php endforeach; ?>
+            </div>
+          <?php endif; ?>
+
+        </div>
+
+        <?php if ($order_preview): ?>
+          <div class="card" style="margin-top:16px">
+            <h3>Order #<?= e($order_preview['id']) ?> details</h3>
+            <div class="label">Status: <strong><?= e($order_preview['status']) ?></strong></div>
+            <div class="label">Delhivery status: <strong><?= e($order_preview['delhivery_status'] ?? 'N/A') ?></strong></div>
+            <div class="label">AWB: <strong><?= e($order_preview['awb'] ?? '—') ?></strong></div>
+            <div style="margin-top:12px">
+              <h4>Items</h4>
+              <?php if (empty($order_items)): ?>
+                <div class="label">No items recorded.</div>
+              <?php else: ?>
+                <?php foreach ($order_items as $it): ?>
+                  <div class="item">
+                    <div class="thumb"><?= e(substr($it['product_name'],0,2)) ?></div>
+                    <div class="meta">
+                      <div class="title"><?= e($it['product_name']) ?></div>
+                      <small class="label">Qty: <?= (int)$it['quantity'] ?> • <?= '₹ ' . number_format($it['price'],2) ?></small>
                     </div>
-                    <div class="order-body">
-                        <p><strong>Date:</strong> <?= date("d M Y, h:i A", strtotime($order['created_at'])) ?></p>
-                        <p><strong>Amount:</strong> ₹<?= number_format($order['amount'], 2) ?></p>
-                        <p><strong>Payment Method:</strong> <?= ucfirst($order['payment_method']) ?></p>
-                    </div>
-                    <div class="order-footer">
-                        <a href="/order_details.php?order_id=<?= $order['id']; ?>" class="view-all"> > </a>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <p class="no-orders">You have no orders yet.</p>
+                  </div>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </div>
+
+            <div style="margin-top:12px">
+              <h4>Tracking timeline</h4>
+              <div class="timeline">
+                <!-- Show latest delhivery_status as first timeline item if present -->
+                <?php if (!empty($order_preview['delhivery_status'])): ?>
+                  <div class="tl-item done"><strong>Delhivery status: <?= e($order_preview['delhivery_status']) ?></strong><small class="label"><?= e($order_preview['updated_at']) ?></small></div>
+                <?php endif; ?>
+
+                <?php if (empty($order_tracking)): ?>
+                  <div class="label">No tracking updates yet.</div>
+                <?php else: ?>
+                  <?php foreach ($order_tracking as $t): ?>
+                    <div class="tl-item"><strong><?= e($t['location']) ?></strong><small class="label"><?= e($t['updated_at']) ?></small></div>
+                  <?php endforeach; ?>
+                <?php endif; ?>
+              </div>
+            </div>
+
+            <div style="margin-top:12px" class="actions">
+              <?php if (!empty($order_preview['awb'])): ?>
+                <a class="btn" href="https://www.delhivery.com/track?waybill=<?= e($order_preview['awb']) ?>" target="_blank">Open Delhivery</a>
+              <?php endif; ?>
+              <a class="btn ghost" href="order_details.php?order_id=<?= (int)$order_preview['id'] ?>">Full details</a>
+
+              <!-- Return request - keep integration with returns table; this is only a front-end form -->
+              <form method="post" action="returns.php" style="display:inline-block;margin-left:8px">
+                <input type="hidden" name="order_id" value="<?= (int)$order_preview['id'] ?>">
+                <input type="hidden" name="user_id" value="<?= (int)$user_id ?>">
+                <button type="submit" class="btn danger">Request return</button>
+              </form>
+            </div>
+          </div>
         <?php endif; ?>
+
+      </section>
+
+      <aside class="right">
+        <div class="card">
+          <h3>Quick actions</h3>
+          <div class="actions">
+            <a class="btn ghost" href="contact.php">Contact support</a>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h4>Shipping info</h4>
+          <div class="label">Courier: Delhivery (AWB & status preserved)</div>
+        </div>
+      </aside>
     </div>
+  </main>
 </body>
 </html>

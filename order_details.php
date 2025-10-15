@@ -1,168 +1,196 @@
 <?php
+// order_details.php
+// Drop-in replacement — uses your DB schema and paths exactly.
+
 require_once __DIR__ . '/config/common_start.php';
 require_once __DIR__ . '/config/db.php';
 
-// ✅ Match track_orders.php session logic
 if (empty($_SESSION['user']['id'])) {
     header("Location: /index.html");
     exit;
 }
+$user_id = (int) $_SESSION['user']['id'];
 
-$user_id = (int)$_SESSION['user']['id'];
+function e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 
-// Validate order_id
-$order_id = intval($_GET['order_id'] ?? 0);
-if ($order_id <= 0) {
+if (empty($_GET['order_id']) || !is_numeric($_GET['order_id'])) {
     http_response_code(400);
-    echo "Order ID missing.";
+    echo "Invalid order id.";
     exit;
 }
+$order_id = (int) $_GET['order_id'];
 
-// Fetch order and ensure ownership
-$stmt = $pdo->prepare("
-    SELECT o.id, o.user_id, o.amount, o.payment_method,
-           o.awb, o.label_url, COALESCE(o.delhivery_status, o.status) AS delhivery_status,
-           o.expected_delivery_date, o.created_at,
-           u.name AS user_name, u.email AS user_email, u.phone AS user_phone,
-           a.house_no, a.landmark, a.city, a.pincode
-    FROM orders o
-    JOIN users u ON o.user_id = u.id
-    LEFT JOIN addresses a ON o.address_id = a.id
-    WHERE o.id = :id AND o.user_id = :uid
-    LIMIT 1
-");
-$stmt->execute([':id' => $order_id, ':uid' => $user_id]);
-$order = $stmt->fetch(PDO::FETCH_ASSOC);
+// Load order (must belong to user)
+try {
+    $stmt = $pdo->prepare("
+        SELECT o.*, a.house_no, a.landmark, a.city, a.pincode, a.user_id AS address_user
+        FROM orders o
+        LEFT JOIN addresses a ON a.id = o.address_id
+        WHERE o.id = :oid AND o.user_id = :uid
+        LIMIT 1
+    ");
+    $stmt->execute([':oid' => $order_id, ':uid' => $user_id]);
+    $order = $stmt->fetch(PDO::FETCH_ASSOC);
+} catch (Exception $ex) {
+    error_log("order_details.php: db error loading order {$order_id}: " . $ex->getMessage());
+    $order = false;
+}
 
 if (!$order) {
     http_response_code(404);
-    echo "Order not found or not yours.";
+    echo "Order not found.";
     exit;
 }
 
-// Fetch order items
-$it = $pdo->prepare("SELECT bank, product_name, quantity, price, product_id FROM order_items WHERE order_id = :id");
-$it->execute([':id' => $order_id]);
-$items = $it->fetchAll(PDO::FETCH_ASSOC);
+// Items
+try {
+    $itstm = $pdo->prepare("SELECT id, order_id, bank, product_name, quantity, price, product_id FROM order_items WHERE order_id = :oid");
+    $itstm->execute([':oid' => $order_id]);
+    $items = $itstm->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $items = [];
+}
 
-// Helper
-function esc($s) { return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
+// Tracking timeline from order_tracking
+try {
+    $tstm = $pdo->prepare("SELECT id, order_id, location, updated_at FROM order_tracking WHERE order_id = :oid ORDER BY updated_at ASC");
+    $tstm->execute([':oid' => $order_id]);
+    $tracking = $tstm->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $tracking = [];
+}
+
+// Check if there is a return record
+$return_exists = false;
+try {
+    $rstm = $pdo->prepare("SELECT id, order_id, user_id, status, created_at FROM returns WHERE order_id = :oid AND user_id = :uid LIMIT 1");
+    $rstm->execute([':oid' => $order_id, ':uid' => $user_id]);
+    $return_exists = (bool) $rstm->fetch(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $return_exists = false;
+}
 ?>
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Order #<?php echo esc($order_id); ?> — Details</title>
-<link rel="stylesheet" href="/public/css/order_details.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Order #<?= e($order['id']) ?> — Details</title>
+  <link rel="stylesheet" href="/public/css/order_details.css">
 </head>
 <body>
-<div class="order-details-container">
-  <h2>Order #<?php echo esc($order_id); ?></h2>
+  <main class="container">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">APS</div>
+        <div>
+          <h1>Order details</h1>
+          <p class="lead">Order #<?= e($order['id']) ?> — <?= e($order['status'] ?? '') ?></p>
+        </div>
+      </div>
+      <div>
+        <small class="lead">Signed in as <strong><?= e($_SESSION['user']['email'] ?? $_SESSION['user']['name'] ?? 'User') ?></strong></small>
+      </div>
+    </header>
 
-  <div class="section">
-    <h3>Order Info</h3>
-    <p><strong>Date:</strong> <?php echo esc(date("d M Y, h:i A", strtotime($order['created_at']))); ?></p>
-    <p><strong>Status:</strong> <?php echo esc(ucfirst($order['delhivery_status'] ?? 'Pending')); ?></p>
-    <?php if (!empty($order['expected_delivery_date'])): ?>
-      <p><strong>Expected Delivery:</strong> <?php echo esc($order['expected_delivery_date']); ?></p>
-    <?php endif; ?>
-    <p><strong>Payment Method:</strong> <?php echo esc($order['payment_method'] ?? ''); ?></p>
-    <p><strong>Total:</strong> ₹<?php echo number_format($order['amount'], 2); ?></p>
-  </div>
+    <div class="layout">
+      <section class="left">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <h2>Order summary</h2>
+              <div class="label">Placed on <?= e(date('d M, Y H:i', strtotime($order['created_at']))) ?></div>
+            </div>
+            <div style="text-align:right">
+              <div class="label">Order total</div>
+              <div class="big"><?= '₹ ' . number_format($order['amount'], 2) ?></div>
+            </div>
+          </div>
 
-  <div class="section">
-    <h3>Shipping & AWB</h3>
-    <?php if (!empty($order['awb'])): ?>
-      <p class="awb-line"><strong>AWB:</strong> <?php echo esc($order['awb']); ?>
-        <?php if (!empty($order['label_url'])): ?>
-          — <a href="<?php echo esc($order['label_url']); ?>" target="_blank">Download Label / Print</a>
-        <?php endif; ?>
-      </p>
-    <?php else: ?>
-      <p class="small-muted">Shipment has not been created yet. Please check back later.</p>
-    <?php endif; ?>
-    <div class="action-row">
-      <a class="back-btn primary" href="/invoice.php?order_id=<?php echo esc($order_id); ?>" target="_blank">Download Invoice</a>
+          <hr style="margin:12px 0;border:none;height:1px;background:rgba(0,0,0,0.06)">
+
+          <div class="order-summary">
+            <div class="mini">
+              <h4>Items</h4>
+              <?php if (empty($items)): ?>
+                <div class="label">No items found.</div>
+              <?php else: foreach ($items as $it): ?>
+                <div class="item">
+                  <div class="thumb"><?= e(substr($it['product_name'],0,2)) ?></div>
+                  <div class="meta">
+                    <div class="title"><?= e($it['product_name']) ?></div>
+                    <div class="small label">Qty: <?= (int)$it['quantity'] ?> • <?= '₹ '.number_format($it['price'],2) ?></div>
+                  </div>
+                </div>
+              <?php endforeach; endif; ?>
+            </div>
+
+            <div class="mini">
+              <h4>Shipping & payment</h4>
+              <div class="label"><strong>Address:</strong> <?= e(trim(($addresses['house_no'] ?? '') . ' ' . ($addresses['landmark'] ?? '') . ', ' . ($addresses['city'] ?? '') . ' - ' . ($addresses['pincode'] ?? ''))) ?></div>
+              <div style="margin-top:8px" class="label"><strong>Payment:</strong> <?= e($order['payment_method'] ?? '') ?> • <?= e($order['payment_status'] ?? '') ?> • TXN: <?= e($order['transaction_id'] ?? '') ?></div>
+              <div style="margin-top:8px" class="label"><strong>Shipping:</strong> <?= '₹ '.number_format($order['shipping_amount'] ?? 0,2) ?></div>
+
+              <div style="margin-top:12px">
+                <h4>Courier & AWB</h4>
+                <div class="label">AWB: <strong id="awb"><?= e($order['awb'] ?? '') ?></strong></div>
+                <div class="label">Delhivery status: <strong><?= e($order['delhivery_status'] ?? '') ?></strong></div>
+                <div class="actions" style="margin-top:10px">
+                  <?php if (!empty($order['awb'])): ?>
+                    <button class="btn" onclick="window.open('https://www.delhivery.com/track?waybill=<?= e($order['awb']) ?>','_blank')">Open Delhivery</button>
+                    <button class="btn" onclick="navigator.clipboard && navigator.clipboard.writeText('<?= e($order['awb']) ?>').then(()=>alert('AWB copied'))">Copy AWB</button>
+                  <?php endif; ?>
+                  <a class="btn danger" href="invoice.php?order_id=<?= (int)$order['id'] ?>">Download invoice</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px">
+            <h3>Tracking timeline</h3>
+            <div class="timeline">
+              <!-- show delhivery status as primary event -->
+              <?php if (!empty($order['delhivery_status'])): ?>
+                <div class="tl-item done"><strong>Delhivery status: <?= e($order['delhivery_status']) ?></strong><small class="label"><?= e($order['updated_at']) ?></small></div>
+              <?php endif; ?>
+
+              <?php if (empty($tracking)): ?>
+                <div class="label">No tracking updates found.</div>
+              <?php else: foreach ($tracking as $t): ?>
+                <div class="tl-item <?= '' ?>"><strong><?= e($t['location']) ?></strong><small class="label"><?= e($t['updated_at']) ?></small></div>
+              <?php endforeach; endif; ?>
+            </div>
+          </div>
+
+          <div style="margin-top:16px" class="actions">
+            <?php if (!$return_exists): ?>
+              <form method="post" action="returns.php" onsubmit="return confirm('Request a return for this order?');" style="display:inline-block">
+                <input type="hidden" name="order_id" value="<?= (int)$order['id'] ?>">
+                <input type="hidden" name="user_id" value="<?= (int)$user_id ?>">
+                <button type="submit" class="btn danger">Request return</button>
+              </form>
+            <?php else: ?>
+              <div class="label">Return requested — check your Returns page for status.</div>
+            <?php endif; ?>
+
+            <a class="btn primary" href="orders.php">Back to orders</a>
+          </div>
+
+        </div>
+      </section>
+
+      <aside class="right">
+        <div class="card">
+          <h4>Order info</h4>
+          <div class="label">Order #: <strong><?= e($order['id']) ?></strong></div>
+          <div class="label">Placed: <?= e(date('d M, Y', strtotime($order['created_at']))) ?></div>
+          <div class="label">Status: <strong><?= e($order['status'] ?? '') ?></strong></div>
+          <div style="margin-top:10px" class="actions">
+            <a class="btn primary" href="contact.php?order_id=<?= (int)$order['id'] ?>">Contact support</a>
+          </div>
+        </div>
+      </aside>
     </div>
-  </div>
-
-  <div class="section">
-    <h3>Tracking Timeline</h3>
-    <div id="tracking-area">
-      <p class="small-muted">Loading timeline…</p>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3>Items</h3>
-    <table>
-      <thead>
-        <tr><th>Bank</th><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr>
-      </thead>
-      <tbody>
-      <?php if ($items): foreach ($items as $it): ?>
-        <tr>
-          <td><?php echo esc($it['bank']); ?></td>
-          <td><?php echo esc($it['product_name']); if (!empty($it['sku'])) echo ' <small>(' . esc($it['sku']) . ')</small>'; ?></td>
-          <td><?php echo (int)$it['quantity']; ?></td>
-          <td>₹<?php echo number_format($it['price'], 2); ?></td>
-          <td>₹<?php echo number_format($it['price'] * $it['quantity'], 2); ?></td>
-        </tr>
-      <?php endforeach; else: ?>
-        <tr><td colspan="5">No items found for this order.</td></tr>
-      <?php endif; ?>
-      </tbody>
-    </table>
-  </div>
-
-  <div style="display:flex;gap:12px;align-items:center;margin-top:18px">
-    <a class="back-btn" href="/track_orders.php">⬅ Back to Orders</a>
-
-    <?php
-      $cur_status = $order['delhivery_status'] ?? null;
-      $can_return = in_array(strtolower((string)$cur_status), ['delivered','out_for_delivery','delivered_by_courier','delivered'], true);
-    ?>
-    <?php if ($can_return): ?>
-      <button id="open-return" class="back-btn success">Request Return</button>
-    <?php endif; ?>
-  </div>
-</div>
-
-<!-- Return modal (kept simple) -->
-<div id="return-modal" style="display:none;position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,0.4);align-items:center;justify-content:center">
-  <div class="modal-card" style="max-width:560px;margin:40px auto;background:#fff;padding:18px;border-radius:8px">
-    <h3>Request Return for Order #<?php echo esc($order_id); ?></h3>
-    <textarea id="return-reason" placeholder="Describe reason for return" style="width:100%;height:120px;padding:10px;border-radius:6px;border:1px solid #eee"></textarea>
-    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-      <button id="submit-return" class="back-btn primary" style="background:#1976d2;color:#fff">Submit</button>
-      <button id="cancel-return" class="back-btn">Cancel</button>
-    </div>
-    <div id="return-feedback" style="margin-top:8px"></div>
-  </div>
-</div>
-
-<script>
-  const ORDER_ID = <?php echo (int)$order_id; ?>;
-</script>
-<script src="/public/js/site.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-    // Hook up modal and submit behavior
-    var openBtn = document.getElementById('open-return');
-    if (openBtn) openBtn.addEventListener('click', function(){ document.getElementById('return-modal').style.display = 'flex'; });
-    var cancelBtn = document.getElementById('cancel-return');
-    if (cancelBtn) cancelBtn.addEventListener('click', function(){ document.getElementById('return-modal').style.display = 'none'; });
-    var submitBtn = document.getElementById('submit-return');
-    if (submitBtn) submitBtn.addEventListener('click', function(){ submitReturnRequest(); });
-
-    // Load timeline via AJAX (/public/js/site.js -> loadTracking expects timeline items containing created_at, status, location, awb)
-    if (typeof loadTracking === 'function') {
-        loadTracking(ORDER_ID);
-        // optional polling for updates
-        setInterval(function(){ loadTracking(ORDER_ID); }, 60000);
-    }
-});
-</script>
+  </main>
 </body>
 </html>

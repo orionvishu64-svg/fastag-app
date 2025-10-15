@@ -1,136 +1,107 @@
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f0f2f5;
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
+/* track_orders.css
+   Dark theme styles for track_orders.php
+   Matches classes used in the provided PHP.
+*/
+
+:root{
+  --bg: #061225;
+  --card: #0b1220;
+  --muted: #98a7bb;
+  --accent: #06b6d4;
+  --accent-2: #7c3aed;
+  --success: #10b981;
+  --danger: #ef4444;
+  --glass: rgba(255,255,255,0.03);
+  --radius: 12px;
+  --text: #e6eef6;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 
-/* Back Button */
-.back-btn {
-    display: inline-block;
-    margin-bottom: 20px;
-    padding: 10px 22px;
-    background: #6c757d;
-    color: #fff;
-    text-decoration: none;
-    border-radius: 8px;
-    font-size: 0.95em;
-    font-weight: 500;
-    transition: background-color 0.2s, transform 0.1s;
-}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#071226);color:var(--text);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.container{max-width:1200px;margin:28px auto;padding:20px}
 
-.back-btn:hover {
-    background: #5a6268;
-    transform: translateY(-2px);
-}
+/* Topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700}
+h1{margin:0;font-size:18px}
+.lead{margin:0;color:var(--muted);font-size:13px}
 
-/* Orders Container */
-.orders-container {
-    max-width: 900px;
-    width: 100%;
-    margin: 20px auto;
-    padding: 30px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
+/* Layout */
+.layout{display:grid;grid-template-columns:1fr 360px;gap:20px}
+@media (max-width:980px){ .layout{grid-template-columns:1fr} .right{order:2} .topbar{flex-direction:column;align-items:flex-start} }
 
-h1 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 25px;
-    font-size: 2em;
-    font-weight: 600;
-}
+/* Cards */
+.card{background:var(--card);padding:18px;border-radius:var(--radius);box-shadow:0 6px 30px rgba(2,6,23,0.6);overflow:hidden}
+.header-row{display:flex;justify-content:space-between;align-items:center}
+.big{font-weight:700}
+.label{color:var(--muted);font-size:13px}
 
-/* Order Card */
-.order-card {
-    background: #fff9834f;
-    padding: 20px;
-    margin-bottom: 20px;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    transition: box-shadow 0.2s ease-in-out, transform 0.1s;
-}
+/* Orders list */
+.orders-list{display:flex;flex-direction:column;gap:12px;margin-top:10px}
+.order-card{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent)}
+.order-meta{display:flex;flex-direction:column}
+.order-id{font-weight:700}
+.order-date{color:var(--muted);font-size:13px}
+.order-info{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.order-amount{font-weight:700}
+.order-status{padding:6px 10px;border-radius:999px;font-size:13px;background:rgba(255,255,255,0.02)}
 
-.order-card:hover {
-    box-shadow: 0px 4px 10px rgba(0,0,0,0.08);
-    transform: translateY(-2px);
-}
+/* Status variants (extend as needed) */
+.order-status.delivered{background:linear-gradient(90deg,var(--success),#06b66f);color:#042a1f}
+.order-status.in_transit{background:linear-gradient(90deg,#08323b,#06212a)}
+.order-status.out_for_delivery{background:linear-gradient(90deg,var(--accent),var(--success))}
 
-/* Header */
-.order-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-    margin-bottom: 12px;
-}
+/* Buttons */
+.btn{padding:8px 12px;border-radius:10px;border:0;background:rgba(255,255,255,0.04);color:inherit;cursor:pointer;font-size:13px;display:inline-flex;align-items:center}
+.btn.small{padding:6px 10px;font-size:13px}
+.btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 8px 30px rgba(124,58,237,0.12);color:#041018}
+.btn.ghost{background:transparent;border:1px solid rgba(255, 255, 255, 0.744)}
+.btn.ghost:hover{background:linear-gradient(90deg,var(--danger),#f97316)}
+.btn.danger{background:linear-gradient(90deg,var(--danger),#f97316);color:#fff}
+.btn.danger:hover{background: transparent; border: 1px solid rgba(255, 255, 255, 0.795);}
 
-.order-header span {
-    font-size: 1em;
-    color: #444;
-}
+/* Progress & timeline */
+.progress{display:flex;gap:18px;align-items:flex-start;margin-top:14px}
+.stage{display:flex;flex-direction:column;align-items:center;flex:1;min-width:52px}
+.dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--glass);border:1px solid rgba(255,255,255,0.04)}
+.dot.done{background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(6,182,212,0.06));border:1px solid rgba(16,185,129,0.18)}
+.stage small{margin-top:10px;color:var(--muted);font-size:13px}
+.bar{height:6px;background:linear-gradient(90deg,#06212a,#072333);flex:1;margin-top:16px;border-radius:6px;position:relative;overflow:hidden}
+.bar > .fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--success));width:0;border-radius:4px;transition:width .7s ease}
 
-.order-header strong {
-    color: #007bff;
-}
+/* Order summary & items */
+.order-summary{display:grid;grid-template-columns:1fr 260px;gap:16px;margin-top:18px}
+@media (max-width:720px){ .order-summary{grid-template-columns:1fr} }
+.mini{background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);padding:12px;border-radius:10px}
+.items{display:flex;flex-direction:column;gap:12px}
+.item{display:flex;gap:12px;align-items:center}
+.thumb{width:64px;height:64px;border-radius:8px;background:linear-gradient(135deg,#0b1220,#0a1724);display:flex;align-items:center;justify-content:center;color:var(--muted);overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.meta{flex:1}
+.title{font-weight:600}
+.price{font-weight:700}
+.small.label{font-size:13px;color:var(--muted)}
 
-/* Status Badges */
-.order-status {
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    font-weight: bold;
-    color: #fff;
-    text-transform: capitalize;
-}
+/* Timeline */
+.timeline{margin-top:16px;border-left:2px solid rgba(255,255,255,0.03);padding-left:14px}
+.tl-item{position:relative;padding:12px 0}
+.tl-item:before{content:'';position:absolute;left:-10px;top:18px;width:12px;height:12px;border-radius:50%;background:var(--glass);border:2px solid rgba(255,255,255,0.04)}
+.tl-item.done:before{background:linear-gradient(135deg,var(--success),var(--accent));border:0}
+.tl-item small{display:block;color:var(--muted);font-size:12px}
 
-.order-status.pending { background-color: #ffc107; }     /* Yellow */
-.order-status.processing { background-color: #17a2b8; }  /* Blue */
-.order-status.delivered { background-color: #28a745; }   /* Green */
-.order-status.cancelled { background-color: #dc3545; }   /* Red */
+/* Helper blocks */
+.actions{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.summary-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.row{display:flex;justify-content:space-between;color:var(--muted)}
+.row.total{font-weight:700;color:var(--accent);font-size:15px}
+.no-orders{text-align:center;color:#9aa;padding:20px;font-size:1.05em}
 
-/* Body */
-.order-body p {
-    margin: 6px 0;
-    color: #555;
-    font-size: 0.95em;
-}
-
-/* Footer */
-.order-footer {
-    text-align: right;
-    margin-top: 15px;
-}
-
-/* View All Button (same design family as Back Button) */
-.view-all {
-    display: inline-block;
-    padding: 10px 22px;
-    background: #ffffff;
-    color: rgb(51, 51, 51);
-    text-decoration: none;
-    border-radius: 8px;
-    font-size: 0.95em;
-    font-weight: 500;
-    transition: background-color 0.2s, transform 0.1s;
-}
-
-.view-all:hover {
-    background: #92bce9;
-    transform: translateY(-2px);
-}
-
-/* No Orders */
-.no-orders {
-    text-align: center;
-    color: #888;
-    font-size: 1.1em;
-    padding: 20px;
+/* Responsive tweaks */
+@media (max-width:420px){
+  .logo{width:40px;height:40px}
+  .thumb{width:56px;height:56px}
+  .dot{width:30px;height:30px}
 }
