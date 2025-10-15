@@ -7,7 +7,8 @@
   --bg: #e1e1e1b8;
   --card: #ffffff;
   --muted:#6f6b6b;
-  --accent:#1976d2;
+  --accent:#1976d2;        /* primary accent */
+  --accent-2: #7c3aed;     /* secondary accent */
   --radius:12px;
   --danger:#ef4444;
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
@@ -19,7 +20,7 @@ body{margin:0;background:var(--bg);color:#222;font-family:inherit}
 /* Topbar */
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
 .brand{display:flex;gap:12px;align-items:center}
-.logo{width:44px;height:44px;border-radius:8px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff}
 h1{margin:0;font-size:20px}
 .lead{margin:0;color:#666;font-size:13px}
 

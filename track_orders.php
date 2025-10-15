@@ -202,6 +202,7 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
           <h3>Quick actions</h3>
           <div class="actions">
             <a class="btn ghost" href="contact.php">Contact support</a>
+            <a class="btn ghost" href="products.php">Explore More</a>
           </div>
         </div>
 
