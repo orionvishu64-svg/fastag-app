@@ -12,7 +12,8 @@
   <div class="order-success">
     <div id="orderSuccess" style="width:200px;height:200px;margin:auto;"></div>
     <h2>Thank you! Your order has been placed.</h2>
-    <p>You can track your order in the <a href="track_orders.php">My Orders</a> section.</p>
+    <p>You can track your order in the My Orders section.</p>
+    <a href="track_orders.php" class="btn">My Orders</a>
     <a href="products.php" class="btn">Continue Shopping</a>
   </div>
   <script>
