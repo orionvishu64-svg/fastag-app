@@ -214,18 +214,33 @@ try {
           </div>
 
           <div style="margin-top:16px" class="actions">
-            <?php if (!$return_exists): ?>
-              <form method="post" action="returns.php" onsubmit="return confirm('Request a return for this order?');" style="display:inline-block">
-                <input type="hidden" name="order_id" value="<?= (int)$order['id'] ?>">
-                <input type="hidden" name="user_id" value="<?= (int)$user_id ?>">
-                <button type="submit" class="btn danger">Request return</button>
-              </form>
-            <?php else: ?>
-              <div class="label">Return requested — check your Returns page for status.</div>
-            <?php endif; ?>
+  <?php
+    $oid = (int) ($order['id'] ?? $row['id'] ?? $o['id'] ?? 0);
+    $return_exists = false;
+    if ($oid > 0 && isset($pdo) && $pdo instanceof PDO) {
+        try {
+            $rstmt = $pdo->prepare("SELECT id, status FROM returns WHERE order_id = :oid AND user_id = :uid LIMIT 1");
+            $rstmt->execute([':oid' => $oid, ':uid' => (int)$_SESSION['user']['id']]);
+            $r = $rstmt->fetch(PDO::FETCH_ASSOC);
+            if ($r) $return_exists = true;
+        } catch (Exception $ex) {
+            // don't break UI on DB error
+            error_log('track_orders.php: return check error '.$ex->getMessage());
+            $return_exists = false;
+        }
+    }
+  ?>
 
-            <a class="btn primary" href="track_orders.php">Back to orders</a>
-          </div>
+  <?php if ($oid > 0 && !$return_exists): ?>
+    <a href="returns.php?order_id=<?= $oid ?>" class="btn danger">Request return</a>
+  <?php elseif ($oid > 0 && $return_exists): ?>
+    <div class="label">Return requested — check your Returns page for status.</div>
+  <?php else: ?>
+    <div class="label">Return not available</div>
+  <?php endif; ?>
+
+  <a class="btn primary" href="track_orders.php">Back to orders</a>
+</div>
 
         </div>
       </section>

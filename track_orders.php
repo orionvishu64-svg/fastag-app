@@ -184,13 +184,7 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
                 <a class="btn" href="https://www.delhivery.com/track?waybill=<?= e($order_preview['awb']) ?>" target="_blank">Open Delhivery</a>
               <?php endif; ?>
               <a class="btn ghost" href="order_details.php?order_id=<?= (int)$order_preview['id'] ?>">Full details</a>
-
-              <!-- Return request - keep integration with returns table; this is only a front-end form -->
-              <form method="post" action="returns.php" style="display:inline-block;margin-left:8px">
-                <input type="hidden" name="order_id" value="<?= (int)$order_preview['id'] ?>">
-                <input type="hidden" name="user_id" value="<?= (int)$user_id ?>">
-                <button type="submit" class="btn danger">Request return</button>
-              </form>
+              <a href="returns.php?order_id=<?= $oid ?>" class="btn danger">Request return</a>
             </div>
           </div>
         <?php endif; ?>
