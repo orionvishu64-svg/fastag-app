@@ -4,16 +4,16 @@
 */
 
 :root{
-  --bg: #f5f7fb;              /* page background */
-  --card: #ffffff;            /* card background */
-  --muted: #4b5563;          /* subdued text */
-  --text: #0b1720;           /* main text */
-  --accent: #06b6d4;         /* primary accent */
-  --accent-2: #7c3aed;       /* secondary accent */
-  --success: #10b981;
-  --danger: #ef4444;
-  --glass: rgba(15,23,42,0.03);
-  --border: #e6eef6;
+  --bg: #f5f7fb;                    /*page background*/
+  --card: #ffffff;                  /*cards  backgrund colors*/
+  --muted: #4b5563;                 /*subdued text*/
+  --text: #0b1720;                  /*main text*/
+  --accent: #06b6d4;                /*primary accent*/
+  --accent-2: #7c3aed;              /*secondary accent*/
+  --success: #10b981;               /*background in success msg*/
+  --danger: #ef4444;                /*background color in danger button*/
+  --glass: rgba(15,23,42,0.03);     /*glas color*/
+  --border: #e6eef6;                /*border color global*/
   --radius: 12px;
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }

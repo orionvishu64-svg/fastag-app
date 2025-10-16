@@ -10,7 +10,7 @@ if (empty($_SESSION['user']['id'])) {
 $user_id = (int) $_SESSION['user']['id'];
 
 function e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
-
+// here my order fetch and populated here
 if (empty($_GET['order_id']) || !is_numeric($_GET['order_id'])) {
     http_response_code(400);
     echo "Invalid order id.";
