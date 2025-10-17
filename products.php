@@ -60,12 +60,13 @@
             <select id="categoryFilter" aria-label="Filter by category">
               <option value="all">All Categories</option>
               <option value="VC4">VC4 - Car/Jeep/Van</option>
-              <option value="VC4max">VC4max - Car/Jeep/Van</option>
+              <option value="VC4max">VC4max - luxury Car/Jeep/Van</option>
               <option value="VC5">VC5 - LCV</option>
               <option value="VC6">VC6 - Bus/Truck</option>
               <option value="VC7">VC7 - Heavy Vehicle</option>
               <option value="VC8">VC8 - Construction Vehicle</option>
               <option value="VC12">VC12 - Mini Bus</option>
+              <option value="VC16">VC16 - Heavy Construction Vehicle</option>
             </select>
           </div>
 
