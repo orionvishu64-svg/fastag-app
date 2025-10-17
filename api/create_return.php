@@ -5,7 +5,7 @@
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 
-// include project bootstrap and DB config
+// include project bootstrap and DB config (relative to /var/www/html/api)
 $commonPath = __DIR__ . '/../config/common_start.php';
 $dbPath     = __DIR__ . '/../config/db.php';
 if (file_exists($commonPath)) require_once $commonPath;
@@ -28,7 +28,7 @@ if (!isset($pdo) || !($pdo instanceof PDO)) {
     }
 }
 if (!isset($pdo) || !($pdo instanceof PDO)) {
-    // try globals that may have been set
+    // try globals that may have been set in db.php
     if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
         $pdo = $GLOBALS['pdo'];
     }
@@ -42,13 +42,14 @@ if (!isset($pdo) || !($pdo instanceof PDO)) {
 // Ensure session started
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-// Identify current user (respect common_start helpers)
+// Identify current user (respect common_start helpers if present)
 $currentUserId = null;
 if (function_exists('get_current_user_id')) {
     try { $currentUserId = get_current_user_id(); } catch (Throwable $e) { $currentUserId = null; }
 }
 if ($currentUserId === null && !empty($_SESSION['user']['id'])) $currentUserId = (int)$_SESSION['user']['id'];
 if ($currentUserId === null && !empty($_SESSION['user_id'])) $currentUserId = (int)$_SESSION['user_id'];
+
 // testing fallback (disable in production by setting ALLOW_REQUEST_USER_FALLBACK = false)
 $allow_request_fallback = defined('ALLOW_REQUEST_USER_FALLBACK') ? (bool) ALLOW_REQUEST_USER_FALLBACK : true;
 if ($currentUserId === null && $allow_request_fallback) {
@@ -68,7 +69,7 @@ $input = get_json_input();
 if (!$input) $input = $_POST ?? [];
 
 $order_id = isset($input['order_id']) ? (int)$input['order_id'] : 0;
-$reason = isset($input['reason']) ? trim($input['reason']) : '';
+$reason = isset($input['reason']) ? trim((string)$input['reason']) : '';
 $items = isset($input['items']) && is_array($input['items']) ? $input['items'] : [];
 $notify_admin = isset($input['notify_admin']) ? (bool)$input['notify_admin'] : true;
 
@@ -80,7 +81,7 @@ if (!$order_id || $reason === '') {
 
 try {
     // Verify order exists and belongs to user
-    $ost = $pdo->prepare("SELECT id, user_id, awb FROM orders WHERE id = :id LIMIT 1");
+    $ost = $pdo->prepare("SELECT id, user_id, awb, address_id FROM orders WHERE id = :id LIMIT 1");
     $ost->execute([':id' => $order_id]);
     $order = $ost->fetch(PDO::FETCH_ASSOC);
     if (!$order) {
@@ -94,10 +95,10 @@ try {
         exit;
     }
 
-    // Insert return and tracking note inside a transaction
+    // Begin transaction
     $pdo->beginTransaction();
 
-    // Insert into returns (match your schema: no items_json column)
+    // Insert into returns table (matches your existing schema)
     $ins = $pdo->prepare("INSERT INTO returns (order_id, user_id, reason, status, created_at, updated_at) VALUES (:order_id, :user_id, :reason, :status, NOW(), NOW())");
     $ins->execute([
         ':order_id' => $order_id,
@@ -107,51 +108,46 @@ try {
     ]);
     $return_id = (int)$pdo->lastInsertId();
 
-    // Insert a tracking/annotation row — ensure location is NOT NULL in your schema
-    // Use a friendly, short non-null value for location to satisfy schema constraints.
-    // --- Begin patched tracking insert (system event) ---
-// --- Insert a system tracking annotation with event_source = 'system' ---
-$event_status = 'Return Requested';
-$event = 'RETURN_REQUESTED';
-$note = 'Customer requested return: ' . $reason;
-$event_source = 'system';
+    // Build tracking system event (event_source = 'system')
+    $event_status = 'Return Requested';
+    $event = 'RETURN_REQUESTED';
+    $note = 'Customer requested return: ' . $reason;
+    $event_source = 'system';
 
-// Optional buyer location hint (city + pincode) — safe fallback; leave NULL if not available
-$locHint = null;
-try {
-    $addrStmt = $pdo->prepare("
-        SELECT a.city, a.pincode
-        FROM orders o
-        LEFT JOIN addresses a ON a.id = o.address_id
-        WHERE o.id = :oid LIMIT 1
-    ");
-    $addrStmt->execute([':oid' => $order_id]);
-    $addrRow = $addrStmt->fetch(PDO::FETCH_ASSOC);
-    if ($addrRow) {
-        $city = trim((string)($addrRow['city'] ?? ''));
-        $pin = trim((string)($addrRow['pincode'] ?? ''));
-        $locHint = trim(($city ? $city : '') . ($pin ? ' ' . $pin : ''));
-        if ($locHint === '') $locHint = null;
-    }
-} catch (Throwable $e) {
+    // Optional: buyer location hint (city + pincode) — safe fallback; NULL if not available
     $locHint = null;
-}
+    try {
+        if (!empty($order['address_id'])) {
+            $addrStmt = $pdo->prepare("SELECT city, pincode FROM addresses WHERE id = :aid LIMIT 1");
+            $addrStmt->execute([':aid' => (int)$order['address_id']]);
+            $addrRow = $addrStmt->fetch(PDO::FETCH_ASSOC);
+            if ($addrRow) {
+                $city = trim((string)($addrRow['city'] ?? ''));
+                $pin = trim((string)($addrRow['pincode'] ?? ''));
+                $locHint = trim(($city ? $city : '') . ($pin ? ' ' . $pin : ''));
+                if ($locHint === '') $locHint = null;
+            }
+        }
+    } catch (Throwable $e) {
+        // ignore location hint errors
+        $locHint = null;
+    }
 
-$tstmt = $pdo->prepare(
-    "INSERT INTO order_tracking
-       (order_id, location, event_status, event, note, event_source, occurred_at, updated_at)
-     VALUES
-       (:oid, :loc, :status, :event, :note, :source, NOW(), NOW())"
-);
-$tstmt->execute([
-    ':oid' => $order_id,
-    ':loc' => $locHint,           // NULL when no hint available
-    ':status' => $event_status,
-    ':event' => $event,
-    ':note' => $note,
-    ':source' => $event_source
-]);
-// --- End patched tracking insert ---
+    // Insert order_tracking row
+    $tstmt = $pdo->prepare(
+        "INSERT INTO order_tracking
+           (order_id, location, event_status, event, note, event_source, occurred_at, updated_at)
+         VALUES
+           (:oid, :loc, :status, :event, :note, :source, NOW(), NOW())"
+    );
+    $tstmt->execute([
+        ':oid' => $order_id,
+        ':loc'  => $locHint, // null when not available
+        ':status' => $event_status,
+        ':event' => $event,
+        ':note' => $note,
+        ':source' => $event_source
+    ]);
 
     $pdo->commit();
 
@@ -169,7 +165,7 @@ $tstmt->execute([
     exit;
 }
 
-// Forward to admin if configured (best-effort)
+// Build payload to forward to admin if configured
 $payload = [
     'return_id' => $return_id,
     'order_id' => $order_id,
@@ -183,30 +179,30 @@ $payload = [
 
 $adminResponse = null;
 if ($notify_admin) {
-    // try admin_api_post helper first
     if (function_exists('admin_api_post')) {
         try {
+            // admin_api_post expected to return array with keys 'http_code' and 'json' or throw
             $adminResponse = admin_api_post('/api/returns.php', $payload);
         } catch (Throwable $e) {
             error_log('create_return: admin_api_post failed: ' . $e->getMessage());
             $adminResponse = null;
         }
     } else {
-        // fallback to ADMIN_SITE_URL env/constant
+        // fallback to ADMIN_SITE_URL + ADMIN_API_KEY
         $adminBase = defined('ADMIN_SITE_URL') ? ADMIN_SITE_URL : (getenv('ADMIN_SITE_URL') ?: null);
         if ($adminBase) {
             $url = rtrim($adminBase, '/') . '/api/returns.php';
             try {
+                $headers = ['Content-Type: application/json'];
+                if (defined('ADMIN_API_KEY') && ADMIN_API_KEY) {
+                    $headers[] = 'Authorization: Bearer ' . ADMIN_API_KEY;
+                }
                 $ch = curl_init($url);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-                // If ADMIN_API_KEY is defined, send it as Authorization header (bearer)
-                if (defined('ADMIN_API_KEY')) {
-                    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json', 'Authorization: Bearer ' . ADMIN_API_KEY]);
-                }
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-                curl_setopt($ch, CURLOPT_TIMEOUT, 8);
-                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 4);
+                curl_setopt($ch, CURLOPT_TIMEOUT, defined('ADMIN_API_TIMEOUT') ? ADMIN_API_TIMEOUT : 8);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, defined('ADMIN_API_CONNECT_TIMEOUT') ? ADMIN_API_CONNECT_TIMEOUT : 4);
                 $raw = curl_exec($ch);
                 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 if ($raw === false) {
@@ -230,7 +226,7 @@ if ($notify_admin) {
     }
 }
 
-// If admin returned an external AWB, update the returns row (best-effort)
+// If admin returned an external AWB, update returns row (best-effort)
 if (is_array($adminResponse) && !empty($adminResponse['json']) && is_array($adminResponse['json'])) {
     $j = $adminResponse['json'];
     $externalAwb = $j['rvp_awb'] ?? ($j['external_awb'] ?? null);
@@ -244,7 +240,7 @@ if (is_array($adminResponse) && !empty($adminResponse['json']) && is_array($admi
     }
 }
 
-// Return success
+// Success response
 $response = ['success' => true, 'return_id' => $return_id, 'message' => 'Return requested successfully'];
 if ($adminResponse !== null) $response['admin_response'] = $adminResponse;
 echo json_encode($response, JSON_UNESCAPED_SLASHES);

@@ -4,11 +4,10 @@
 // {
 //   success: true,
 //   order: { id, awb, label_url, latest_status, expected_delivery_date, created_at },
-//   timeline: [ { id, status, event, event_status, note, location, occurred_at }, ... ]
+//   timeline: [ { id, event, event_status, status, note, location, event_source, awb, courier_name, payload, latitude, longitude, occurred_at }, ... ]
 // }
 
 declare(strict_types=1);
-
 header('Content-Type: application/json; charset=utf-8');
 
 // include project bootstrap and DB config (relative to api/)
@@ -17,7 +16,7 @@ $dbPath     = __DIR__ . '/../config/db.php';
 if (file_exists($commonPath)) require_once $commonPath;
 if (file_exists($dbPath))     require_once $dbPath;
 
-/** safe get_json_input fallback (common_start normally provides it) */
+// fallback JSON body helper if common_start does not provide it
 if (!function_exists('get_json_input')) {
     function get_json_input(): array {
         $raw = file_get_contents('php://input');
@@ -27,9 +26,8 @@ if (!function_exists('get_json_input')) {
     }
 }
 
-/** Ensure PDO is available (db.php usually sets $pdo) */
+// Ensure PDO is available (db.php usually sets $pdo). Try safe_pdo() fallback.
 if (!isset($pdo) || !($pdo instanceof PDO)) {
-    // attempt a minimal fallback (do not override an existing connection if present)
     if (function_exists('safe_pdo')) {
         try { $pdo = safe_pdo(); } catch (Throwable $e) { error_log('get_order_tracking: safe_pdo failed: '.$e->getMessage()); }
     }
@@ -54,7 +52,6 @@ if ($currentUserId === null && !empty($_SESSION['user_id'])) $currentUserId = (i
 $allow_request_fallback = defined('ALLOW_REQUEST_USER_FALLBACK') ? (bool) ALLOW_REQUEST_USER_FALLBACK : true;
 if ($currentUserId === null && $allow_request_fallback) {
     if (!empty($_REQUEST['user_id'])) $currentUserId = (int)$_REQUEST['user_id'];
-    // also accept JSON body fallback if allowed (testing convenience)
     if ($currentUserId === null) {
         $probe = get_json_input();
         if (!empty($probe['user_id'])) $currentUserId = (int)$probe['user_id'];
@@ -83,9 +80,10 @@ if ($order_id <= 0) {
 }
 
 try {
-    // fetch order and ensure ownership; use COALESCE to show delhivery_status if present
+    // Fetch order and ensure ownership
     $orderStmt = $pdo->prepare("
-        SELECT id, user_id, awb, label_url, COALESCE(delhivery_status, status) AS latest_status,
+        SELECT id, user_id, awb, label_url,
+               COALESCE(delhivery_status, status) AS latest_status,
                expected_delivery_date, created_at
         FROM orders
         WHERE id = :id
@@ -98,19 +96,24 @@ try {
         echo json_encode(['success' => false, 'error' => 'order_not_found']);
         exit;
     }
-
     if ((int)$order['user_id'] !== (int)$currentUserId) {
         echo json_encode(['success' => false, 'error' => 'not_owner']);
         exit;
     }
 
-    // fetch tracking rows — use occurred_at if available, otherwise fallback updated_at
+    // Fetch tracking rows, include event_source, awb, courier_name, payload, lat/lon if present
     $trackStmt = $pdo->prepare("
         SELECT id,
                location,
                event_status,
                event,
                note,
+               event_source,
+               awb,
+               courier_name,
+               payload,
+               latitude,
+               longitude,
                occurred_at,
                updated_at
         FROM order_tracking
@@ -127,30 +130,54 @@ try {
     exit;
 }
 
-// Build timeline: start with an order-level entry (Order placed)
+// Build timeline: start with an order-level entry
 $timeline = [];
 
-// order-level
+// order-level entry (Order created / placed)
 $timeline[] = [
     'id' => null,
-    'status' => $order['latest_status'] ?? null,
     'event' => 'ORDER_CREATED',
+    'status' => $order['latest_status'] ?? null,
     'event_status' => $order['latest_status'] ?? null,
     'note' => null,
     'location' => null,
+    'event_source' => 'system',
+    'awb' => $order['awb'] ?? null,
+    'courier_name' => null,
+    'payload' => null,
+    'latitude' => null,
+    'longitude' => null,
     'occurred_at' => $order['created_at'] ?? null
 ];
 
 // append tracking rows
 foreach ($tracks as $t) {
     $ts = $t['occurred_at'] ?? $t['updated_at'] ?? null;
+    // try to decode payload if present
+    $payload = null;
+    if (!empty($t['payload'])) {
+        // payload may be JSON or string; attempt decode safely
+        if (is_string($t['payload'])) {
+            $dec = json_decode($t['payload'], true);
+            $payload = (json_last_error() === JSON_ERROR_NONE) ? $dec : $t['payload'];
+        } else {
+            $payload = $t['payload'];
+        }
+    }
+
     $timeline[] = [
         'id' => isset($t['id']) ? (int)$t['id'] : null,
-        'status' => $t['event_status'] ?? null,
         'event' => $t['event'] ?? null,
+        'status' => $t['event_status'] ?? null,
         'event_status' => $t['event_status'] ?? null,
         'note' => $t['note'] ?? null,
         'location' => $t['location'] ?? null,
+        'event_source' => $t['event_source'] ?? null,
+        'awb' => $t['awb'] ?? null,
+        'courier_name' => $t['courier_name'] ?? null,
+        'payload' => $payload,
+        'latitude' => $t['latitude'] ?? null,
+        'longitude' => $t['longitude'] ?? null,
         'occurred_at' => $ts
     ];
 }
