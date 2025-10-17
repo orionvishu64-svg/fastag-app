@@ -13,6 +13,6 @@ error_reporting(E_ALL);
     <a href="contact.php" class="<?= basename($_SERVER['PHP_SELF']) === 'contact.php' ? 'active' : '' ?>"><i class="fa-solid fa-comment"></i> Contact Us</a>
     <a href="blog.php" class="<?= basename($_SERVER['PHP_SELF']) === 'blog.php' ? 'active' : '' ?>"><i class="far fa-image"></i> Blog</a>
     <a href="about.php" class="<?= basename($_SERVER['PHP_SELF']) === 'about.php' ? 'active' : '' ?>"><i class="fa fa-info-circle"></i> About US</a>
-    <a id="nav-logout" href="/config/logout.php"><i class="fa fa-sign-out"></i> Logout</a>
+    <a id="nav-logout" href="/../config/logout.php"><i class="fa fa-sign-out"></i> Logout</a>
 </nav>
 </aside>
