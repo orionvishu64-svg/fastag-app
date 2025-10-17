@@ -109,19 +109,49 @@ try {
 
     // Insert a tracking/annotation row — ensure location is NOT NULL in your schema
     // Use a friendly, short non-null value for location to satisfy schema constraints.
-    $location = 'Return Requested';
-    $event_status = 'Return Requested';
-    $event = 'RETURN_REQUESTED';
-    $note = 'Customer requested return: ' . $reason;
+    // --- Begin patched tracking insert (system event) ---
+// --- Insert a system tracking annotation with event_source = 'system' ---
+$event_status = 'Return Requested';
+$event = 'RETURN_REQUESTED';
+$note = 'Customer requested return: ' . $reason;
+$event_source = 'system';
 
-    $tstmt = $pdo->prepare("INSERT INTO order_tracking (order_id, location, event_status, event, note, occurred_at, updated_at) VALUES (:oid, :loc, :status, :event, :note, NOW(), NOW())");
-    $tstmt->execute([
-        ':oid' => $order_id,
-        ':loc' => $location,
-        ':status' => $event_status,
-        ':event' => $event,
-        ':note' => $note
-    ]);
+// Optional buyer location hint (city + pincode) — safe fallback; leave NULL if not available
+$locHint = null;
+try {
+    $addrStmt = $pdo->prepare("
+        SELECT a.city, a.pincode
+        FROM orders o
+        LEFT JOIN addresses a ON a.id = o.address_id
+        WHERE o.id = :oid LIMIT 1
+    ");
+    $addrStmt->execute([':oid' => $order_id]);
+    $addrRow = $addrStmt->fetch(PDO::FETCH_ASSOC);
+    if ($addrRow) {
+        $city = trim((string)($addrRow['city'] ?? ''));
+        $pin = trim((string)($addrRow['pincode'] ?? ''));
+        $locHint = trim(($city ? $city : '') . ($pin ? ' ' . $pin : ''));
+        if ($locHint === '') $locHint = null;
+    }
+} catch (Throwable $e) {
+    $locHint = null;
+}
+
+$tstmt = $pdo->prepare(
+    "INSERT INTO order_tracking
+       (order_id, location, event_status, event, note, event_source, occurred_at, updated_at)
+     VALUES
+       (:oid, :loc, :status, :event, :note, :source, NOW(), NOW())"
+);
+$tstmt->execute([
+    ':oid' => $order_id,
+    ':loc' => $locHint,           // NULL when no hint available
+    ':status' => $event_status,
+    ':event' => $event,
+    ':note' => $note,
+    ':source' => $event_source
+]);
+// --- End patched tracking insert ---
 
     $pdo->commit();
 
