@@ -27,7 +27,7 @@ try {
     // include image AS logo for the frontend
     $sql = "SELECT 
                 id, name, description, price, bank, category, product_id,
-                activation, security, tagcost, payout,
+                activation, balance, security, tagcost, payout,
                 image AS logo
             FROM products
             WHERE 1=1";
@@ -52,6 +52,7 @@ try {
         $r['price']      = (float)($r['price'] ?? 0);
         $r['tagcost']    = (float)($r['tagcost'] ?? 0);
         $r['activation'] = (int)($r['activation'] ?? 0);
+        $r['balance']    = (int)($r['balance'] ?? 0);
         $r['security']   = (int)($r['security'] ?? 0);
         $r['payout']     = (string)($r['payout'] ?? '');
 

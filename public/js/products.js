@@ -91,6 +91,7 @@
               <div class="sheet-bank-cat"></div>
               <div class="sheet-meta-grid">
                 <div><strong>Activation:</strong> <span class="sheet-activation"></span></div>
+                <div><strong>Balance:</strong> <span class="sheet-balance"></span></div>
                 <div><strong>Security:</strong> <span class="sheet-security"></span></div>
                 <div><strong>Tagcost:</strong> <span class="sheet-tagcost"></span></div>
                 <div><strong>Payout:</strong> <span class="sheet-payout"></span></div>
@@ -120,6 +121,7 @@
     const title = sheet.querySelector('.sheet-title');
     const bankCat = sheet.querySelector('.sheet-bank-cat');
     const activation = sheet.querySelector('.sheet-activation');
+    const balance = sheet.querySelector('.sheet-balance');
     const security = sheet.querySelector('.sheet-security');
     const tagcost = sheet.querySelector('.sheet-tagcost');
     const payout = sheet.querySelector('.sheet-payout');
@@ -161,6 +163,7 @@
         title.textContent = product.name || '';
         bankCat.textContent = `${product.bank || ''} • ${product.category || ''}`;
         activation.textContent = (product.activation != null) ? `₹${product.activation}` : '—';
+        balance.textContent = (product.balance != null) ? `₹${product.balance}` : '—';
         security.textContent = (product.security != null) ? `₹${product.security}` : '—';
         tagcost.textContent = (product.tagcost != null) ? `₹${product.tagcost}` : '—';
         payout.textContent = product.payout || '—';

@@ -71,6 +71,7 @@ const ProductDB = (function () {
       category: r.category || '',
       product_id: r.product_id || '',
       activation: r.activation != null ? Number(r.activation) : 0,
+      balance: r.balance != null ? Number(r.balance) : 0,
       security: r.security != null ? Number(r.security) : 0,
       tagcost: r.tagcost != null ? Number(r.tagcost) : 0,
       payout: r.payout || '',
