@@ -1,12 +1,6 @@
 <?php
 // /var/www/html/api/create_return.php
 // Creates a local return entry and forwards it to the admin site for RVP/QC handling.
-//
-// Notes:
-// - Matches your DB schema: returns does NOT have items_json column.
-// - order_tracking.location is NOT NULL in your schema, so we populate it with a short text.
-// - Uses relative includes: ../config/common_start.php and ../config/db.php
-// - Safe PDO acquisition: prefers $pdo from db.php, then safe_pdo(), then globals.
 
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');

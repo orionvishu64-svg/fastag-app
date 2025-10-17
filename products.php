@@ -7,7 +7,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FASTag Products - Apna Payment Services</title>
-
   <link rel="stylesheet" href="/public/css/styles.css" />
   <link rel="stylesheet" href="/public/css/theme.css" />
   <link rel="stylesheet" href="/public/css/products.css" />
