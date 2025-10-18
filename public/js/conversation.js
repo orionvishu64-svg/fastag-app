@@ -1,7 +1,7 @@
 (() => {
   const ENDPOINT_GET_CONV = '/config/get_conversation.php';          // GET ?ticket_id=...
   const ENDPOINT_GET_CLOSED = '/config/get_closed_conversation.php';
-  const ENDPOINT_ADD_REPLY = '/config/contact_replies.php';          // POST { ticket_id|query_id, message }
+  const ENDPOINT_ADD_REPLY = '/config/contact_replies.php';          // POST { ticket_id|query_id, message, local_id, origin_socket_id }
 
   // ===== Utility Functions =====
   async function safeFetchJson(url, opts = {}) {
@@ -48,36 +48,73 @@
   }
 
   function genLocalId() {
+    if (window.crypto && window.crypto.randomUUID) return 'local_' + crypto.randomUUID();
     return 'local_' + Date.now().toString(36) + '_' + Math.floor(Math.random() * 90000 + 10000).toString(36);
   }
 
-  // ===== DOM Rendering Helpers =====
-  function addMessageToThread(text, is_admin, timestamp, admin_identifier, user_id) {
-    const thread = document.getElementById('openThread');
-    if (!thread) return;
+  // ===== Centralized, idempotent message renderer =====
+  // msg: { id, local_id, content/message/reply_text, is_admin (0/1), created_at, admin_identifier, user_id }
+  function renderMessage(msg = {}, { containerId = 'openThread', prepend = false } = {}) {
+    const container = document.getElementById(containerId);
+    if (!container) return null;
+
+    // normalized fields
+    const replyId = msg.id ?? msg.inserted_id ?? msg.reply_id ?? null;
+    const localId = msg.local_id ?? msg.localId ?? msg.client_msg_id ?? null;
+    const text = msg.reply_text ?? msg.message ?? msg.content ?? '';
+    const isAdmin = (typeof msg.is_admin !== 'undefined') ? (Number(msg.is_admin) === 1) : Boolean(msg.admin_identifier);
+    const who = isAdmin ? (msg.admin_identifier || 'Admin') : 'You';
+    const ts = msg.created_at ?? msg.replied_at ?? msg.created_at_ts ?? null;
+    const tsText = fmtTimeToIST(ts);
+
+    // Deduplication: if a node with same replyId or localId exists -> don't render again
+    if (replyId && container.querySelector(`[data-reply-id="${escapeAttr(replyId)}"]`)) return null;
+    if (!replyId && localId && container.querySelector(`[data-local-id="${escapeAttr(localId)}"]`)) return null;
+
+    // Build DOM node (consistent with history rendering)
     const div = document.createElement('div');
-    div.className = `message ${Number(is_admin) === 1 ? 'admin' : 'user'}`;
-    const who = Number(is_admin) === 1 ? (admin_identifier || 'Admin') : 'You';
-    const ts = fmtTimeToIST(timestamp);
+    div.className = `message ${isAdmin ? 'admin' : 'user'}`;
+    if (replyId) div.setAttribute('data-reply-id', String(replyId));
+    if (localId) div.setAttribute('data-local-id', String(localId));
     div.innerHTML = `<div><strong>${escapeHtml(who)}:</strong> ${escapeHtml(text)}</div>
-                     <div class="meta">${escapeHtml(ts)}</div>`;
-    thread.appendChild(div);
-    thread.scrollTop = thread.scrollHeight;
+                     <div class="meta">${escapeHtml(tsText)}</div>`;
+
+    if (prepend) container.prepend(div); else container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
   }
 
-  function renderClosedReplies(container, replies) {
+  // small helper to escape values used inside attribute selectors
+  function escapeAttr(s) {
+    return String(s || '').replace(/(["\\])/g, '\\$1');
+  }
+
+  // render an array of replies into a container element
+  function renderRepliesContainer(container, replies) {
     if (!container) return;
     container.innerHTML = '';
     (replies || []).forEach(r => {
-      const div = document.createElement('div');
-      const is_admin = (typeof r.is_admin !== 'undefined') ? Number(r.is_admin) === 1 : Boolean(r.admin_identifier);
-      div.className = `message ${is_admin ? 'admin' : 'user'}`;
-      const text = r.reply_text ?? r.message ?? '';
-      const ts = fmtTimeToIST(r.replied_at ?? r.created_at ?? r.created_at_ts);
-      div.innerHTML = `<div>${escapeHtml(text)}</div>
-                       <div class="meta">${escapeHtml(ts)}</div>`;
-      container.appendChild(div);
+      renderMessage({
+        id: r.id ?? r.inserted_id ?? r.reply_id,
+        local_id: r.local_id ?? r.localId,
+        reply_text: r.reply_text ?? r.message ?? '',
+        is_admin: (typeof r.is_admin !== 'undefined') ? Number(r.is_admin) : Boolean(r.admin_identifier),
+        created_at: r.replied_at ?? r.created_at ?? r.created_at_ts,
+        admin_identifier: r.admin_identifier,
+        user_id: r.user_id
+      }, { containerId: container.id, prepend: false });
     });
+  }
+
+  // small helper: get ticket_id from URL ?ticket_id=... (fallback to window.TICKET_PUBLIC_ID)
+  function getRequestedTicketId() {
+    const fromGlobal = (window.TICKET_PUBLIC_ID || '').toString().trim();
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get('ticket_id') || params.get('query_id') || null;
+      if (q && String(q).trim()) return String(q).trim();
+    } catch (e) {}
+    return fromGlobal || null;
   }
 
   // ===== Load Open Ticket =====
@@ -121,22 +158,14 @@
       div.innerHTML = inner;
       container.appendChild(div);
 
-      // populate existing replies
+      // populate existing replies using centralized renderer
       const threadEl = document.getElementById('openThread');
-      (data.replies || []).forEach(r => {
-        const text = r.reply_text ?? r.message ?? '';
-        const is_admin = (typeof r.is_admin !== 'undefined') ? Number(r.is_admin) === 1 : Boolean(r.admin_identifier);
-        const ts = r.replied_at ?? r.created_at;
-        const replyDiv = document.createElement('div');
-        replyDiv.className = `message ${is_admin ? 'admin' : 'user'}`;
-        replyDiv.innerHTML = `<div>${escapeHtml(text)}</div>
-                              <div class="meta">${escapeHtml(fmtTimeToIST(ts))}</div>`;
-        threadEl.appendChild(replyDiv);
-      });
+      renderRepliesContainer(threadEl, data.replies || []);
 
       // ===== Submit Handler (Optimistic Append + local_id/origin_socket_id) =====
       const form = document.getElementById('replyForm');
       if (form) {
+        // remove previously attached handler if any (prevents double-binding)
         if (form.__replyHandler) form.removeEventListener('submit', form.__replyHandler);
 
         const handler = async (e) => {
@@ -145,19 +174,21 @@
           const msg = (msgEl && msgEl.value || '').trim();
           if (!msg) return;
 
-          // Optimistic append
-          const nowIso = new Date().toISOString();
-          addMessageToThread(msg, 0, nowIso);
-
           // Prepare local_id + origin_socket_id
           const localId = genLocalId();
           let originSocketId = null;
-          try {
-            originSocketId = sessionStorage.getItem('chat_socket_id') || null;
-          } catch {
-            originSocketId = null;
-          }
+          try { originSocketId = sessionStorage.getItem('chat_socket_id') || null; } catch { originSocketId = null; }
 
+          // Optimistic append (use centralized renderer)
+          const nowIso = new Date().toISOString();
+          const optimisticNode = renderMessage({
+            local_id: localId,
+            reply_text: msg,
+            is_admin: 0,
+            created_at: nowIso
+          }, { containerId: 'openThread', prepend: false });
+
+          // send to server
           try {
             const fd = new FormData();
             fd.append('ticket_id', t.id || t.query_id || t.ticket_id || '');
@@ -175,19 +206,21 @@
 
             if (res && res.success) {
               try {
-                const node = document.querySelector('.replies > .message.user:last-child, #openThread > .message.user:last-child');
-                if (node) {
-                  if (res.inserted_id) node.setAttribute('data-reply-id', String(res.inserted_id));
-                  if (res.local_id || localId) node.setAttribute('data-local-id', String(res.local_id || localId));
+                // update optimistic node attributes with authoritative IDs returned by server
+                if (optimisticNode) {
+                  if (res.inserted_id) optimisticNode.setAttribute('data-reply-id', String(res.inserted_id));
+                  if (res.local_id || localId) optimisticNode.setAttribute('data-local-id', String(res.local_id || localId));
                 }
-              } catch {}
+              } catch (err) { /* ignore DOM update errors */ }
             } else {
               console.error('Reply API failed', res);
               alert('Failed to send reply. Please try again.');
+              // optionally remove optimisticNode or mark as failed
             }
           } catch (err) {
             console.error('Send reply failed', err);
             alert('Failed to send reply. Please try again later.');
+            // optionally remove optimisticNode or mark as failed
           }
 
           if (msgEl) msgEl.value = '';
@@ -204,48 +237,117 @@
     }
   }
 
-  // ===== Load Closed Tickets =====
-  async function loadClosedTickets() {
-    try {
-      const data = await safeFetchJson(ENDPOINT_GET_CLOSED, { method: 'GET' });
+// ===== Load Closed Tickets =====
+async function loadClosedTickets() {
+  try {
+    // Check if we have a specific ticket requested (URL param or global)
+    const requestedTicket = getRequestedTicketId(); // uses URL or window.TICKET_PUBLIC_ID
+
+    // If a specific ticket is requested, fetch full conversation via the "get conversation" endpoint
+    if (requestedTicket) {
+      // use the same endpoint as open ticket rendering so we get full replies
+      const url = ENDPOINT_GET_CONV + '?ticket_id=' + encodeURIComponent(requestedTicket);
+      const data = await safeFetchJson(url, { method: 'GET' });
+
       const container = document.getElementById('closedTicketsContainer');
       if (!container) return;
       container.innerHTML = '';
 
-      if (data && data.success && Array.isArray(data.queries) && data.queries.length) {
-        data.queries.forEach(q => {
-          const tdiv = document.createElement('div');
-          tdiv.className = 'ticket';
-          let html = '';
-          html += `<div class="status-badge">Closed</div>`;
-          html += `<h4>${escapeHtml(q.ticket_id || q.id)} - ${escapeHtml(q.subject || '')}</h4>`;
-          html += `<p><strong>Message:</strong> ${escapeHtml(q.message || '')}</p>`;
-          html += `<div class="replies"></div>`;
-          html += `<div class="meta">Closed: ${escapeHtml(fmtTimeToIST(q.closed_at ?? q.submitted_at))}</div>`;
-          tdiv.innerHTML = html;
-          container.appendChild(tdiv);
-          const repliesContainer = tdiv.querySelector('.replies');
-          renderClosedReplies(repliesContainer, q.replies || []);
-        });
-      } else {
-        container.innerHTML = '<div class="ticket"><p>No closed tickets. Please check back later.</p></div>';
+      if (!data || (Array.isArray(data) && data.length === 0) ||
+          (typeof data === 'object' && Object.keys(data).length === 0)) {
+        container.innerHTML = `<div class="ticket"><p>No conversation found for #${escapeHtml(requestedTicket)}</p></div>`;
+        return;
       }
-    } catch (err) {
-      console.error('Failed to load closed tickets', err);
+
+      // Normalize to ticket object (same as loadOpenTicket)
+      const t = data.query || (Array.isArray(data) ? data[0] : (data.ticket || data));
+      if (!t) {
+        container.innerHTML = `<div class="ticket"><p>No conversation found for #${escapeHtml(requestedTicket)}</p></div>`;
+        return;
+      }
+
+      // Render single ticket (same markup as open ticket)
+      const div = document.createElement('div');
+      div.className = 'ticket';
+      let inner = '';
+      inner += `<div class="status-badge">${t.status ? (t.status.charAt(0).toUpperCase() + t.status.slice(1)) : 'Closed'}</div>`;
+      inner += `<h4>Ticket #${escapeHtml(t.ticket_id || t.id || t.query_id)} - ${escapeHtml(t.subject || '')}</h4>`;
+      inner += `<p><strong>Message:</strong> ${escapeHtml(t.message || '')}</p>`;
+      inner += `<div id="openThread" class="replies"></div>`;
+      // We usually do not render the reply form for closed tickets, but keep the thread
+      div.innerHTML = inner;
+      container.appendChild(div);
+
+      // populate replies using centralized renderer (same as open)
+      const threadEl = document.getElementById('openThread');
+      renderRepliesContainer(threadEl, data.replies || t.replies || []);
+
+      return;
     }
+
+    // No specific ticket requested: fallback to listing *all* closed tickets via the closed endpoint
+    const data = await safeFetchJson(ENDPOINT_GET_CLOSED, { method: 'GET' });
+    const container = document.getElementById('closedTicketsContainer');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (data && data.success && Array.isArray(data.queries) && data.queries.length) {
+      data.queries.forEach(q => {
+        const tdiv = document.createElement('div');
+        tdiv.className = 'ticket';
+        let html = '';
+        html += `<div class="status-badge">Closed</div>`;
+        html += `<h4>${escapeHtml(q.ticket_id || q.id)} - ${escapeHtml(q.subject || '')}</h4>`;
+        html += `<p><strong>Message:</strong> ${escapeHtml(q.message || '')}</p>`;
+        html += `<div class="replies"></div>`;
+        html += `<div class="meta">Closed: ${escapeHtml(fmtTimeToIST(q.closed_at ?? q.submitted_at))}</div>`;
+        tdiv.innerHTML = html;
+        container.appendChild(tdiv);
+        const repliesContainer = tdiv.querySelector('.replies');
+        renderClosedReplies(repliesContainer, q.replies || []);
+      });
+    } else {
+      container.innerHTML = '<div class="ticket"><p>No closed tickets. Please check back later.</p></div>';
+    }
+  } catch (err) {
+    console.error('Failed to load closed tickets', err);
   }
+}
 
   // ===== Post Reply (generic utility if needed elsewhere) =====
-  async function postReply(queryIdOrTicketId, message) {
+  async function postReply(queryIdOrTicketId, message, opts = {}) {
     if (!queryIdOrTicketId || !message) throw new Error('Invalid params');
+    const localId = opts.local_id || genLocalId();
     const form = new FormData();
     form.append('ticket_id', queryIdOrTicketId);
     form.append('query_id', queryIdOrTicketId);
     form.append('message', message);
     form.append('reply_text', message);
+    form.append('local_id', localId);
+    if (opts.origin_socket_id) form.append('origin_socket_id', opts.origin_socket_id);
+
     const res = await safeFetchJson(ENDPOINT_ADD_REPLY, { method: 'POST', body: form, credentials: 'include' });
     if (!res || (res.success === false)) throw new Error(res && res.message ? res.message : 'Server rejected reply');
     return res;
+  }
+
+  // ===== Expose a handler for incoming socket events (so chat-socket.js can call it) =====
+  // payload should include at least: inserted_id/id/reply_id, local_id (if included), reply_text/message/content, is_admin, created_at
+  function handleIncomingSocketReply(payload) {
+    if (!payload) return;
+    // Normalize payload into message object and call centralized renderer
+    const m = {
+      id: payload.id ?? payload.inserted_id ?? payload.reply_id ?? null,
+      local_id: payload.local_id ?? payload.localId ?? payload.client_msg_id ?? null,
+      reply_text: payload.reply_text ?? payload.message ?? payload.content ?? '',
+      is_admin: (typeof payload.is_admin !== 'undefined') ? payload.is_admin : (payload.user_type === 'admin' ? 1 : 0),
+      created_at: payload.created_at ?? payload.replied_at ?? new Date().toISOString(),
+      admin_identifier: payload.admin_identifier ?? null,
+      user_id: payload.user_id ?? null
+    };
+
+    // Render using centralized function (it will dedupe by data-reply-id/data-local-id)
+    renderMessage(m, { containerId: 'openThread', prepend: false });
   }
 
   // ===== Initialize =====
@@ -254,9 +356,12 @@
     loadClosedTickets();
   });
 
+  // Public API
   window.CONVERSATION = {
     reloadOpen: loadOpenTicket,
     reloadClosed: loadClosedTickets,
-    postReply
+    postReply,
+    renderMessage,           // useful for other modules (socket) to call directly if needed
+    handleIncomingSocketReply
   };
 })();
