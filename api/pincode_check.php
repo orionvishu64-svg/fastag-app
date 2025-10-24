@@ -1,12 +1,11 @@
 <?php
 // /var/www/html/api/pincode_check.php
-// Returns JSON:
-// { success: true, serviceable: bool, shipping_cost: number|null, min_tat_days: int|null, max_tat_days: int|null, message: string, source: 'local'|'admin'|'none'}
+// Unified API: { success, serviceable, shipping_cost, min_tat_days, max_tat_days, message, source }
 
 declare(strict_types=1);
-
 header('Content-Type: application/json; charset=utf-8');
-// include common_start and db config (relative paths)
+
+// --- include common_start and db config ---
 $commonPath = __DIR__ . '/../config/common_start.php';
 $dbPath     = __DIR__ . '/../config/db.php';
 if (file_exists($commonPath)) require_once $commonPath;
@@ -17,7 +16,7 @@ if (!file_exists($dbPath)) {
 }
 require_once $dbPath;
 
-// helper: read JSON body (if common_start already has get_json_input, this will not override)
+// ---------- helpers ----------
 if (!function_exists('get_json_input')) {
     function get_json_input(): array {
         $raw = file_get_contents('php://input');
@@ -26,154 +25,166 @@ if (!function_exists('get_json_input')) {
         return (json_last_error() === JSON_ERROR_NONE && is_array($dec)) ? $dec : [];
     }
 }
-
-// helper: unified output
 function out_resp(array $payload, int $httpCode = 200): void {
     if (!headers_sent()) http_response_code($httpCode);
     echo json_encode($payload, JSON_UNESCAPED_SLASHES);
     exit;
 }
 
-// ensure PDO available (db.php should define $pdo)
+// ---------- ensure PDO ----------
 if (!isset($pdo) || !($pdo instanceof PDO)) {
-    // attempt safe_pdo if present
     if (function_exists('safe_pdo')) {
-        try { $pdo = safe_pdo(); } catch (Throwable $e) { error_log('pincode_check: safe_pdo failed: ' . $e->getMessage()); }
+        try { $pdo = safe_pdo(); } catch (Throwable $e) {
+            error_log('pincode_check: safe_pdo failed: ' . $e->getMessage());
+        }
     }
 }
 if (!isset($pdo) || !($pdo instanceof PDO)) {
-    out_resp(['success' => false, 'error' => 'db_unavailable'], 500);
+    error_log('pincode_check: no valid PDO connection');
+    out_resp(['success'=>false,'error'=>'db_unavailable'],500);
 }
 
-// Accept pincode via GET, POST form or JSON
-$inputJson = get_json_input();
-$pincodeRaw = null;
-if (!empty($_GET['pincode'])) $pincodeRaw = $_GET['pincode'];
-elseif (!empty($_GET['pin'])) $pincodeRaw = $_GET['pin'];
-elseif (!empty($_POST['pincode'])) $pincodeRaw = $_POST['pincode'];
-elseif (!empty($_POST['pin'])) $pincodeRaw = $_POST['pin'];
-elseif (!empty($inputJson['pincode'])) $pincodeRaw = $inputJson['pincode'];
-elseif (!empty($inputJson['pin'])) $pincodeRaw = $inputJson['pin'];
+// ---------- read input ----------
+$inputJson  = get_json_input();
+$pincodeRaw = $_GET['pincode'] ?? $_GET['pin'] ?? $_POST['pincode'] ?? $_POST['pin'] ?? $inputJson['pincode'] ?? $inputJson['pin'] ?? null;
+$pincode    = is_scalar($pincodeRaw) ? trim((string)$pincodeRaw) : '';
 
-// sanitize
-$pincode = is_scalar($pincodeRaw) ? trim((string)$pincodeRaw) : '';
+if ($pincode === '') out_resp(['success'=>false,'error'=>'missing_pincode'],400);
+if (!preg_match('/^\d{6}$/',$pincode)) out_resp(['success'=>false,'error'=>'invalid_pincode'],400);
 
-if ($pincode === '') {
-    out_resp(['success' => false, 'error' => 'missing_pincode'], 400);
-}
-
-// validate 6-digit Indian pincode
-if (!preg_match('/^\d{6}$/', $pincode)) {
-    out_resp(['success' => false, 'error' => 'invalid_pincode'], 400);
-}
-
-// normalize results shape
+// ---------- result base ----------
 $resultShape = [
-    'success' => true,
-    'serviceable' => false,
+    'success'       => true,
+    'serviceable'   => false,
     'shipping_cost' => null,
-    'min_tat_days' => null,
-    'max_tat_days' => null,
-    'message' => 'not_serviceable',
-    'source' => 'none'
+    'min_tat_days'  => null,
+    'max_tat_days'  => null,
+    'message'       => 'not_serviceable',
+    'source'        => 'none'
 ];
 
-// 1) Try local DB lookup (multiple candidate tables & column mapping)
+// ---------- local DB lookup ----------
 try {
+    $cacheDir = __DIR__ . '/../cache';
+    if (!is_dir($cacheDir)) @mkdir($cacheDir, 0775, true);
+    $cacheFile = "$cacheDir/pincode_table.cache";
+
     $candidateTables = ['pincode_serviceability','pincodes','pincodes_service','pin_serviceability','pincode_service'];
+
+    if (file_exists($cacheFile)) {
+        $cachedTable = trim(file_get_contents($cacheFile));
+        if ($cachedTable) $candidateTables = [$cachedTable];
+    }
+
     foreach ($candidateTables as $tbl) {
-        // check table exists quickly via information_schema to avoid exceptions
-        $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :tbl");
-        $checkStmt->execute([':tbl' => $tbl]);
-        $exists = (int)$checkStmt->fetchColumn() > 0;
+        $tblSafe = str_replace('`','', $tbl);
+        $existsStmt = $pdo->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :tbl");
+        $existsStmt->execute([':tbl' => $tblSafe]);
+        $exists = (int)$existsStmt->fetchColumn() > 0;
         if (!$exists) continue;
 
-        $q = "SELECT * FROM `$tbl` WHERE pincode = :pin LIMIT 1";
-        $stmt = $pdo->prepare($q);
-        $stmt->execute([':pin' => $pincode]);
+        $stmt = $pdo->prepare("SELECT * FROM `$tblSafe` WHERE pincode = :pin LIMIT 1");
+        $stmt->execute([':pin'=>$pincode]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$row) continue;
 
-        // Map known column names to normalized fields
-        // support a variety of naming conventions
+        @file_put_contents($cacheFile, $tblSafe);
+
+        // map columns
         $serviceable = null;
-        foreach (['is_serviceable','serviceable','available','is_available'] as $k) {
-            if (array_key_exists($k, $row)) { $serviceable = (bool)$row[$k]; break; }
-        }
-        if ($serviceable === null) $serviceable = true; // assume serviceable if record present unless explicit flag exists
+        foreach (['is_serviceable','serviceable','available','is_available'] as $k)
+            if (array_key_exists($k,$row)) { $serviceable = (bool)$row[$k]; break; }
+        if ($serviceable === null) $serviceable = true;
 
         $shipping_cost = null;
-        foreach (['shipping_cost','cost','shipping','delivery_cost'] as $k) {
-            if (array_key_exists($k, $row) && $row[$k] !== null && $row[$k] !== '') { $shipping_cost = (float)$row[$k]; break; }
-        }
+        foreach (['shipping_cost','cost','shipping','delivery_cost'] as $k)
+            if (array_key_exists($k,$row) && is_numeric($row[$k])) { $shipping_cost = (float)$row[$k]; break; }
 
         $min_tat = null;
-        foreach (['min_tat_days','min_tat','min_days'] as $k) {
-            if (array_key_exists($k, $row) && $row[$k] !== null && $row[$k] !== '') { $min_tat = (int)$row[$k]; break; }
-        }
+        foreach (['min_tat_days','min_tat','min_days'] as $k)
+            if (array_key_exists($k,$row) && is_numeric($row[$k])) { $min_tat = (int)$row[$k]; break; }
 
         $max_tat = null;
-        foreach (['max_tat_days','max_tat','max_days'] as $k) {
-            if (array_key_exists($k, $row) && $row[$k] !== null && $row[$k] !== '') { $max_tat = (int)$row[$k]; break; }
-        }
+        foreach (['max_tat_days','max_tat','max_days'] as $k)
+            if (array_key_exists($k,$row) && is_numeric($row[$k])) { $max_tat = (int)$row[$k]; break; }
 
         $message = $serviceable ? 'serviceable' : 'not_serviceable';
+        $http = $serviceable ? 200 : 404;
 
         out_resp(array_merge($resultShape, [
-            'serviceable' => $serviceable,
+            'serviceable'   => $serviceable,
             'shipping_cost' => $shipping_cost,
-            'min_tat_days' => $min_tat,
-            'max_tat_days' => $max_tat,
-            'message' => $message,
-            'source' => 'local',
-        ]));
+            'min_tat_days'  => $min_tat,
+            'max_tat_days'  => $max_tat,
+            'message'       => $message,
+            'source'        => 'local'
+        ]), $http);
     }
 } catch (Throwable $e) {
-    error_log('pincode_check local lookup error: ' . $e->getMessage());
-    // continue to admin API fallback
+    error_log('pincode_check local lookup error: '.$e->getMessage());
 }
 
-// 2) Try admin API via lib/admin_ship_api.php (if present)
+// ---------- admin API fallback ----------
 $adminApiFile = __DIR__ . '/../lib/admin_ship_api.php';
 if (file_exists($adminApiFile)) {
     try {
         require_once $adminApiFile;
         if (function_exists('admin_api_get')) {
-            $resp = admin_api_get('/api/pincode_serviceability.php', ['pin' => $pincode]);
+            $resp = admin_api_get('/api/pincode_serviceability.php',['pin'=>$pincode]);
             if (!empty($resp['json']) && is_array($resp['json'])) {
                 $j = $resp['json'];
-                // map common keys from admin
-                $serviceable = $j['serviceable'] ?? $j['is_serviceable'] ?? $j['available'] ?? false;
-                $shipping_cost = $j['shipping_cost'] ?? $j['shipping'] ?? $j['cost'] ?? null;
-                $min_tat = $j['min_tat_days'] ?? $j['min_days'] ?? $j['min_tat'] ?? null;
-                $max_tat = $j['max_tat_days'] ?? $j['max_days'] ?? $j['max_tat'] ?? null;
+                $serviceable = (bool)($j['serviceable'] ?? $j['is_serviceable'] ?? $j['available'] ?? false);
+                $shipping_cost = isset($j['shipping_cost']) ? (float)$j['shipping_cost'] : null;
+                $min_tat = isset($j['min_tat_days']) ? (int)$j['min_tat_days'] : null;
+                $max_tat = isset($j['max_tat_days']) ? (int)$j['max_tat_days'] : null;
                 $message = $j['message'] ?? ($serviceable ? 'serviceable' : 'not_serviceable');
-
-                // coerce types
-                $serviceable = (bool)$serviceable;
-                $shipping_cost = $shipping_cost !== null ? (float)$shipping_cost : null;
-                $min_tat = $min_tat !== null ? (int)$min_tat : null;
-                $max_tat = $max_tat !== null ? (int)$max_tat : null;
+                $http = $serviceable ? 200 : 404;
 
                 out_resp([
-                    'success' => true,
-                    'serviceable' => $serviceable,
-                    'shipping_cost' => $shipping_cost,
-                    'min_tat_days' => $min_tat,
-                    'max_tat_days' => $max_tat,
-                    'message' => $message,
-                    'source' => 'admin'
-                ]);
-            } else {
-                error_log('pincode_check: admin api returned empty or invalid JSON for pin ' . $pincode . ' raw:' . ($resp['raw'] ?? ''));
+                    'success'=>true,
+                    'serviceable'=>$serviceable,
+                    'shipping_cost'=>$shipping_cost,
+                    'min_tat_days'=>$min_tat,
+                    'max_tat_days'=>$max_tat,
+                    'message'=>$message,
+                    'source'=>'admin'
+                ], $http);
             }
-        } else {
-            error_log('pincode_check: admin_api_get not found in lib/admin_ship_api.php');
         }
     } catch (Throwable $e) {
-        error_log('pincode_check: admin_api_get exception: ' . $e->getMessage());
+        error_log('pincode_check admin_api_get exception: '.$e->getMessage());
     }
 }
 
-// 3) Not found/serviceable fallback
-out_resp($resultShape);
+/*
+// ---------- optional Delhivery live fallback ----------
+$delhiveryKey = getenv('DELHIVERY_API_KEY');
+if ($delhiveryKey) {
+    try {
+        $url = "https://track.delhivery.com/api/pin-codes/json/?filter_codes=$pincode";
+        $opts = ['http'=>[
+            'method'=>'GET',
+            'header'=>"Authorization: Token $delhiveryKey\r\n",
+            'timeout'=>4
+        ]];
+        $r = @file_get_contents($url, false, stream_context_create($opts));
+        $j = json_decode($r,true);
+        if (!empty($j['delivery_codes'][0]['postal_code']['is_deliverable'])) {
+            out_resp([
+                'success'=>true,
+                'serviceable'=>true,
+                'shipping_cost'=>null,
+                'min_tat_days'=>null,
+                'max_tat_days'=>null,
+                'message'=>'serviceable',
+                'source'=>'delhivery_live'
+            ]);
+        }
+    } catch (Throwable $e) {
+        error_log('pincode_check delhivery_live exception: '.$e->getMessage());
+    }
+}
+*/
+
+// ---------- default fallback ----------
+out_resp($resultShape,404);
