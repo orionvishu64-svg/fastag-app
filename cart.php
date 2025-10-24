@@ -14,7 +14,7 @@ require_once 'config/common_start.php';
 </head>
 <body>
 <?php include __DIR__ . '/includes/header.php'; ?>
-    <!-- Cart Content -->
+    <!-- Cart Content all items will populate here -->
     <section class="cart-section">
         <div class="container">
             <div class="cart-header">
