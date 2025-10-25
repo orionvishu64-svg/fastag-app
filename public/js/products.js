@@ -1,8 +1,10 @@
-/* /public/js/products.js — single-file renderer + Blinkit-style bottom sheet (rewritten)
+/* /public/js/products.js — single-file renderer + pagination style for products
    - Renders products into #products-container / .products-grid
    - Image handling fixed: pickLogo() supports logo/image/image_url/image_path + SVG placeholder fallback
    - Clicking a product card opens the full-screen sheet
    - addToCart fallback uses localStorage
+   - NEW: Add to cart button becomes “✔ Added”, stays disabled, and only reverts when item is removed from cart.
+   - NEW: Prevent duplicate adds (same product only once in cart).
 */
 
 (function () {
@@ -49,6 +51,48 @@
       imgEl.onerror = null;
       imgEl.src = svgPlaceholder(product?.bank || product?.name || '?');
     };
+  }
+
+  /* ---------- cart helpers (single source of truth = localStorage 'cart') ---------- */
+  function getCart() {
+    try { return JSON.parse(localStorage.getItem('cart') || '[]'); }
+    catch { return []; }
+  }
+  function setCart(arr) {
+    try { localStorage.setItem('cart', JSON.stringify(Array.isArray(arr) ? arr : [])); }
+    catch {}
+  }
+  function productId(obj) {
+    // prefer numeric id/product_id; fallback to string key using name
+    const nid = Number(obj?.id ?? obj?.product_id);
+    if (!Number.isNaN(nid)) return `id:${nid}`;
+    const name = (obj?.name || '').toString().trim();
+    return name ? `name:${name}` : null;
+  }
+  function sameProduct(a, b) {
+    const ka = productId(a);
+    const kb = productId(b);
+    return !!ka && !!kb && ka === kb;
+  }
+  function isInCart(p) {
+    const cart = getCart();
+    return cart.some(item => sameProduct(item, p));
+  }
+  function addToCartLocal(p, qty) {
+    const cart = getCart();
+    if (cart.some(i => sameProduct(i, p))) return cart; // already there
+    const item = { ...p };
+    // normalize quantity field name for compatibility
+    if ('quantity' in item) item.quantity = Math.max(1, Number(qty || item.quantity || 1));
+    else item.qty = Math.max(1, Number(qty || item.qty || 1));
+    cart.push(item);
+    setCart(cart);
+    return cart;
+  }
+  function removeFromCartLocal(p) {
+    const cart = getCart().filter(i => !sameProduct(i, p));
+    setCart(cart);
+    return cart;
   }
 
   /* ---------- container finder ---------- */
@@ -132,29 +176,62 @@
     const qtyDec = sheet.querySelector('.qty-decr');
     let addBtn = sheet.querySelector('.sheet-add');
 
+    let currentProduct = null; // for storage sync
+
+    function setAddedState(added) {
+      if (!addBtn) return;
+      if (added) {
+        addBtn.textContent = '✔ Added';
+        addBtn.disabled = true;
+        addBtn.setAttribute('aria-disabled', 'true');
+        addBtn.classList.add('is-added');
+      } else {
+        addBtn.textContent = 'Add to cart';
+        addBtn.disabled = false;
+        addBtn.removeAttribute('aria-disabled');
+        addBtn.classList.remove('is-added');
+      }
+    }
+
     function wireAdd(product) {
       addBtn = sheet.querySelector('.sheet-add');
       if (!addBtn) return;
-      const newAdd = addBtn.cloneNode(true);
+      const newAdd = addBtn.cloneNode(true); // remove old listeners
       addBtn.parentNode.replaceChild(newAdd, addBtn);
       addBtn = newAdd;
+
+      // initialize button state (if product already in cart)
+      setAddedState(isInCart(product));
+
       addBtn.addEventListener('click', function () {
-        const q = Math.max(1, Number(qtyInput.value || 1));
-        if (typeof addToCart === 'function') {
-          addToCart({ ...product, qty: q });
-        } else {
-          const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-          cart.push({ ...product, qty: q });
-          localStorage.setItem('cart', JSON.stringify(cart));
+        // Guard: if already in cart, do nothing (button remains disabled)
+        if (isInCart(product)) {
+          setAddedState(true);
+          return;
         }
-        addBtn.textContent = '✔ Added';
-        setTimeout(hide, 500);
+        const q = Math.max(1, Number(qtyInput.value || 1));
+        // immediate UI lock to avoid double clicks
+        addBtn.disabled = true;
+        addBtn.setAttribute('aria-disabled', 'true');
+
+        // Prefer project-level addToCart if available, but still lock UI
+        if (typeof window.addToCart === 'function') {
+          try { window.addToCart({ ...product, qty: q }); }
+          catch {}
+        } else {
+          addToCartLocal(product, q);
+        }
+
+        setAddedState(true);
+        // (Optional) auto-close sheet; does not affect sticky state
+        // setTimeout(hide, 500);
       });
     }
 
     function show(product) {
       if (!product) return;
       try {
+        currentProduct = product;
         const src = pickLogo(product);
         img.src = src;
         attachImgFallback(img, product);
@@ -176,6 +253,7 @@
         qtyInput.oninput = () => { if (!qtyInput.value || Number(qtyInput.value) < 1) qtyInput.value = 1; };
 
         wireAdd(product);
+        setAddedState(isInCart(product)); // reflect latest cart state at open time
 
         sheet.style.display = '';
         panel.classList.remove('panel-up');
@@ -202,6 +280,13 @@
         sheet.style.display = 'none';
       }
     }
+
+    // Keep button in sync if cart is changed elsewhere (another tab/page or cart screen)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'cart' && currentProduct) {
+        setAddedState(isInCart(currentProduct));
+      }
+    });
 
     // close handlers
     backdrop && backdrop.addEventListener('click', hide);
@@ -363,4 +448,5 @@
 
   // expose for debugging
   window.reloadAndUpdateUI = reloadAndUpdateUI;
+  window._cartDebug = { getCart, setCart, addToCartLocal, removeFromCartLocal, isInCart };
 })();
