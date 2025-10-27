@@ -38,13 +38,13 @@ try {
     clearAuthCookie();
 
     // --- 6️⃣ Redirect to homepage or login page ---
-    header('Location: index.html');
+    header('Location: /../index.html');
     exit;
 
 } catch (Throwable $e) {
     error_log('/logout.php error: ' . $e->getMessage());
     // Fallback logout if something fails
     clearAuthCookie();
-    header('Location: index.html');
+    header('Location: /../index.html');
     exit;
 }
