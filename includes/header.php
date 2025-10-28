@@ -50,7 +50,8 @@ $cart_count = isset($_SESSION['cart_count']) ? (int) $_SESSION['cart_count'] : 0
       <div class="nav-greeting">
         Hello, <strong><?php echo htmlspecialchars($user_name ?? 'Guest'); ?></strong>
       </div>
-      <a href="cart.php" class="nav-cart" data-count="<?php echo $cart_count ?? 0; ?>">Cart 🛒</a>
+      <a href="cart.php" class="nav-cart" data-count="<?php echo $cart_count ?? 0; ?>">🛒</a>
+      <a href="contact.php" class="nav-help" data-count="<?php echo $cart_count ?? 0; ?>"><i class="fa fa-comments"></i>Help</a>
     </div>
   </div>
 
