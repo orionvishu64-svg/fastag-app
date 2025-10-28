@@ -1,7 +1,6 @@
 <?php
 // conversation.php
 // Shows a single ticket (open or closed) based on ?ticket_id=TCK-...
-// Requires: common_start.php that provides session and $pdo (PDO instance).
 
 require_once __DIR__ . '/config/common_start.php';
 require_once __DIR__ . '/config/db.php';
