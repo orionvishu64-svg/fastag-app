@@ -1,255 +1,55 @@
-/* signup.css — corrected final (replace your current signup.css)
-   - Uses input[inputmode="numeric"] correctly (no reliance on type="tel")
-   - Send OTP buttons are styled as outlined/light pills (match screenshots)
-   - Google / secondary button is a light pill (match screenshots)
-   - Keeps all IDs/classes/HTML intact — only CSS changes
-*/
-
 /* ---------- Variables ---------- */
-:root{
-  --bg-1:#f3f8fe;
-  --bg-2:#fbfdff;
-  --accent:#0ea5e9;
-  --accent-dark:#0284c7;
-  --muted:#6b7280;
-  --card-bg:rgba(255,255,255,0.98);
-  --radius:16px;
-  --card-pad:26px;
-  --shadow-1:0 14px 36px rgba(2,6,23,0.06);
-  --shadow-soft:0 20px 40px rgba(10,20,40,0.06);
-  --maxw:1100px;
-  --form-max:520px;
-  --info-w:320px;
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
+:root{--bg-1:#f3f8fe;--bg-2:#fbfdff;--accent:#0ea5e9;--accent-dark:#0284c7;--muted:#6b7280;--card-bg:rgba(255,255,255,0.98);--radius:16px;--card-pad:26px;--shadow-1:0 14px 36px rgba(2,6,23,0.06);--shadow-soft:0 20px 40px rgba(10,20,40,0.06);--maxw:1100px;--form-max:520px;--info-w:320px;--font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;}
 /* ---------- Base layout ---------- */
-*{box-sizing:border-box}
-html,body{height:100%;margin:0}
-body{
-  font-family:var(--font);
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  color:#0f172a;
-  background:
-    radial-gradient(900px 400px at 8% 10%, rgba(14,165,233,0.05), transparent),
-    linear-gradient(180deg,var(--bg-1),var(--bg-2));
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:28px;
-}
-
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;}
+body{font-family:var(--font);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;color:#0f172a;background:radial-gradient(900px 400px at 8% 10%,rgba(14,165,233,0.05),transparent),linear-gradient(180deg,var(--bg-1),var(--bg-2));display:flex;align-items:center;justify-content:center;padding:28px;}
 /* ---------- Two-column wrapper ---------- */
-.auth-layout{
-  width:100%;
-  max-width:var(--maxw);
-  display:grid;
-  grid-template-columns: 1fr minmax(auto,var(--form-max)) 1fr;
-  gap:28px;
-  align-items:center;
-  align-content:center;
-  padding:8px 0;
-  margin:0 auto;
-}
-
+.auth-layout{width:100%;max-width:var(--maxw);display:grid;grid-template-columns:1fr minmax(auto,var(--form-max)) 1fr;gap:28px;align-items:center;align-content:center;padding:8px 0;margin:0 auto;}
 /* ---------- Left info card ---------- */
-.info-card{ grid-column:1/2; display:flex; justify-content:flex-end; padding-right:20px; }
-.info-card .info-inner{
-  width:var(--info-w);
-  background: linear-gradient(180deg, rgba(14,165,233,0.04), rgba(2,132,199,0.02));
-  border-radius:var(--radius);
-  padding:28px 26px;
-  box-shadow: var(--shadow-soft);
-  border:1px solid rgba(15,23,42,0.03);
-}
-.info-card h2{
-  margin:0 0 8px; color:var(--accent-dark); font-size:22px; font-weight:800; line-height:1.05;
-}
-.info-card .info-desc{ color:var(--muted); font-size:13.5px; line-height:1.6; margin-top:6px; }
-
+.info-card{grid-column:1/2;display:flex;justify-content:flex-end;padding-right:20px;}
+.info-card .info-inner{width:var(--info-w);background:linear-gradient(180deg,rgba(14,165,233,0.04),rgba(2,132,199,0.02));border-radius:var(--radius);padding:28px 26px;box-shadow:var(--shadow-soft);border:1px solid rgba(15,23,42,0.03);}
+.info-card h2{margin:0 0 8px;color:var(--accent-dark);font-size:22px;font-weight:800;line-height:1.05;}
+.info-card .info-desc{color:var(--muted);font-size:13.5px;line-height:1.6;margin-top:6px;}
 /* ---------- Right form column ---------- */
-.form-column{ grid-column:2/3; display:block; }
-
-/* Style the card that contains your form (targets form or .auth-card wrappers) */
-.form-column > form,
-.form-column > .auth-card,
-form.auth-card,
-form.card {
-  width:100%;
-  max-width:var(--form-max);
-  margin:0 auto;
-  background: var(--card-bg);
-  border-radius:var(--radius);
-  padding:var(--card-pad);
-  box-shadow: var(--shadow-1);
-  border:1px solid rgba(15,23,42,0.04);
-  transition: box-shadow .18s ease, transform .12s ease;
-}
-.form-column > form:hover,
-.form-column > .auth-card:hover { box-shadow: 0 22px 46px rgba(2,6,23,0.08); }
-
-/* ---------- Headings ---------- */
-h1,h2,h3{ margin:0 0 12px; font-weight:700; color:#0f172a; }
-h2{ font-size:1.4rem; text-align:center; margin-bottom:8px; }
-
-/* ---------- Row & label layout ---------- */
-.row{ display:flex; align-items:center; gap:14px; margin:10px 0; flex-wrap:nowrap; }
-label{ min-width:120px; font-size:.95rem; color:#334155; padding-left:2px; }
-
-/* ---------- Inputs: include inputmode="numeric" and pattern-based inputs ---------- */
-/* Apply same styling for numeric-mode inputs (your markup uses inputmode="numeric") */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[inputmode="numeric"],
-input[pattern],
-.input,
-textarea {
-  flex:1 1 auto;
-  width:100%;
-  padding:10px 12px;
-  border-radius:10px;
-  border:1px solid #e2e8f0;
-  background:#fff;
-  font-size:15px;
-  color:#0f172a;
-  transition: box-shadow .12s ease, border-color .12s ease, transform .08s ease;
-}
-input:focus, .input:focus, textarea:focus{
-  outline:none;
-  border-color: var(--accent);
-  box-shadow: 0 8px 20px rgba(2,132,199,0.10);
-  transform: translateY(-1px);
-}
-
-/* If your inputs are placed inside a .field container, ensure they align with OTP buttons */
-.row .field { display:flex; gap:10px; align-items:center; width:100%; flex-direction:column; }
-.row .field > .input, .row .field input { width:100%; margin:0; }
-
-/* ---------- Send OTP buttons (outlined pill, not filled) ----------
-   - This styles the "Send OTP" buttons like the screenshot: white/transparent background,
-     thin blue border, blue text, small pill shape.
-   - We also make them full-width beneath the input so they appear exactly as in screenshots.
-*/
-button.small,
-.small {
-  display:inline-block;
-  width:auto;
-  padding:8px 12px;
-  border-radius:10px;
-  border:1px solid rgba(14,165,233,0.20);
-  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(250,250,250,0.95));
-  color:var(--accent-dark);
-  font-weight:700;
-  cursor:pointer;
-  transition: transform .06s ease, filter .12s ease, box-shadow .12s ease;
-  box-shadow: 0 6px 18px rgba(2,132,199,0.04);
-}
-button.small:hover { filter:brightness(1.02); transform: translateY(-1px); }
-button.small:active { transform: translateY(0); }
-
-/* Make OTP-send buttons inside row.field appear full-width under the input (matches screenshot) */
-.row .field > button.small,
-.row .field .otp-btn {
-  width:100%;
-  margin-top:8px;
-  align-self:stretch;
-}
-
-/* If the Send OTP button sits as a sibling outside .field, also ensure full width */
-.otp-row button.small, .otp-row .small { width:100%; }
-
+.form-column{grid-column:2/3;display:block;}
+.form-column > form,.form-column > .auth-card,form.auth-card,form.card{width:100%;max-width:var(--form-max);margin:0 auto;background:var(--card-bg);border-radius:var(--radius);padding:var(--card-pad);box-shadow:var(--shadow-1);border:1px solid rgba(15,23,42,0.04);transition:box-shadow .18s ease,transform .12s ease;}
+.form-column > form:hover,.form-column > .auth-card:hover{box-shadow:0 22px 46px rgba(2,6,23,0.08);}
+h1,h2,h3{margin:0 0 12px;font-weight:700;color:#0f172a;}
+h2{font-size:1.4rem;text-align:center;margin-bottom:8px;}
+.row{display:flex;align-items:center;gap:14px;margin:10px 0;flex-wrap:nowrap;}
+label{min-width:120px;font-size:.95rem;color:#334155;padding-left:2px;}
+/* ---------- Inputs: include input[inputmode="numeric"] and pattern-based inputs ---------- */
+input[type="text"],input[type="email"],input[type="password"],input[inputmode="numeric"],input[pattern],.input,textarea{flex:1 1 auto;width:100%;padding:10px 12px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;font-size:15px;color:#0f172a;transition:box-shadow .12s ease,border-color .12s ease,transform .08s ease;}
+input:focus,.input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 8px 20px rgba(2,132,199,0.10);transform:translateY(-1px);}
+.row .field{display:flex;gap:10px;align-items:center;width:100%;flex-direction:column;}
+.row .field > .input,.row .field input{width:100%;margin:0;}
+/* ---------- Send OTP buttons (outlined pill, not filled) ---------- */
+button.small,.small{display:inline-block;width:auto;padding:8px 12px;border-radius:10px;border:1px solid rgba(14,165,233,0.20);background:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(250,250,250,0.95));color:var(--accent-dark);font-weight:700;cursor:pointer;transition:transform .06s ease,filter .12s ease,box-shadow .12s ease;box-shadow:0 6px 18px rgba(2,132,199,0.04);}
+button.small:hover{filter:brightness(1.02);transform:translateY(-1px);}
+button.small:active{transform:translateY(0);}
+.row .field > button.small,.row .field .otp-btn{width:100%;margin-top:8px;align-self:stretch;}
+.otp-row button.small,.otp-row .small{width:100%;}
 /* ---------- Primary buttons (Sign Up / Login) — filled blue gradient ---------- */
-button[type="submit"], #set {
-  width:100%;
-  margin-top:10px;
-  padding:12px 14px;
-  border-radius:12px;
-  border: none;
-  background: linear-gradient(180deg, #38bdf8, var(--accent-dark));
-  color:#fff;
-  font-weight:800;
-  font-size:1rem;
-  cursor:pointer;
-  box-shadow: 0 10px 26px rgba(2,132,199,0.14);
-  transition: transform .06s ease, filter .12s ease;
-}
-button[type="submit"]:hover { transform: translateY(-1px); filter:brightness(1.03); }
-button[type="submit"]:active { transform:none; }
-
-/* ---------- Secondary / Google button (light pill) ----------
-   Targets .btn.secondary or .google-btn if present. If your HTML uses a different class,
-   the visual style for the light pill can be applied by adding .btn.secondary to that element.
-*/
-.btn.secondary,
-.google-btn,
-button.cont-secondary {
-  width:100%;
-  display:inline-block;
-  padding:12px 14px;
-  border-radius:10px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.95), #f6f8fb);
-  color:#334155;
-  border:1px solid rgba(15,23,42,0.04);
-  box-shadow: 0 10px 20px rgba(10,20,40,0.03);
-  text-align:center;
-  font-weight:700;
-}
-
-/* Example: if your Google button uses <button class="btn secondary">, this will apply correctly.
-   If not, you can add class 'google-btn' to that button in HTML (optional). */
-
+button[type="submit"],#set{width:100%;margin-top:10px;padding:12px 14px;border-radius:12px;border:none;background:linear-gradient(180deg,#38bdf8,var(--accent-dark));color:#fff;font-weight:800;font-size:1rem;cursor:pointer;box-shadow:0 10px 26px rgba(2,132,199,0.14);transition:transform .06s ease,filter .12s ease;}
+button[type="submit"]:hover{transform:translateY(-1px);filter:brightness(1.03);}
+button[type="submit"]:active{transform:none;}
+/* ---------- Secondary / Google button (light pill) ---------- */
+.btn.secondary,.google-btn,button.cont-secondary{width:100%;display:inline-block;padding:12px 14px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.95),#f6f8fb);color:#334155;border:1px solid rgba(15,23,42,0.04);box-shadow:0 10px 20px rgba(10,20,40,0.03);text-align:center;font-weight:700;}
 /* ---------- Helper messages and ticks ---------- */
-.helper, .muted { color:var(--muted); font-size:13px; }
-.err { color:#dc2626; margin-top:6px; min-height:20px; font-size:13px; }
-.ok { color:#16a34a; font-weight:700; display:none; }
-
+.helper,.muted{color:var(--muted);font-size:13px;}
+.err{color:#dc2626;margin-top:6px;min-height:20px;font-size:13px;}
+.ok{color:#16a34a;font-weight:700;display:none;}
 /* ---------- Step/OTP panels transitions ---------- */
-#emailOtpRow, #phoneOtpRow, #step2, #step3 { transition: all .18s ease; }
-#emailOtpRow[style*="display: none"], #phoneOtpRow[style*="display: none"],
-#step2[style*="display: none"], #step3[style*="display: none"] {
-  opacity:0; transform: translateY(-6px);
-}
-
+#emailOtpRow,#phoneOtpRow,#step2,#step3{transition:all .18s ease;}
+#emailOtpRow[style*="display: none"],#phoneOtpRow[style*="display: none"],#step2[style*="display: none"],#step3[style*="display: none"]{opacity:0;transform:translateY(-6px);}
 /* ---------- Footer / links ---------- */
-.footer-links { margin-top:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
-.footer-links a { color:var(--accent-dark); font-weight:600; text-decoration:none; }
-.footer-links a:hover { text-decoration:underline; }
-
+.footer-links{margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.footer-links a{color:var(--accent-dark);font-weight:600;text-decoration:none;}
+.footer-links a:hover{text-decoration:underline;}
 /* ---------- Align left info card & right form top positions ---------- */
-.info-card .info-inner, .form-column > form {
-  padding-top:28px;
-  padding-bottom:28px;
-}
-
+.info-card .info-inner,.form-column > form{padding-top:28px;padding-bottom:28px;}
 /* ---------- Responsive ---------- */
-@media (max-width:980px){
-  .auth-layout { grid-template-columns: 1fr; gap:18px; padding:8px; }
-  .info-card { grid-column:1/ -1; justify-content:center; padding-right:0; }
-  .info-card .info-inner { width:92%; margin:0 auto; }
-  .form-column { grid-column:1/ -1; }
-  .form-column > form { box-shadow:none; border-radius:12px; padding:18px; }
-  .row { gap:10px; flex-wrap:wrap; }
-  label { min-width:92px; }
-  body { padding:18px; }
-}
-
-@media (max-width:520px){
-  label { min-width:80px; font-size:14px; }
-  .info-card .info-inner { padding:18px; font-size:14px; }
-  .form-column > form { padding:18px; }
-}
-
-/* ---------- Notes ----------
- - This file intentionally uses input[inputmode="numeric"] and input[pattern] so it matches
-   your actual HTML (no reliance on type="tel").
- - Send OTP buttons are now outlined/light pills and will render full-width inside .row .field
-   (exactly like the screenshot).
- - Google button/secondary style targets .btn.secondary and .google-btn; if your Google control
-   doesn't use these classes you can add class="google-btn" without changing IDs.
- - To reveal the verified tick after your verification logic, add:
-       document.getElementById('ok').classList.add('ok-visible');
- - If you want me to inject this file into the ZIP you provided, say "inject css" and I will
-   update the ZIP (I will not change HTML or JS).
-*/
+@media(max-width:980px){.auth-layout{grid-template-columns:1fr;gap:18px;padding:8px;}.info-card{grid-column:1/-1;justify-content:center;padding-right:0;}.info-card .info-inner{width:92%;margin:0 auto;}.form-column{grid-column:1/-1;}.form-column > form{box-shadow:none;border-radius:12px;padding:18px;}.row{gap:10px;flex-wrap:wrap;}label{min-width:92px;}body{padding:18px;}}
+@media(max-width:520px){label{min-width:80px;font-size:14px;}.info-card .info-inner{padding:18px;font-size:14px;}.form-column > form{padding:18px;}}
+/* ---------- End of signup.css ---------- */

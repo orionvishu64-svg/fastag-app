@@ -86,6 +86,7 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
     <link rel="stylesheet" href="/public/css/track_orders.css">
 </head>
 <body>
+  <?php include __DIR__ . '/includes/header.php'; ?>
   <main class="container">
     <header class="topbar">
       <div class="brand">
@@ -207,5 +208,6 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
       </aside>
     </div>
   </main>
+  <script src="/public/js/script.js"></script>
 </body>
 </html>

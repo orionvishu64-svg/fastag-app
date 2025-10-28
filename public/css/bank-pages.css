@@ -1,269 +1,37 @@
 /* Bank Pages Specific Styles */
-
-/* Bank Header Styles */
-.bank-header {
-  padding: 120px 0 60px;
-  background: linear-gradient(135deg, #f8fafc 0%, #072a58 100%);
-  position: relative;
-  overflow: hidden;
-}
-
-.bank-header::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-  opacity: 0.3;
-}
-
-.bank-header-content {
-  display: flex;
-  align-items: center;
-  gap: 40px;
-  position: relative;
-  z-index: 1;
-}
-
-.bank-logo-large {
-  flex-shrink: 0;
-}
-
-.bank-logo-large img {
-  max-width: 200px;
-  height: auto;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.bank-info h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: #1e293b;
-}
-
-.bank-info p {
-  font-size: 1.1rem;
-  color: #64748b;
-  margin-bottom: 24px;
-  line-height: 1.6;
-}
-
-.bank-features {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.feature-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #475569;
-  font-weight: 500;
-}
-
-.feature-item i {
-  color: #3b82f6;
-  font-size: 1.1rem;
-}
-
-/* Theme Colors */
-.kotak-theme {
-  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-}
-
-.kotak-theme .feature-item i {
-  color: #dc2626;
-}
-
-.sbi-theme {
-  background: linear-gradient(135deg, #eff6ff 0%, #d1e5ff 100%);
-}
-
-.sbi-theme .feature-item i {
-  color: #1d4ed8;
-}
-
-.bajaj-theme {
-  background: linear-gradient(135deg, #f0f9ff 0%, #b1cada 100%);
-}
-
-.bajaj-theme .feature-item i {
-  color: #0ea5e9;
-}
-
-.idfc-theme {
-  background: linear-gradient(135deg, #faf5ff 0%, #d5c5e7 100%);
-}
-
-.idfc-theme .feature-item i {
-  color: #8b5cf6;
-}
-
-/* Benefits Section */
-.benefits-section {
-  padding: 80px 0;
-  background: white;
-}
-
-.benefits-section h2 {
-  text-align: center;
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 60px;
-}
-
-.benefits-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 32px;
-}
-
-.benefit-card {
-  text-align: center;
-  padding: 32px 24px;
-  border-radius: 16px;
-  background: white;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-}
-
-.benefit-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-}
-
-.benefit-card i {
-  font-size: 3rem;
-  color: #3b82f6;
-  margin-bottom: 20px;
-}
-
-.kotak-theme .benefit-card i {
-  color: #dc2626;
-}
-
-.sbi-theme .benefit-card i {
-  color: #1d4ed8;
-}
-
-.bajaj-theme .benefit-card i {
-  color: #0ea5e9;
-}
-
-.idfc-theme .benefit-card i {
-  color: #8b5cf6;
-}
-
-.benefit-card h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 12px;
-}
-
-.benefit-card p {
-  color: #64748b;
-  line-height: 1.6;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .bank-header {
-    padding: 60px 0 40px;
-  }
-
-  .bank-header-content {
-    flex-direction: column;
-    text-align: center;
-    gap: 24px;
-  }
-
-  .bank-info h1 {
-    font-size: 2rem;
-  }
-
-  .bank-features {
-    justify-content: center;
-  }
-
-  .categories-grid {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-
-  .category-card {
-    padding: 24px;
-  }
-
-  .benefits-grid {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-
-  .notice-card {
-    flex-direction: column;
-    text-align: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .bank-info h1 {
-    font-size: 1.75rem;
-  }
-
-  .categories-section h2 {
-    font-size: 2rem;
-  }
-
-  .benefits-section h2 {
-    font-size: 2rem;
-  }
-
-  .category-card {
-    padding: 20px;
-  }
-
-  .category-icon {
-    width: 60px;
-    height: 60px;
-  }
-
-  .category-icon i {
-    font-size: 1.5rem;
-  }
-}
-
-/* Animation Classes */
-.fade-in {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.6s ease;
-}
-
-.fade-in.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Loading Animation */
-.loading {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+.bank-header{padding: 120px 0 60px; background: linear-gradient(135deg,#f8fafc 0%,#072a58 100%); position: relative; overflow: hidden;}
+.bank-header::before{content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>'); opacity: 0.3;}
+.bank-header-content{display: flex; align-items: center; gap: 40px; position: relative; z-index: 1;}
+.bank-logo-large{flex-shrink: 0;}
+.bank-logo-large img{max-width: 200px; height: auto; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);}
+.bank-info h1{font-size: 2.5rem; font-weight: 700; margin-bottom: 16px; color: #1e293b;}
+.bank-info p{font-size: 1.1rem; color: #64748b; margin-bottom: 24px; line-height: 1.6;}
+.bank-features{display: flex; gap: 24px; flex-wrap: wrap;}
+.feature-item{display: flex; align-items: center; gap: 8px; color: #475569; font-weight: 500;}
+.feature-item i{color: #3b82f6; font-size: 1.1rem;}
+.kotak-theme{background: linear-gradient(135deg,#fef2f2 0%,#fee2e2 100%);}
+.kotak-theme .feature-item i{color: #dc2626;}
+.sbi-theme{background: linear-gradient(135deg,#eff6ff 0%,#d1e5ff 100%);}
+.sbi-theme .feature-item i{color: #1d4ed8;}
+.bajaj-theme{background: linear-gradient(135deg,#f0f9ff 0%,#b1cada 100%);}
+.bajaj-theme .feature-item i{color: #0ea5e9;}
+.idfc-theme{background: linear-gradient(135deg,#faf5ff 0%,#d5c5e7 100%);}
+.idfc-theme .feature-item i{color: #8b5cf6;}
+.benefits-section{padding: 80px 0; background: white;}
+.benefits-section h2{text-align: center; font-size: 2.5rem; font-weight: 700; color: #1e293b; margin-bottom: 60px;}
+.benefits-grid{display: grid; grid-template-columns: repeat(auto-fit,minmax(250px,1fr)); gap: 32px;}
+.benefit-card{text-align: center; padding: 32px 24px; border-radius: 16px; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s ease;}
+.benefit-card:hover{transform: translateY(-8px); box-shadow: 0 12px 40px rgba(0,0,0,0.15);}
+.benefit-card i{font-size: 3rem; color: #3b82f6; margin-bottom: 20px;}
+.kotak-theme .benefit-card i{color: #dc2626;}
+.sbi-theme .benefit-card i{color: #1d4ed8;}
+.bajaj-theme .benefit-card i{color: #0ea5e9;}
+.idfc-theme .benefit-card i{color: #8b5cf6;}
+.benefit-card h3{font-size: 1.25rem; font-weight: 600; color: #1e293b; margin-bottom: 12px;}
+.benefit-card p{color: #64748b; line-height: 1.6;}
+@media (max-width: 768px){.bank-header{padding: 60px 0 40px;} .bank-header-content{flex-direction: column; text-align: center; gap: 24px;} .bank-info h1{font-size: 2rem;} .bank-features{justify-content: center;} .categories-grid{grid-template-columns: 1fr; gap: 24px;} .category-card{padding: 24px;} .benefits-grid{grid-template-columns: 1fr; gap: 24px;} .notice-card{flex-direction: column; text-align: center;}}
+@media (max-width: 480px){.bank-info h1{font-size: 1.75rem;} .categories-section h2{font-size: 2rem;} .benefits-section h2{font-size: 2rem;} .category-card{padding: 20px;} .category-icon{width: 60px; height: 60px;} .category-icon i{font-size: 1.5rem;}}
+.fade-in{opacity: 0; transform: translateY(30px); transition: all 0.6s ease;}
+.fade-in.visible{opacity: 1; transform: translateY(0);}
+.loading{display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite;}
+@keyframes spin{to{transform: rotate(360deg);}}
