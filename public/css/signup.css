@@ -52,4 +52,9 @@ button[type="submit"]:active{transform:none;}
 /* ---------- Responsive ---------- */
 @media(max-width:980px){.auth-layout{grid-template-columns:1fr;gap:18px;padding:8px;}.info-card{grid-column:1/-1;justify-content:center;padding-right:0;}.info-card .info-inner{width:92%;margin:0 auto;}.form-column{grid-column:1/-1;}.form-column > form{box-shadow:none;border-radius:12px;padding:18px;}.row{gap:10px;flex-wrap:wrap;}label{min-width:92px;}body{padding:18px;}}
 @media(max-width:520px){label{min-width:80px;font-size:14px;}.info-card .info-inner{padding:18px;font-size:14px;}.form-column > form{padding:18px;}}
+/* ensure the Google button container uses the auth card's pill styling and centers the inner button */
+#google-signup {display: flex;justify-content: center;align-items: center;margin-top: 10px;margin-bottom: 10px;padding: 6px;border-radius: 10px;background: #ffffff;box-shadow: 0 4px 10px rgba(2,132,199,0.08);}
+/* keep full-width button on small screens if needed */
+@media (max-width:520px) {#google-signup { width: 100%; }}
+
 /* ---------- End of signup.css ---------- */
