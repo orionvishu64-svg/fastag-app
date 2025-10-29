@@ -81,7 +81,7 @@
           <div class="divider">or</div>
 
           <!-- Google button renders here -->
-          <div id="google-signup" style="display:flex;justify-content:center;"></div>
+          <div id="google-signup" class="google-btn"></div>
 
           <div class="footer-links">
             Already have an account? <a href="index.html">Sign In</a>
@@ -136,9 +136,9 @@
       say('');
       const phone = $('[name=phone]').value.trim();
       if (phone && !/^\d{10}$/.test(phone)) return say('Enter 10-digit phone');
-      const r = await fetch('/config/otp_send_sms.php', {
+      const r = await fetch('/config/sms_otp.php', {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ phone })
+        body: JSON.stringify({ action: 'send', phone })
       });
       const d = await r.json();
       if (!d.success) return say(d.error || 'Failed to send phone OTP');
@@ -147,9 +147,9 @@
     $('#verifyPhoneOtp').onclick = async () => {
       const phone = $('[name=phone]').value.trim();
       const code  = $('#phoneOtp').value.trim();
-      const r = await fetch('/config/otp_verify_sms.php', {
+      const r = await fetch('/config/sms_otp.php', {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ phone, code })
+        body: JSON.stringify({ action: 'verify', phone, code })
       });
       const d = await r.json();
       if (!d.success) return say(d.error || 'Phone OTP invalid');

@@ -52,24 +52,6 @@ function clearAuthCookie(): void {
     unset($_COOKIE[AUTH_COOKIE_NAME]);
 }
 
-/* ----------------- Token generation & DB helpers (auth_tokens table) -----------------
-  Table expected structure (example):
-  CREATE TABLE auth_tokens (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    user_id INT UNSIGNED NOT NULL,
-    token_hash CHAR(64) NOT NULL,
-    user_agent VARCHAR(255) DEFAULT NULL,
-    ip_address VARCHAR(45) DEFAULT NULL,
-    expires_at DATETIME NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    INDEX (user_id),
-    INDEX (token_hash),
-    CONSTRAINT fk_auth_tokens_user FOREIGN KEY (user_id)
-      REFERENCES users(id)
-      ON DELETE CASCADE
-  );
--------------------------------------------------------------------------- */
-
 /**
  * createAuthToken
  * - inserts token_hash into auth_tokens and returns raw token for client cookie

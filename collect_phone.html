@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Verify Phone</title>
+  <link rel="stylesheet" href="/public/css/signup.css">
+  <style>.ok{display:none;color:green;font-weight:600}.err{color:#b00020}</style>
+</head>
+<body>
+  <div class="auth-layout">
+    <aside class="info-card" aria-hidden="true">
+      <div class="info-inner">
+        <h2>Verify Your Phone For further assistance</h2>
+        <p class="info-desc">We'll send a verification code to your phone so we can verify your identity<br><br>Quick and secure recovery.</p>
+      </div>
+    </aside>
+    <div class="form-column">
+      <div id="step1">
+    <h2 class="tophead">Verify your phone</h2>
+    <label>Phone</label>
+    <input id="phone" pattern="\d{10}" name="phone" inputmode="numeric" maxlength="10" required />
+    <div class="row">
+        <span class="spacer-label"></span>
+        <button id="send" class="small" type="button">Send OTP</button>
+      </div>
+      <div id="step2" style="display:none">
+    <label>Enter OTP</label>
+    <input id="otp" inputmode="numeric" maxlength="6" pattern="\d{6}" />
+    <button id="verify">Verify</button>
+    <span id="tick" class="ok">✓ Verified</span>
+  </div>
+    <p id="msg"></p>
+  </div>
+</form>
+</div>
+</div>
+  <script>
+    const $ = sel => document.querySelector(sel);
+    const say = t => $('#msg').textContent = t;
+
+    $('#sendOtp').onclick = async () => {
+      say('');
+      const phone = $('#phone').value.trim();
+      if (!/^[0-9]{10}$/.test(phone)) return say('Enter a valid 10-digit phone.');
+      const r = await fetch('/config/sms_otp.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+      const d = await r.json();
+      if (!d.success) return say(d.error || 'Failed to send OTP.');
+      say('OTP sent successfully!');
+      $('#otpBox').style.display = 'block';
+    };
+
+    $('#verifyOtp').onclick = async () => {
+      say('');
+      const phone = $('#phone').value.trim();
+      const code = $('#otp').value.trim();
+      if (!/^[0-9]{6}$/.test(code)) return say('Enter a valid 6-digit OTP.');
+      const v = await fetch('/config/sms_otp.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, code })
+      });
+      const j = await v.json();
+      if (!j.success) return say(j.error || 'OTP invalid.');
+
+      // Save phone after verification
+      const s = await fetch('/config/save_phone.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+      const res = await s.json();
+      if (!res.success) return say(res.error || 'Failed to save phone.');
+      say('Phone verified! Redirecting...');
+      setTimeout(() => window.location = '/partner_form.php', 1000);
+    };
+  </script>
+</body>
+</html>
