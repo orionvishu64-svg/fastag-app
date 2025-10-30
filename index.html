@@ -5,61 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login</title>
 
+  <!-- No-flash: hide body until auth check completes -->
   <style>
-    /* hide body until auth check completes */
     html[data-auth-checked="false"] body { visibility: hidden; }
-    /* layout niceties for the input + toggle */
-    .input-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .toggle-btn {
-      cursor: pointer;
-      font-size: 13px;
-      color: #007bff;
-      background: none;
-      border: none;
-      padding: 6px;
-      margin-left: -48px;
-      z-index: 2;
-    }
-    input[type=password], input[type=text], input[type=tel] {
-      width: 100%;
-      padding: 10px 56px 10px 10px; /* space for toggle */
-      box-sizing: border-box;
-    }
-    form { max-width: 420px; margin: 24px; }
-    label { display:block; margin-top:12px; margin-bottom:6px; font-weight:600; }
-    #loginBtn { margin-top:14px; padding:10px 12px; width:100%; }
-    #msg { color:#b00020; margin-top:8px; min-height:18px; }
-    .notice { color:#0b5; margin-top:8px; min-height:18px; } /* success / info */
-    .secondary { margin-top:10px; font-size:0.95rem; color:#374151; }
-    .action-link { color:#007bff; cursor:pointer; text-decoration:underline; }
   </style>
 
   <!-- Early auth check: runs before page content is visible -->
   <script>
     (function(){
+      // mark as not yet checked
       document.documentElement.setAttribute('data-auth-checked', 'false');
-      async function reveal(){ document.documentElement.setAttribute('data-auth-checked','true'); }
+
+      async function reveal() {
+        document.documentElement.setAttribute('data-auth-checked', 'true');
+      }
+
       (async function(){
         try {
           const res = await fetch('config/check_login.php', { credentials: 'include', cache: 'no-store' });
           if (res.ok) {
             const j = await res.json();
             if (j && j.logged_in) {
-              try { window.dispatchEvent(new CustomEvent('app:login', { detail: j.user })); } catch(e){}
+              // Let other scripts know (optional)
+              try { window.dispatchEvent(new CustomEvent('app:login', { detail: j.user })); } catch (e) {}
+              // If server requests partner form, follow it; otherwise go to dashboard
               const redirectTo = j.partner_required ? '/partner_form.php' : '/dashboard.php';
               window.location.href = redirectTo;
               return;
             }
           }
-        } catch(e){
-          // auth check failed (network or server) — reveal page so user can try to login
+        } catch (e) {
+          // ignore errors, reveal login
           console.warn('auth check failed', e);
         }
+        // not logged in: reveal the page
         reveal();
       })();
     })();
@@ -73,130 +52,83 @@
       <div class="info-inner">
         <h2>Welcome back</h2>
         <p class="info-desc">
-          Enter your device mPIN to sign in.
+          Sign in to continue to your account and access secure services.<br><br>
+          Modern security, fast checkout, and instant notifications.
         </p>
       </div>
     </aside>
 
     <div class="form-column">
-      <form id="loginForm" autocomplete="off" novalidate>
-        <label for="mpin">M-PIN</label>
-        <div class="input-wrapper">
-          <input id="mpin" name="mpin" placeholder="●●●●" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}" required />
-          <button type="button" class="toggle-btn" data-target="mpin" aria-label="Show mPIN">Show</button>
-        </div>
+      <div>
+        <form id="loginForm">
+          <label>Phone</label>
+          <input name="phone" inputmode="numeric" pattern="\d{10}" maxlength="10" required />
+          <label>M-PIN</label>
+          <input name="mpin" placeholder="XXX-XXX" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}" required />
+          <button type="submit" id="loginBtn">Login</button>
+        </form>
 
-        <button id="loginBtn" type="submit">Login</button>
-
-        <div class="footer-links" style="margin-top:8px;">
+        <div class="footer-links">
           <a href="forgot-mpin.html">Forgot your mPIN?</a>
-        </div>
+          <div id="msg" style="color:#b00020"></div>
+        </div>  
 
-        <div id="msg" role="status" aria-live="polite"></div>
-        <div id="info" class="notice" role="status" aria-live="polite"></div>
-
-        <div class="footer-links secondary">
+        <div class="footer-links">
           Don't have an account? <a href="signup.html">Sign Up</a>
         </div>
-      </form>
+      </div>
+
+      <script>
+      const say = t => document.querySelector('#msg').textContent = t || '';
+
+      document.querySelector('#loginForm').onsubmit = async (e) => {
+        e.preventDefault();
+        say('');
+        const fd    = new FormData(e.target);
+        const phone = (fd.get('phone') || '').trim();
+        const mpin  = (fd.get('mpin')  || '').trim();
+
+        if (!/^\d{10}$/.test(phone)) return say('Enter 10-digit phone');
+        if (!/^\d{4,6}$/.test(mpin))  return say('Invalid mPIN');
+
+        try {
+          const r = await fetch('config/login.php', {
+            method: 'POST',
+            credentials: 'include',            // <- ensure cookie is set/sent
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, mpin })
+          });
+
+          const text = await r.text();
+          let d;
+          try { d = JSON.parse(text); }
+          catch {
+            console.error('Non-JSON response:', text);
+            return say('Server error');
+          }
+
+          if (!r.ok || !d.success) {
+            console.error('Login error:', d);
+            return say(d.error || 'Login failed');
+          }
+
+          // Notify other scripts that login occurred
+          try { window.dispatchEvent(new CustomEvent('app:login', { detail: d.user || null })); } catch (e) {}
+
+          // ✅ success — redirect conditionally
+          if (d.partner_required) {
+            window.location.assign('/partner_form.php');
+          } else {
+            window.location.assign('/dashboard.php');
+          }
+
+        } catch (err) {
+          console.error(err);
+          say('Network error');
+        }
+      };
+      </script>
     </div>
   </div>
-
-<script>
-  // helpers
-  const $ = s => document.querySelector(s);
-  const say = t => { $('#msg').textContent = t || ''; };
-  const info = t => { $('#info').textContent = t || ''; };
-
-  // toggle mPIN visibility
-  document.addEventListener('click', (e) => {
-    if (!e.target.classList.contains('toggle-btn')) return;
-    const target = e.target.dataset.target;
-    let input = document.getElementById(target);
-    if (!input) input = document.querySelector(`[name="${target}"]`);
-    if (!input) return;
-    if (input.type === 'password') {
-      input.type = 'text';
-      e.target.textContent = 'Hide';
-      e.target.setAttribute('aria-label', 'Hide mPIN');
-    } else {
-      input.type = 'password';
-      e.target.textContent = 'Show';
-      e.target.setAttribute('aria-label', 'Show mPIN');
-    }
-  });
-
-  // login submit: sends only { mpin } and includes cookies
-  document.querySelector('#loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    say(''); info('');
-    const mpin = (document.getElementById('mpin').value || '').trim();
-
-    if (!/^\d{4,6}$/.test(mpin)) {
-      return say('Invalid mPIN (4–6 digits).');
-    }
-
-    // disable button while request in progress
-    const btn = $('#loginBtn');
-    btn.disabled = true;
-    btn.textContent = 'Signing in...';
-
-    try {
-      const res = await fetch('config/login.php', {
-        method: 'POST',
-        credentials: 'include',    // important: send device cookie with request
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mpin: String(mpin) })
-      });
-
-      // parse json safely
-      const raw = await res.text();
-      let d = null;
-      try { d = raw ? JSON.parse(raw) : null; } catch (zz) {
-        console.error('Non-JSON login response:', raw);
-        say('Server error. Try again later.');
-        return;
-      }
-
-      if (!res.ok) {
-        // handle common login errors clearly
-        if (res.status === 401 && d && d.error === 'no_device_cookie') {
-          say('Device not recognized. Please register or sign in once to bind this device.');
-          info('Tip: click "Sign Up" to create an account on this device.');
-          return;
-        }
-        if (res.status === 401 && d && d.error === 'invalid_mpin') {
-          say('Invalid mPIN. Please try again.');
-          return;
-        }
-        // other errors
-        console.error('Login failure:', res.status, d);
-        say(d && (d.error || d.message) ? (d.error || d.message) : 'Login failed');
-        return;
-      }
-
-      // success
-      if (d && d.success) {
-        // dispatch app:login for other listeners and redirect
-        try { window.dispatchEvent(new CustomEvent('app:login', { detail: d.user || null })); } catch(e){}
-        const redirectTo = d.partner_required ? '/partner_form.php' : '/dashboard.php';
-        window.location.assign(redirectTo);
-        return;
-      } else {
-        // unexpected but show message
-        console.error('Unexpected login response:', d);
-        say(d && (d.error || d.message) ? (d.error || d.message) : 'Login failed');
-        return;
-      }
-
-    } catch (err) {
-      console.error('Network/login error', err);
-      say('Network error. Please try again.');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Login';
-    }
-  });
-</script>
 </body>
 </html>

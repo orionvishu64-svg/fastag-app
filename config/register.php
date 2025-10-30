@@ -63,24 +63,13 @@ try {
 
     // Set signed cookie for mPIN-only login (device binding)
     $payload = ['uid' => $uid, 'exp' => time() + AUTH_COOKIE_TTL];
-    $secure_flag = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-               || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443);
-
-if (getenv('DEV_NO_SECURE_COOKIE') === '1') {
-    $secure_flag = false;
-}
-
-// Create signed token
-$token = sign_token($payload);
-
-// Set cookie
-setcookie(AUTH_COOKIE_NAME, $token, [
-    'expires'  => time() + AUTH_COOKIE_TTL,
-    'path'     => '/',
-    'secure'   => $secure_flag,
-    'httponly' => true,
-    'samesite' => 'Lax',
-]);
+    setcookie(AUTH_COOKIE_NAME, sign_token($payload), [
+        'expires'  => time() + AUTH_COOKIE_TTL,
+        'path'     => '/',
+        'secure'   => !empty($_SERVER['HTTPS']),
+        'httponly' => true, 
+        'samesite' => 'Lax',
+    ]);
 
     // Cleanup OTP session flags
     unset($_SESSION['email_verified'], $_SESSION['phone_verified'], $_SESSION['email_otp'], $_SESSION['phone_otp']);
