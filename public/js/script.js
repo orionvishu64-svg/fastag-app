@@ -333,22 +333,6 @@ function getLoggedInEmail() {
   return fallbackEmail || null;
 }
 
-function updateLoginButton() {
-  const loginButton = document.querySelector(".login-btn")
-  if (!loginButton) return
-
-  const email = getLoggedInEmail()
-  if (email) {
-    loginButton.setAttribute("href", "profile.php")
-    loginButton.innerHTML = `<i class="far fa-user-circle"></i>`
-  } else {
-    loginButton.setAttribute("href", "index.html")
-    loginButton.innerHTML = `<i class="far fa-user-circle"></i>`
-  }
-} 
-
-document.addEventListener("DOMContentLoaded", updateLoginButton)
-
 // Wire global logout on all pages that include the navbar
 function wireGlobalLogout() {
   const logoutLink = document.getElementById("nav-logout")

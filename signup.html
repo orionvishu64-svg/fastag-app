@@ -248,7 +248,8 @@
         });
         const d = await res.json();
         if (!d.success) return say(d.error || d.message || 'Signup failed');
-        // success -> redirect to login (or auto-login if backend sets cookie)
+        // give browser a moment to save the cookie (helps in some environments)
+        await new Promise(r => setTimeout(r, 800));
         location.href = 'index.html';
       } catch (err) {
         console.error(err);

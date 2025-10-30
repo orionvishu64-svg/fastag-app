@@ -34,7 +34,11 @@
     label { display:block; margin-top:12px; margin-bottom:6px; font-weight:600; }
     #loginBtn { margin-top:14px; padding:10px 12px; width:100%; }
     #msg { color:#b00020; margin-top:8px; min-height:18px; }
+    .notice { color:#0b5; margin-top:8px; min-height:18px; } /* success / info */
+    .secondary { margin-top:10px; font-size:0.95rem; color:#374151; }
+    .action-link { color:#007bff; cursor:pointer; text-decoration:underline; }
   </style>
+
   <!-- Early auth check: runs before page content is visible -->
   <script>
     (function(){
@@ -53,6 +57,7 @@
             }
           }
         } catch(e){
+          // auth check failed (network or server) — reveal page so user can try to login
           console.warn('auth check failed', e);
         }
         reveal();
@@ -68,35 +73,42 @@
       <div class="info-inner">
         <h2>Welcome back</h2>
         <p class="info-desc">
-          Sign in to continue to your account and access secure services.
+          Enter your device mPIN to sign in.
         </p>
       </div>
     </aside>
+
     <div class="form-column">
       <form id="loginForm" autocomplete="off" novalidate>
-        <label for="phone">Phone</label>
-        <input id="phone" name="phone" inputmode="numeric" pattern="\d{10}" maxlength="10" required placeholder="10-digit phone" />
         <label for="mpin">M-PIN</label>
         <div class="input-wrapper">
-          <!-- note: id="mpin" added so toggle can find it -->
           <input id="mpin" name="mpin" placeholder="●●●●" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}" required />
           <button type="button" class="toggle-btn" data-target="mpin" aria-label="Show mPIN">Show</button>
         </div>
+
         <button id="loginBtn" type="submit">Login</button>
+
         <div class="footer-links" style="margin-top:8px;">
           <a href="forgot-mpin.html">Forgot your mPIN?</a>
         </div>
+
         <div id="msg" role="status" aria-live="polite"></div>
-        <div class="footer-links" style="margin-top:10px;">
+        <div id="info" class="notice" role="status" aria-live="polite"></div>
+
+        <div class="footer-links secondary">
           Don't have an account? <a href="signup.html">Sign Up</a>
         </div>
       </form>
     </div>
   </div>
+
 <script>
-  // small helpers
+  // helpers
   const $ = s => document.querySelector(s);
-  // robust toggle handler: looks by id, then by name if id missing
+  const say = t => { $('#msg').textContent = t || ''; };
+  const info = t => { $('#info').textContent = t || ''; };
+
+  // toggle mPIN visibility
   document.addEventListener('click', (e) => {
     if (!e.target.classList.contains('toggle-btn')) return;
     const target = e.target.dataset.target;
@@ -113,34 +125,76 @@
       e.target.setAttribute('aria-label', 'Show mPIN');
     }
   });
-  const say = t => { $('#msg').textContent = t || ''; };
+
+  // login submit: sends only { mpin } and includes cookies
   document.querySelector('#loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault(); say('');
-    const fd = new FormData(e.target);
-    const phone = (fd.get('phone') || '').trim();
-    const mpin  = (fd.get('mpin') || '').trim();
-    if (!/^\d{10}$/.test(phone)) return say('Enter 10-digit phone');
-    if (!/^\d{4,6}$/.test(mpin)) return say('Invalid mPIN');
+    e.preventDefault();
+    say(''); info('');
+    const mpin = (document.getElementById('mpin').value || '').trim();
+
+    if (!/^\d{4,6}$/.test(mpin)) {
+      return say('Invalid mPIN (4–6 digits).');
+    }
+
+    // disable button while request in progress
+    const btn = $('#loginBtn');
+    btn.disabled = true;
+    btn.textContent = 'Signing in...';
+
     try {
-      const r = await fetch('config/login.php', {
+      const res = await fetch('config/login.php', {
         method: 'POST',
-        credentials: 'include',
+        credentials: 'include',    // important: send device cookie with request
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, mpin })
+        body: JSON.stringify({ mpin: String(mpin) })
       });
-      const text = await r.text();
-      let d;
-      try { d = JSON.parse(text); } catch { console.error('Non-JSON response:', text); return say('Server error'); }
-      if (!r.ok || !d.success) {
-        console.error('Login error:', d);
-        return say(d.error || d.message || 'Login failed');
+
+      // parse json safely
+      const raw = await res.text();
+      let d = null;
+      try { d = raw ? JSON.parse(raw) : null; } catch (zz) {
+        console.error('Non-JSON login response:', raw);
+        say('Server error. Try again later.');
+        return;
       }
-      try { window.dispatchEvent(new CustomEvent('app:login', { detail: d.user || null })); } catch (e) {}
-      const redirectTo = d.partner_required ? '/partner_form.php' : '/dashboard.php';
-      window.location.assign(redirectTo);
+
+      if (!res.ok) {
+        // handle common login errors clearly
+        if (res.status === 401 && d && d.error === 'no_device_cookie') {
+          say('Device not recognized. Please register or sign in once to bind this device.');
+          info('Tip: click "Sign Up" to create an account on this device.');
+          return;
+        }
+        if (res.status === 401 && d && d.error === 'invalid_mpin') {
+          say('Invalid mPIN. Please try again.');
+          return;
+        }
+        // other errors
+        console.error('Login failure:', res.status, d);
+        say(d && (d.error || d.message) ? (d.error || d.message) : 'Login failed');
+        return;
+      }
+
+      // success
+      if (d && d.success) {
+        // dispatch app:login for other listeners and redirect
+        try { window.dispatchEvent(new CustomEvent('app:login', { detail: d.user || null })); } catch(e){}
+        const redirectTo = d.partner_required ? '/partner_form.php' : '/dashboard.php';
+        window.location.assign(redirectTo);
+        return;
+      } else {
+        // unexpected but show message
+        console.error('Unexpected login response:', d);
+        say(d && (d.error || d.message) ? (d.error || d.message) : 'Login failed');
+        return;
+      }
+
     } catch (err) {
-      console.error(err);
-      say('Network error');
+      console.error('Network/login error', err);
+      say('Network error. Please try again.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Login';
     }
   });
 </script>
