@@ -2,9 +2,7 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-$vendor = __DIR__.'/vendor/autoload.php';
-if (!is_readable($vendor)) { error_log('PHPMailer autoload missing'); throw new RuntimeException('Mail setup error'); }
-require_once $vendor;
+require __DIR__ . '/../vendor/autoload.php';
 
 $env = __DIR__.'/.env.php';
 if (!is_readable($env)) { error_log('Mail env missing: '.$env); throw new RuntimeException('Mail config missing'); }
