@@ -62,7 +62,6 @@
       })();
     })();
   </script>
-
   <link rel="stylesheet" href="/public/css/signup.css">
 </head>
 <body>
@@ -75,38 +74,30 @@
         </p>
       </div>
     </aside>
-
     <div class="form-column">
       <form id="loginForm" autocomplete="off" novalidate>
         <label for="phone">Phone</label>
         <input id="phone" name="phone" inputmode="numeric" pattern="\d{10}" maxlength="10" required placeholder="10-digit phone" />
-
         <label for="mpin">M-PIN</label>
         <div class="input-wrapper">
           <!-- note: id="mpin" added so toggle can find it -->
           <input id="mpin" name="mpin" placeholder="●●●●" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}" required />
           <button type="button" class="toggle-btn" data-target="mpin" aria-label="Show mPIN">Show</button>
         </div>
-
         <button id="loginBtn" type="submit">Login</button>
-
         <div class="footer-links" style="margin-top:8px;">
           <a href="forgot-mpin.html">Forgot your mPIN?</a>
         </div>
-
         <div id="msg" role="status" aria-live="polite"></div>
-
         <div class="footer-links" style="margin-top:10px;">
           Don't have an account? <a href="signup.html">Sign Up</a>
         </div>
       </form>
     </div>
   </div>
-
 <script>
   // small helpers
   const $ = s => document.querySelector(s);
-
   // robust toggle handler: looks by id, then by name if id missing
   document.addEventListener('click', (e) => {
     if (!e.target.classList.contains('toggle-btn')) return;
@@ -124,9 +115,7 @@
       e.target.setAttribute('aria-label', 'Show mPIN');
     }
   });
-
   const say = t => { $('#msg').textContent = t || ''; };
-
   document.querySelector('#loginForm').addEventListener('submit', async (e) => {
     e.preventDefault(); say('');
     const fd = new FormData(e.target);
