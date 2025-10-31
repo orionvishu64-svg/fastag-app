@@ -43,7 +43,6 @@
     (function(){
       document.documentElement.setAttribute('data-auth-checked', 'false');
       async function reveal(){ document.documentElement.setAttribute('data-auth-checked','true'); }
-
       (async function(){
         try {
           const res = await fetch('config/check_login.php', { credentials: 'include', cache: 'no-store' });
