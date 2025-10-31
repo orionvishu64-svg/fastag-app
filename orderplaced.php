@@ -20,9 +20,9 @@
   lottie.loadAnimation({
     container: document.getElementById('orderSuccess'),
     renderer: 'svg',
-    loop: false, // play once
+    loop: false,
     autoplay: true,
-    path: 'https://assets10.lottiefiles.com/packages/lf20_jbrw3hcz.json' // Success animation JSON link
+    path: 'https://assets10.lottiefiles.com/packages/lf20_jbrw3hcz.json'
   });
 </script>
 </body>
