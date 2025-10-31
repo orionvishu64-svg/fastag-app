@@ -1,43 +1,33 @@
-<!--index.html-->
+<!-- index.html (modified to show Lottie loader after successful login) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login</title>
-
   <style>
     /* hide body until auth check completes */
     html[data-auth-checked="false"] body { visibility: hidden; }
-
     /* layout niceties for the input + toggle */
-    .input-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .toggle-btn {
-      cursor: pointer;
-      font-size: 13px;
-      color: #007bff;
-      background: none;
-      border: none;
-      padding: 6px;
-      margin-left: -48px;
-      z-index: 2;
-    }
-    input[type=password], input[type=text], input[type=tel] {
-      width: 100%;
-      padding: 10px 56px 10px 10px; /* space for toggle */
-      box-sizing: border-box;
-    }
+    .input-wrapper {position: relative;display: flex;align-items: center;gap: 8px;}
+    .toggle-btn {cursor: pointer;font-size: 13px;color: #007bff;background: none;border: none;padding: 6px;margin-left: -48px;z-index: 2;}
+    input[type=password], input[type=text], input[type=tel] {width: 100%;padding: 10px 56px 10px 10px; /* space for toggle */box-sizing: border-box;}
     form { max-width: 420px; margin: 24px; }
     label { display:block; margin-top:12px; margin-bottom:6px; font-weight:600; }
     #loginBtn { margin-top:14px; padding:10px 12px; width:100%; }
     #msg { color:#b00020; margin-top:8px; min-height:18px; }
+    /* loader styles */
+    .login-loader {position: fixed;inset: 0;display: flex;flex-direction: column;justify-content: center;align-items: center;background: #fff;z-index: 9999;transition: opacity 0.5s ease;}
+    .login-loader.hidden {opacity: 0;visibility: hidden;pointer-events: none;}
+    .login-loader p {font-size: 1.1rem;color: #333;margin-top: 0.8rem;}
+    /* basic layout */
+    .auth-layout { display:flex; gap:2rem; align-items:center; justify-content:center; min-height:100vh; padding:24px; box-sizing:border-box; }
+    .info-card { flex:1; max-width:520px; padding:28px; background: #f7f9fc; border-radius:12px; box-shadow: 0 6px 20px rgba(12,16,30,0.04); }
+    .form-column { flex:0 0 420px; max-width:420px; width:100%; }
+    @media (max-width:900px){ .auth-layout { flex-direction:column; } .info-card { order:2 } .form-column { order:1 } }
   </style>
-
+  <!-- lottie-player webcomponent -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <!-- Early auth check: runs before page content is visible -->
   <script>
     (function(){
@@ -62,6 +52,7 @@
       })();
     })();
   </script>
+
   <link rel="stylesheet" href="/public/css/signup.css">
 </head>
 <body>
@@ -74,6 +65,7 @@
         </p>
       </div>
     </aside>
+
     <div class="form-column">
       <form id="loginForm" autocomplete="off" novalidate>
         <label for="phone">Phone</label>
@@ -95,56 +87,114 @@
       </form>
     </div>
   </div>
-<script>
-  // small helpers
-  const $ = s => document.querySelector(s);
-  // robust toggle handler: looks by id, then by name if id missing
-  document.addEventListener('click', (e) => {
-    if (!e.target.classList.contains('toggle-btn')) return;
-    const target = e.target.dataset.target;
-    let input = document.getElementById(target);
-    if (!input) input = document.querySelector(`[name="${target}"]`);
-    if (!input) return;
-    if (input.type === 'password') {
-      input.type = 'text';
-      e.target.textContent = 'Hide';
-      e.target.setAttribute('aria-label', 'Hide mPIN');
-    } else {
-      input.type = 'password';
-      e.target.textContent = 'Show';
-      e.target.setAttribute('aria-label', 'Show mPIN');
-    }
-  });
-  const say = t => { $('#msg').textContent = t || ''; };
-  document.querySelector('#loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault(); say('');
-    const fd = new FormData(e.target);
-    const phone = (fd.get('phone') || '').trim();
-    const mpin  = (fd.get('mpin') || '').trim();
-    if (!/^\d{10}$/.test(phone)) return say('Enter 10-digit phone');
-    if (!/^\d{4,6}$/.test(mpin)) return say('Invalid mPIN');
-    try {
-      const r = await fetch('config/login.php', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, mpin })
-      });
-      const text = await r.text();
-      let d;
-      try { d = JSON.parse(text); } catch { console.error('Non-JSON response:', text); return say('Server error'); }
-      if (!r.ok || !d.success) {
-        console.error('Login error:', d);
-        return say(d.error || d.message || 'Login failed');
+
+  <!-- Lottie loader (hidden until login success) -->
+  <div id="login-loader" class="login-loader hidden" aria-hidden="true">
+    <!-- NOTE: using one-play animation (loop="false") and listening for 'complete' -->
+    <lottie-player
+      id="loginLottiePlayer"
+      src="https://lottie.host/7e9e7d22-6939-45bb-8f2e-b4a2b1a24a37/loading.json"
+      background="transparent"
+      speed="1"
+      loop="false"
+      autoplay
+      style="width: 220px; height: 220px;">
+    </lottie-player>
+    <p>Logging you in...</p>
+  </div>
+
+  <script>
+    // small helpers
+    const $ = s => document.querySelector(s);
+    // robust toggle handler: looks by id, then by name if id missing
+    document.addEventListener('click', (e) => {
+      if (!e.target.classList.contains('toggle-btn')) return;
+      const target = e.target.dataset.target;
+      let input = document.getElementById(target);
+      if (!input) input = document.querySelector(`[name="${target}"]`);
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        e.target.textContent = 'Hide';
+        e.target.setAttribute('aria-label', 'Hide mPIN');
+      } else {
+        input.type = 'password';
+        e.target.textContent = 'Show';
+        e.target.setAttribute('aria-label', 'Show mPIN');
       }
-      try { window.dispatchEvent(new CustomEvent('app:login', { detail: d.user || null })); } catch (e) {}
-      const redirectTo = d.partner_required ? '/partner_form.php' : '/dashboard.php';
-      window.location.assign(redirectTo);
-    } catch (err) {
-      console.error(err);
-      say('Network error');
+    });
+
+    const say = t => { $('#msg').textContent = t || ''; };
+
+    function showLoaderAndRedirect(redirectTo) {
+      // hide main UI elements
+      const form = document.getElementById('loginForm');
+      if (form) form.style.display = 'none';
+      const info = document.querySelector('.info-card');
+      if (info) info.style.display = 'none';
+
+      // show loader
+      const loader = document.getElementById('login-loader');
+      loader.classList.remove('hidden');
+      loader.setAttribute('aria-hidden', 'false');
+
+      const player = document.getElementById('loginLottiePlayer');
+      let redirected = false;
+
+      // redirect helper (ensures only one redirect)
+      const doRedirect = () => {
+        if (redirected) return;
+        redirected = true;
+        // small fade-out before navigating (optional)
+        loader.style.opacity = '0';
+        setTimeout(() => { window.location.href = redirectTo; }, 250);
+      };
+
+      // if player exists, listen for 'complete' event, else fallback to timeout
+      if (player && typeof player.addEventListener === 'function') {
+        // Give the player a short moment to start; then wait for complete
+        player.addEventListener('complete', () => {
+          doRedirect();
+        });
+
+        // Fallback: in case 'complete' doesn't fire (network), redirect after 3s
+        setTimeout(doRedirect, 3000);
+      } else {
+        setTimeout(doRedirect, 2500);
+      }
     }
-  });
-</script>
+    document.querySelector('#loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault(); say('');
+      const fd = new FormData(e.target);
+      const phone = (fd.get('phone') || '').trim();
+      const mpin  = (fd.get('mpin') || '').trim();
+      if (!/^\d{10}$/.test(phone)) return say('Enter 10-digit phone');
+      if (!/^\d{4,6}$/.test(mpin)) return say('Invalid mPIN');
+      try {
+        const r = await fetch('config/login.php', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, mpin })
+        });
+        const text = await r.text();
+        let d;
+        try { d = JSON.parse(text); } catch { console.error('Non-JSON response:', text); return say('Server error'); }
+        if (!r.ok || !d.success) {
+          console.error('Login error:', d);
+          return say(d.error || d.message || 'Login failed');
+        }
+        try { window.dispatchEvent(new CustomEvent('app:login', { detail: d.user || null })); } catch (e) {}
+        const redirectTo = d.partner_required ? '/partner_form.php' : '/dashboard.php';
+
+        // SHOW LOTTIE LOADER before redirecting
+        showLoaderAndRedirect(redirectTo);
+
+      } catch (err) {
+        console.error(err);
+        say('Network error');
+      }
+    });
+  </script>
 </body>
 </html>
