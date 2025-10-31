@@ -10,19 +10,25 @@ $user_name = $_SESSION['user']['name'] ?? $_SESSION['user_name'] ?? 'Guest';
 $cart_count = isset($_SESSION['cart_count']) ? (int) $_SESSION['cart_count'] : 0;
 ?>
 
- <!-- Put preloader at the very first element inside <body> -->
-<div id="preloader" aria-hidden="false">
-  <div id="ctn-preloader" class="ctn-preloader" role="status" aria-label="Loading">
-    <div class="round_spinner">
-      <div class="spinner" aria-hidden="true"></div>
-      <div class="text">
-        <!-- Use a small logo here. Avoid loading="lazy" for this image -->
-        <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200Black.png"
-             alt="ApnaPayment" class="preloader-logo" />
-      </div>
+<!-- Preloader -->
+<div id="preloader" aria-hidden="false" aria-busy="true">
+  <div id="ctn-preloader" class="ctn-preloader" role="status" aria-label="Loading, getting your Fastag">
+    <div class="logo-spinner" aria-hidden="true">
+      <!-- Decorative spinning ring (CSS) -->
+      <div class="spinner-ring" aria-hidden="true"></div>
+
+      <!-- logo sits above the ring -->
+      <img
+        src="https://www.apnapayment.com/website/img/logo/ApnaPayment200Black.png"
+        alt="ApnaPayment"
+        class="preloader-logo"
+        width="140" height="140"
+        loading="eager"
+      />
     </div>
-    <h3 class="head" style="color: #222222ff">Get Your Fastag</h3>
-    <p class="preloader-fact"></p>
+
+    <h3 class="head">Get Your Fastag</h3>
+    <p class="preloader-fact">Fast, secure and instant activation</p>
   </div>
 </div>
 
@@ -67,7 +73,7 @@ $cart_count = isset($_SESSION['cart_count']) ? (int) $_SESSION['cart_count'] : 0
 (function () {
   'use strict';
 
-  // ---------- PRELOADER ----------
+// ---------- PRELOADER ----------
   try {
     const preloader = document.getElementById('preloader');
 
@@ -85,24 +91,26 @@ $cart_count = isset($_SESSION['cart_count']) ? (int) $_SESSION['cart_count'] : 0
     const FORCED_FALLBACK_MS = HIDE_MS + 600;
 
     function hidePreloaderGracefully() {
-      const p = document.getElementById('preloader');
-      if (!p) return;
-      // add class for CSS transition
-      p.classList.add('preloader-hidden');
+  const p = document.getElementById('preloader');
+  if (!p) return;
 
-      // also set inline styles to override stubborn CSS
-      p.style.opacity = '0';
-      p.style.visibility = 'hidden';
-      p.style.pointerEvents = 'none';
+  try {
+    // inform assistive tech that loading completed
+    p.setAttribute('aria-busy', 'false');
+    p.setAttribute('aria-hidden', 'true');
+    document.documentElement.classList.remove('preloader-active');
+    document.body.classList.remove('preloader-active');
+  } catch(e){ /* ignore */ }
 
-      // remove after transition
-      setTimeout(() => {
-        try { p.remove(); } catch (e) { /* ignore */ }
-        document.documentElement.classList.remove('preloader-active');
-        document.body.classList.remove('preloader-active');
-        console.info('Preloader removed (graceful).');
-      }, 420);
-    }
+  // add class for CSS transition
+  p.classList.add('preloader-hidden');
+
+  // ensure it is removed after the transition
+  setTimeout(() => {
+    try { p.remove(); } catch (e) { /* ignore */ }
+    console.info('Preloader removed (graceful).');
+  }, 420);
+}
 
     // schedule hide
     setTimeout(hidePreloaderGracefully, HIDE_MS);
@@ -121,7 +129,7 @@ $cart_count = isset($_SESSION['cart_count']) ? (int) $_SESSION['cart_count'] : 0
   } catch (err) {
     console.error('Preloader script fatal error:', err);
   }
-
+  
   // ---------- HEADER FIX: make header fixed + reserve space ----------
   try {
     const header = document.querySelector('.header');

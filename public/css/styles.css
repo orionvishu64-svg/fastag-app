@@ -124,14 +124,44 @@ body{font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto
 .flex{display: flex;}
 .grid{display: grid;}
 
-/* Preloader (must match JS) */
-#preloader{position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #ffffff; z-index: 999999; transition: opacity 400ms ease, visibility 400ms ease; opacity: 1; visibility: visible; pointer-events: auto;}
-#preloader.preloader-hidden{opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;}
-#ctn-preloader{text-align: center; max-width: 480px; width: 90%;}
-.round_spinner .spinner{width: 72px; height: 72px; border-radius: 50%; border: 8px solid rgba(0,0,0,0.08); border-top-color: rgba(0,0,0,0.6); animation: preloader-spin 1s linear infinite; margin: 0 auto 14px; box-sizing: border-box;}
-@keyframes preloader-spin{to{transform: rotate(360deg);}}
-.preloader-logo{max-width: 140px; width: 45%; height: auto; display: block; margin: 0 auto;}
-html.preloader-active, body.preloader-active{overflow: hidden !important; height: 100% !important;}
+/* Preloader container - keep your existing rules, but make sure these values override older ones */
+#preloader {position: fixed;inset: 0;display: flex;align-items: center;justify-content: center;background: #ffffff;z-index: 999999;transition: opacity 400ms ease, visibility 400ms ease, transform 400ms ease;opacity: 1;visibility: visible;pointer-events: auto;}
+/* preserve your hide class behavior */
+#preloader.preloader-hidden {opacity: 0 !important;visibility: hidden !important;pointer-events: none !important;transform: translateY(-6px) scale(.995);}
+/* inner card */
+#ctn-preloader {text-align: center;max-width: 480px;width: 90%;padding: 6px 14px;}
+/* the logo + spinner wrapper */
+.logo-spinner {position: relative;width: 160px;height: 160px;margin: 0 auto 14px;display: flex;align-items: center;justify-content: center;}
+/* the spinning ring that circles the logo */
+.spinner-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-sizing: border-box;
+  /* outer ring look */
+  border: 8px solid rgba(0,0,0,0.06);
+  border-top-color: rgba(6, 68, 173, 0.95); /* active color - change to brand color */
+  transform: rotate(0deg);
+  animation: preloader-rotate 1.2s linear infinite;
+  z-index: 1;
+  /* subtle glow */
+  filter: drop-shadow(0 6px 12px rgba(6,68,173,0.08));
+}
+/* inner subtle second ring for depth */
+.spinner-ring::after {content: "";position: absolute;inset: 8px;border-radius: 50%;border: 4px solid rgba(6,68,173,0.06);z-index: 0;}
+/* logo styling sits above spinner */
+.preloader-logo {position: relative;z-index: 2;width: 86px;        /* good default for desktop */height: auto;display: block;border-radius: 50%;background: #fff;   /* makes logo appear crisp inside ring */padding: 6px;box-shadow: 0 8px 18px rgba(18,18,18,0.06);}
+/* Heading & text */
+.head {color: #222;font-size: 1.25rem;margin: 6px 0 4px;font-weight: 700;}
+.preloader-fact {color: #555;font-size: 0.95rem;margin: 0;}
+/* Spin keyframes */
+@keyframes preloader-rotate {
+  to { transform: rotate(360deg); }
+}
+/* Responsive adjustments */
+@media (max-width: 420px) {.logo-spinner { width: 120px; height: 120px; }.preloader-logo { width: 70px; }.spinner-ring { border-width: 7px; }.spinner-ring::after { border-width: 3px; }}
+/* Accessibility: keep scroll locked while loading */
+html.preloader-active, body.preloader-active {overflow: hidden !important;height: 100% !important;}
 
 /* Header styling */
 .header.header-fixed-by-script{width: 100%; box-shadow: 0 1px 6px rgba(0,0,0,0.06); background: #0b1220; transition: top 250ms ease;}
