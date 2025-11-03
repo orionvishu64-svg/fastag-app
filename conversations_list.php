@@ -1,4 +1,4 @@
-<?php
+<?php 
 // conversations_list.php
 
 require_once __DIR__ . '/config/db.php';
@@ -23,7 +23,8 @@ try {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Conversations list</title>
-  <style>/* Consistent theme with signup/login pages — header + full-width table */
+  <style>
+/* Consistent theme with signup/login pages — header + full-width table */
 /* ---------- Variables ---------- */
 :root{
   --bg-1:#f3f8fe;
@@ -103,10 +104,10 @@ body{
   width:100%;
   overflow:auto;
 }
+/* desktop table */
 .main-card table{
   width:100%;
   border-collapse:collapse;
-  min-width:700px;
   font-size:15px;
 }
 .main-card th{
@@ -149,67 +150,142 @@ tr.closed td{
   color:#fff;
   box-shadow:0 8px 18px rgba(59,130,246,0.12);
 }
-/* ---------- Responsive ---------- */
-@media (max-width:768px){
+
+/* ---------- Responsive: convert rows to cards on small screens ---------- */
+@media (max-width:800px){
   body{padding:16px;}
   .info-card{flex-direction:column;gap:10px;text-align:center;}
   .info-card h1{font-size:20px;}
   .info-card a{margin-top:4px;}
   .main-card{padding:16px;}
-  .main-card table{min-width:600px;font-size:14px;}
+
+  /* hide header row, convert each tr into a block card */
+  .main-card thead{ display:none; }
+  .main-card table, .main-card tbody, .main-card tr, .main-card td {
+    display:block;
+    width:100%;
+  }
+  .main-card tr{
+    margin-bottom:12px;
+    border-radius:12px;
+    padding:12px;
+    box-shadow:0 6px 18px rgba(2,6,23,0.04);
+    border:1px solid rgba(15,23,42,0.03);
+    background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,250,0.98));
+  }
+  .main-card td{
+    padding:10px 8px;
+    border-bottom:none;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    font-size:14px;
+  }
+  .main-card td + td { margin-top:6px; } /* spacing between stacked fields */
+
+  /* show label on left using data-label */
+  .main-card td::before{
+    content:attr(data-label);
+    display:inline-block;
+    width:36%;
+    min-width:95px;
+    font-weight:700;
+    color:var(--muted);
+    text-transform:capitalize;
+    font-size:13px;
+  }
+
+  /* make Actions button full width on very small devices */
+  .main-card .actions-wrap{
+    display:flex;
+    width:100%;
+    justify-content:flex-end;
+  }
+  .main-card .btn{
+    flex:0 0 auto;
+    width:auto;
+  }
+
+  /* if extremely narrow, stack label and value vertically for readability */
+  @media (max-width:420px){
+    .main-card td{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    .main-card td::before{
+      width:auto;
+      margin-bottom:6px;
+    }
+    .main-card .actions-wrap{
+      width:100%;
+    }
+    .main-card .btn{
+      width:100%;
+      text-align:center;
+      padding:10px;
+    }
+  }
 }
+
+/* even smaller touch optimizations */
 @media (max-width:480px){
   .info-card h1{font-size:18px;}
   .info-card{padding:16px;}
   .main-card{padding:14px;}
+  body{padding:12px;}
 }
-</style>
+  </style>
 </head>
 <body>
-<div class="convo-layout">
+<div class="convo-page">
   <div class="info-card">
     <h1>All Conversations</h1>
     <a href="contact.php">Back to Contact</a>
   </div>
-<div class="main-card">
-  <table>
-    <thead>
-      <tr>
-        <th>Ticket</th>
-        <th>Name</th>
-        <th>Subject</th>
-        <th>Submitted</th>
-        <th>Priority</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="conversations-body">
-    <?php foreach ($tickets as $t): ?>
-      <?php $cls = ($t['status'] === 'open') ? 'open' : 'closed'; ?>
-      <tr class="<?= $cls ?>" data-contact-query-id="<?= htmlspecialchars($t['id']) ?>">
-        <td><?= htmlspecialchars($t['ticket_id']) ?></td>
-        <td><?= htmlspecialchars($t['name']) ?> (<?= htmlspecialchars($t['email']) ?>)</td>
-        <td><?= htmlspecialchars($t['subject']) ?></td>
-        <td><?= htmlspecialchars($t['submitted_at']) ?></td>
-        <td><?= htmlspecialchars($t['priority']) ?></td>
-        <td><?= htmlspecialchars($t['status']) ?></td>
-        <td>
-          <?php if ($t['status'] === 'open'): ?>
-            <a class="btn btn-open" href="conversation.php?ticket_id=<?= urlencode($t['ticket_id']) ?>">Open</a>
-          <?php else: ?>
-            <a class="btn btn-view" href="conversation.php?ticket_id=<?= urlencode($t['ticket_id']) ?>">View</a>
-          <?php endif; ?>
-        </td>
-      </tr>
-    <?php endforeach; ?>
-    </tbody>
-  </table>
-          </div>
-          </div>
-  <script>
-    // optional: simple auto-refresh every 45s (uncomment if you want)
-    // setInterval(()=> location.reload(), 45000);
-  </script>
+
+  <div class="main-card" aria-live="polite">
+    <table>
+      <thead>
+        <tr>
+          <th>Ticket</th>
+          <th>Name</th>
+          <th>Subject</th>
+          <th>Submitted</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="conversations-body">
+      <?php foreach ($tickets as $t): ?>
+        <?php $cls = ($t['status'] === 'open') ? 'open' : 'closed'; ?>
+        <tr class="<?= $cls ?>" data-contact-query-id="<?= htmlspecialchars($t['id']) ?>">
+          <td data-label="Ticket"><?= htmlspecialchars($t['ticket_id']) ?></td>
+          <td data-label="Name"><?= htmlspecialchars($t['name']) ?> <span style="color:var(--muted);font-weight:600;font-size:13px;">(<?= htmlspecialchars($t['email']) ?>)</span></td>
+          <td data-label="Subject"><?= htmlspecialchars($t['subject']) ?></td>
+          <td data-label="Submitted"><?= htmlspecialchars($t['submitted_at']) ?></td>
+          <td data-label="Priority"><?= htmlspecialchars($t['priority']) ?></td>
+          <td data-label="Status"><?= htmlspecialchars($t['status']) ?></td>
+          <td data-label="Actions">
+            <div class="actions-wrap">
+            <?php if ($t['status'] === 'open'): ?>
+              <a class="btn btn-open" href="conversation.php?ticket_id=<?= urlencode($t['ticket_id']) ?>" style="white-space:nowrap;">Open</a>
+            <?php else: ?>
+              <a class="btn btn-view" href="conversation.php?ticket_id=<?= urlencode($t['ticket_id']) ?>" style="white-space:nowrap;">View</a>
+            <?php endif; ?>
+            </div>
+          </td>
+        </tr>
+      <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  // optional: simple auto-refresh every 45s (uncomment if you want)
+  // setInterval(()=> location.reload(), 45000);
+</script>
 </body>
 </html>
