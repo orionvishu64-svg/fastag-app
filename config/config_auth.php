@@ -15,7 +15,7 @@ const AUTH_COOKIE_SECRET = 'CHANGE_ME_TO_A_LONG_RANDOM_SECRET_AT_LEAST_64_BYTES'
  * AUTH_COOKIE_TTL is seconds (default: 120 days).
  * You may change to any number of seconds you want the cookie to live.
  */
-const AUTH_COOKIE_TTL    = 60 * 60 * 24 * 120;
+const AUTH_COOKIE_TTL    = 60 * 60 * 24 * 365;
 
 const AUTH_COOKIE_PATH   = '/';
 const AUTH_COOKIE_DOMAIN = ''; // set if needed (e.g. '.example.com')

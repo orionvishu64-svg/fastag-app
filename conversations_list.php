@@ -3,7 +3,6 @@
 
 require_once __DIR__ . '/config/db.php';
 header('Content-Type: text/html; charset=utf-8');
-
 // fetch open and closed conversations
 try {
     // open tickets first
@@ -22,9 +21,9 @@ try {
 <html>
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Conversations list</title>
   <style>/* Consistent theme with signup/login pages — header + full-width table */
-
 /* ---------- Variables ---------- */
 :root{
   --bg-1:#f3f8fe;
@@ -39,7 +38,6 @@ try {
   --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --maxw:1100px;
 }
-
 /* ---------- Base Layout ---------- */
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;padding:0;}
@@ -53,7 +51,6 @@ body{
   justify-content:center;
   padding:28px;
 }
-
 /* Wrapper for entire page */
 .convo-page{
   width:100%;
@@ -62,7 +59,6 @@ body{
   flex-direction:column;
   gap:22px;
 }
-
 /* ---------- Top Header Card ---------- */
 .info-card{
   width:100%;
@@ -97,7 +93,6 @@ body{
   transform:translateY(-1px);
   filter:brightness(1.05);
 }
-
 /* ---------- Main Table Card ---------- */
 .main-card{
   background:var(--card-bg);
@@ -108,14 +103,12 @@ body{
   width:100%;
   overflow:auto;
 }
-
 .main-card table{
   width:100%;
   border-collapse:collapse;
   min-width:700px;
   font-size:15px;
 }
-
 .main-card th{
   text-align:left;
   font-weight:700;
@@ -124,13 +117,11 @@ body{
   border-bottom:1px solid rgba(15,23,42,0.08);
   background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(250,250,250,0.85));
 }
-
 .main-card td{
   padding:12px 14px;
   border-bottom:1px solid rgba(15,23,42,0.04);
   color:#334155;
 }
-
 tr.open td{
   background:linear-gradient(180deg, rgba(230,255,240,0.9), rgba(255,255,255,0.85));
 }
@@ -138,7 +129,6 @@ tr.closed td{
   background:linear-gradient(180deg, rgba(255,247,235,0.95), rgba(255,255,255,0.85));
   color:#475569;
 }
-
 /* ---------- Buttons ---------- */
 .btn{
   padding:8px 12px;
@@ -159,7 +149,6 @@ tr.closed td{
   color:#fff;
   box-shadow:0 8px 18px rgba(59,130,246,0.12);
 }
-
 /* ---------- Responsive ---------- */
 @media (max-width:768px){
   body{padding:16px;}
@@ -218,7 +207,6 @@ tr.closed td{
   </table>
           </div>
           </div>
-
   <script>
     // optional: simple auto-refresh every 45s (uncomment if you want)
     // setInterval(()=> location.reload(), 45000);
