@@ -1,30 +1,24 @@
 <?php
-// get_products.php
 require_once __DIR__ . '/common_start.php';
 require_once __DIR__ . '/db.php';
 
 header('Content-Type: application/json');
 
-// 👇 hardcode the host that actually has your /uploads/ folder
-// Use HTTPS if your site is HTTPS
-const ASSET_BASE_URL = 'http://15.207.6.169';
+const IMAGE_HOST = 'http://15.207.6.169'; // server where uploads/ actually exist
 
-function to_absolute_asset_url(?string $p): string {
-    if (!$p) return '';
-    // already absolute? (http/https or protocol-relative //)
-    if (preg_match('~^(?:http?:)?//~i', $p)) return $p;
-    // ensure leading slash for relative paths like "uploads/..."
-    $p = ($p[0] === '/') ? $p : '/' . $p;
-    return rtrim(ASSET_BASE_URL, '/') . $p;
+function fix_image_url(?string $path): string {
+    if (!$path) return '';
+    if (preg_match('~^(?:https?:)?//~i', $path)) return $path;
+    $path = ($path[0] === '/') ? $path : '/' . $path;
+    return rtrim(IMAGE_HOST, '/') . $path;
 }
 
 try {
-    $bank     = isset($_GET['bank']) ? trim($_GET['bank']) : null;
-    $category = isset($_GET['category']) ? trim($_GET['category']) : null;
-    $search   = isset($_GET['q']) ? trim($_GET['q']) : null;
-    $limit    = isset($_GET['limit']) ? (int)$_GET['limit'] : 0;
+    $bank = $_GET['bank'] ?? null;
+    $category = $_GET['category'] ?? null;
+    $search = $_GET['q'] ?? null;
+    $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 0;
 
-    // include image AS logo for the frontend
     $sql = "SELECT 
                 id, name, description, price, bank, category, product_id,
                 activation, balance, security, tagcost, payout,
@@ -33,9 +27,9 @@ try {
             WHERE 1=1";
     $params = [];
 
-    if ($bank !== null && $bank !== '') { $sql .= " AND bank = ?";      $params[] = $bank; }
-    if ($category !== null && $category !== '') { $sql .= " AND category = ?";  $params[] = $category; }
-    if ($search !== null && $search !== '') {
+    if ($bank) { $sql .= " AND bank = ?"; $params[] = $bank; }
+    if ($category) { $sql .= " AND category = ?"; $params[] = $category; }
+    if ($search) {
         $sql .= " AND (name LIKE ? OR description LIKE ? OR product_id LIKE ?)";
         $like = "%{$search}%";
         array_push($params, $like, $like, $like);
@@ -55,14 +49,12 @@ try {
         $r['balance']    = (int)($r['balance'] ?? 0);
         $r['security']   = (int)($r['security'] ?? 0);
         $r['payout']     = (string)($r['payout'] ?? '');
-
-        // 👇 convert DB path like "uploads/products/..." into full URL
-        $r['logo'] = to_absolute_asset_url($r['logo'] ?? '');
+        $r['logo']       = fix_image_url($r['logo'] ?? '');
     }
     unset($r);
 
     echo json_encode(['success' => true, 'products' => $rows]);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Database error.']);
+    echo json_encode(['success' => false, 'message' => 'Database error']);
 }
