@@ -6,7 +6,7 @@ header('Content-Type: text/html; charset=utf-8');
 // fetch open and closed conversations
 try {
     // open tickets first
-    $stmtOpen = $pdo->prepare("SELECT id, ticket_id, name, email, subject, submitted_at, status, viewed, priority 
+    $stmtOpen = $pdo->prepare("SELECT id, ticket_id, subject, status, viewed 
                                FROM contact_queries
                                ORDER BY FIELD(status,'open','closed'), submitted_at DESC");
     $stmtOpen->execute();
@@ -249,10 +249,7 @@ tr.closed td{
       <thead>
         <tr>
           <th>Ticket</th>
-          <th>Name</th>
           <th>Subject</th>
-          <th>Submitted</th>
-          <th>Priority</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -262,10 +259,7 @@ tr.closed td{
         <?php $cls = ($t['status'] === 'open') ? 'open' : 'closed'; ?>
         <tr class="<?= $cls ?>" data-contact-query-id="<?= htmlspecialchars($t['id']) ?>">
           <td data-label="Ticket"><?= htmlspecialchars($t['ticket_id']) ?></td>
-          <td data-label="Name"><?= htmlspecialchars($t['name']) ?> <span style="color:var(--muted);font-weight:600;font-size:13px;">(<?= htmlspecialchars($t['email']) ?>)</span></td>
           <td data-label="Subject"><?= htmlspecialchars($t['subject']) ?></td>
-          <td data-label="Submitted"><?= htmlspecialchars($t['submitted_at']) ?></td>
-          <td data-label="Priority"><?= htmlspecialchars($t['priority']) ?></td>
           <td data-label="Status"><?= htmlspecialchars($t['status']) ?></td>
           <td data-label="Actions">
             <div class="actions-wrap">
