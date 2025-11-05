@@ -19,7 +19,7 @@
                     <img src="https://images.goodreturns.in/webp/common_dynamic/images/social_share/fastag_18.jpg" alt="Kotak Bank">
                 </div>
                 <div class="bank-info">
-                    <h1>KOTAK FIRST FASTag</h1>
+                    <h1>KOTAK FASTag</h1>
                     <p>Choose your vehicle category for KOTAK FIRST Bank FASTag. Modern banking with customer-first approach.</p>
                     <div class="bank-features">
                         <div class="feature-item">

@@ -45,7 +45,7 @@
       <div class="container">
         <div class="products-header-info">
           <h2>Select Your Vehicle Category</h2>
-          </div>
+        </div>
 
         <!-- renderer inserts cards here -->
         <div id="products-container" class="products-grid" aria-live="polite"></div>

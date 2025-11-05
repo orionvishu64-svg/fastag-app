@@ -1,18 +1,4 @@
-/* /public/js/bank-pages.js
- *
- * Logic for bank-specific pages (SBI, Bajaj, Kotak, IDFC, etc.)
- * - Detects bank for the page
- * - Wires category / VC buttons to filter products by category+bank
- * - Keeps page-specific UI (benefits, notices) unchanged
- *
- * Expected HTML:
- *  - Category buttons/cards should have data-category attribute (e.g. data-category="VC4")
- *  - body may include data-bank="SBI" to explicitly set bank for page
- *  - product grid container same as products.js (no change)
- * Usage:
- *  - Always include after productdb.js and products.js
- *  - Customize pending with the specific bank pages
- */
+/* /public/js/bank-pages.js */
 
 (function () {
   if (!window.ProductDB || !window.reloadProducts) {
@@ -78,7 +64,6 @@
     if (!search) return;
     let timeout = null;
     const bank = detectBankFromPage();
-
     search.addEventListener('input', (e) => {
       const q = e.target.value || '';
       if (timeout) clearTimeout(timeout);
@@ -93,7 +78,6 @@
     const bank = detectBankFromPage();
     // Bank pages should explicitly load only that bank's products
     window.reloadProducts({ bank });
-
     // Wire categories, search (if present)
     wireCategoryButtons();
     wireSearch();

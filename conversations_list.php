@@ -1,6 +1,5 @@
 <?php 
 // conversations_list.php
-
 require_once __DIR__ . '/config/db.php';
 header('Content-Type: text/html; charset=utf-8');
 // fetch open and closed conversations
@@ -24,34 +23,42 @@ try {
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Conversations list</title>
   <style>
-/* Consistent theme with signup/login pages — header + full-width table */
-/* ---------- Variables ---------- */
+/* convo-table-dark-warm.css — dark warm theme (keeps all IDs/classes unchanged) */
+/* ---------- THEME VARIABLES ---------- */
 :root{
-  --bg-1:#f3f8fe;
-  --bg-2:#fbfdff;
-  --accent:#0ea5e9;
-  --accent-dark:#0284c7;
-  --muted:#64748b;
-  --card-bg:rgba(255,255,255,0.98);
+  --bg-dark: #0b0b0c;
+  --panel-dark: #0f0f10;
+  --panel-2: #141414;
+  --text: #f3f3f3;
+  --muted: #b0b0b0;
+  --warm-yellow: #ffb84d;
+  --warm-yellow-2: #ffcf73;
+  --warm-red: #e85c41;
+  --card-bg: linear-gradient(180deg, rgba(18,18,18,0.85), rgba(14,14,14,0.9));
   --radius:14px;
-  --shadow:0 14px 36px rgba(2,6,23,0.06);
-  --shadow-soft:0 20px 40px rgba(10,20,40,0.06);
-  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --shadow: 0 14px 36px rgba(0,0,0,0.75);
+  --shadow-soft: 0 20px 40px rgba(0,0,0,0.6);
+  --font: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --maxw:1100px;
+  --glass-border: rgba(255,255,255,0.04);
 }
+
 /* ---------- Base Layout ---------- */
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;padding:0;}
 body{
   font-family:var(--font);
-  color:#0f172a;
+  color:var(--text);
   background:
-    radial-gradient(900px 400px at 8% 10%, rgba(14,165,233,0.05), transparent),
-    linear-gradient(180deg,var(--bg-1),var(--bg-2));
+    radial-gradient(900px 400px at 8% 10%, rgba(255,184,77,0.02), transparent),
+    linear-gradient(180deg,var(--bg-dark), #070707);
   display:flex;
   justify-content:center;
   padding:28px;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
+
 /* Wrapper for entire page */
 .convo-page{
   width:100%;
@@ -60,13 +67,14 @@ body{
   flex-direction:column;
   gap:22px;
 }
+
 /* ---------- Top Header Card ---------- */
 .info-card{
   width:100%;
-  background:linear-gradient(180deg, rgba(14,165,233,0.05), rgba(2,132,199,0.02));
+  background: linear-gradient(180deg, rgba(255,184,77,0.03), rgba(232,92,65,0.02));
   border-radius:var(--radius);
   box-shadow:var(--shadow-soft);
-  border:1px solid rgba(15,23,42,0.03);
+  border:1px solid rgba(255,255,255,0.03);
   padding:20px 26px;
   display:flex;
   justify-content:space-between;
@@ -76,60 +84,66 @@ body{
 .info-card h1{
   font-size:22px;
   font-weight:800;
-  color:var(--accent-dark);
+  color:var(--warm-yellow);
   margin:0;
 }
 .info-card a{
   text-decoration:none;
-  background:linear-gradient(180deg, rgba(255,255,255,0.95), #f6f8fb);
+  background: linear-gradient(180deg, rgba(20,20,20,0.9), rgba(28,28,28,0.95));
   padding:10px 16px;
   border-radius:10px;
-  color:#0369a1;
+  color:var(--warm-yellow);
   font-weight:700;
-  border:1px solid rgba(15,23,42,0.06);
-  box-shadow:0 8px 20px rgba(10,20,40,0.03);
+  border:1px solid rgba(255,184,77,0.06);
+  box-shadow:0 8px 20px rgba(0,0,0,0.6);
   transition:all .12s ease;
 }
 .info-card a:hover{
   transform:translateY(-1px);
-  filter:brightness(1.05);
+  filter:brightness(1.06);
 }
+
 /* ---------- Main Table Card ---------- */
 .main-card{
-  background:var(--card-bg);
+  background: var(--card-bg);
   border-radius:var(--radius);
   box-shadow:var(--shadow);
-  border:1px solid rgba(15,23,42,0.04);
+  border:1px solid rgba(255,255,255,0.03);
   padding:20px 22px;
   width:100%;
   overflow:auto;
 }
+
 /* desktop table */
 .main-card table{
   width:100%;
   border-collapse:collapse;
   font-size:15px;
+  color:var(--text);
 }
 .main-card th{
   text-align:left;
   font-weight:700;
-  color:#0f172a;
+  color:var(--warm-yellow-2);
   padding:12px 14px;
-  border-bottom:1px solid rgba(15,23,42,0.08);
-  background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(250,250,250,0.85));
+  border-bottom:1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
 }
 .main-card td{
   padding:12px 14px;
-  border-bottom:1px solid rgba(15,23,42,0.04);
-  color:#334155;
+  border-bottom:1px solid rgba(255,255,255,0.02);
+  color:var(--muted);
+  vertical-align:middle;
 }
 tr.open td{
-  background:linear-gradient(180deg, rgba(230,255,240,0.9), rgba(255,255,255,0.85));
+  background: linear-gradient(180deg, rgba(34, 49, 36, 0.35), rgba(20,20,20,0.15));
+  color: #dff7e6;
 }
 tr.closed td{
-  background:linear-gradient(180deg, rgba(255,247,235,0.95), rgba(255,255,255,0.85));
-  color:#475569;
+  background: linear-gradient(180deg, rgba(45,28,22,0.18), rgba(20,20,20,0.06));
+  color:var(--muted);
 }
+
 /* ---------- Buttons ---------- */
 .btn{
   padding:8px 12px;
@@ -139,17 +153,24 @@ tr.closed td{
   display:inline-block;
   border:none;
   cursor:pointer;
+  transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
 }
 .btn-open{
-  background:linear-gradient(180deg,#34d399,#10b981);
-  color:#fff;
-  box-shadow:0 8px 18px rgba(16,185,129,0.12);
+  background: linear-gradient(90deg, rgba(255,184,77,1), rgba(232,92,65,1));
+  color:#111;
+  box-shadow:0 8px 18px rgba(232,92,65,0.12);
 }
+.btn-open:hover{ transform:translateY(-2px); filter:brightness(1.02); }
 .btn-view{
-  background:linear-gradient(180deg,#60a5fa,#3b82f6);
-  color:#fff;
-  box-shadow:0 8px 18px rgba(59,130,246,0.12);
+  background: linear-gradient(90deg, rgba(255,184,77,0.92), rgba(255,204,102,0.95));
+  color:#111;
+  box-shadow:0 8px 18px rgba(255,184,77,0.10);
 }
+.btn-view:hover{ transform:translateY(-2px); filter:brightness(1.02); }
+
+/* Fine-tune table rows for better dark readability */
+.main-card tbody tr{ transition:background .14s ease, transform .12s ease; }
+.main-card tbody tr:hover{ transform:translateY(-3px); box-shadow:0 12px 30px rgba(0,0,0,0.6); }
 
 /* ---------- Responsive: convert rows to cards on small screens ---------- */
 @media (max-width:800px){
@@ -169,9 +190,9 @@ tr.closed td{
     margin-bottom:12px;
     border-radius:12px;
     padding:12px;
-    box-shadow:0 6px 18px rgba(2,6,23,0.04);
-    border:1px solid rgba(15,23,42,0.03);
-    background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,250,0.98));
+    box-shadow:0 6px 18px rgba(0,0,0,0.5);
+    border:1px solid rgba(255,255,255,0.02);
+    background: linear-gradient(180deg, rgba(18,18,18,0.85), rgba(22,22,22,0.92));
   }
   .main-card td{
     padding:10px 8px;
@@ -181,6 +202,7 @@ tr.closed td{
     align-items:center;
     gap:12px;
     font-size:14px;
+    color:var(--muted);
   }
   .main-card td + td { margin-top:6px; } /* spacing between stacked fields */
 
@@ -191,7 +213,7 @@ tr.closed td{
     width:36%;
     min-width:95px;
     font-weight:700;
-    color:var(--muted);
+    color:var(--warm-yellow-2);
     text-transform:capitalize;
     font-size:13px;
   }
@@ -235,6 +257,10 @@ tr.closed td{
   .main-card{padding:14px;}
   body{padding:12px;}
 }
+/* reduced-motion support */
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important;animation:none!important;scroll-behavior:auto!important;}
+}
   </style>
 </head>
 <body>
@@ -276,7 +302,6 @@ tr.closed td{
     </table>
   </div>
 </div>
-
 <script>
   // optional: simple auto-refresh every 45s (uncomment if you want)
   // setInterval(()=> location.reload(), 45000);

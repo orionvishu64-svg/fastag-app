@@ -82,7 +82,6 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
     <title>Track Orders</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/public/css/styles.css">
-    <link rel="stylesheet" href="/public/css/theme.css">
     <link rel="stylesheet" href="/public/css/track_orders.css">
 </head>
 <body>
@@ -90,14 +89,10 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
   <main class="container">
     <header class="topbar">
       <div class="brand">
-        <div class="logo">APS</div>
         <div>
           <h1>My Orders</h1>
           <p class="lead">All orders — shipping & tracking info</p>
         </div>
-      </div>
-      <div class="controls">
-        <small class="lead">Signed in as <strong><?= e($_SESSION['user']['email'] ?? $_SESSION['user']['name'] ?? 'User') ?></strong></small>
       </div>
     </header>
 
@@ -106,9 +101,9 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
         <div class="card">
           <h2>Recent Orders</h2>
 
-          <?php if (empty($orders)): ?>
-            <div class="no-orders">No orders found for your account.</div>
-          <?php else: ?>
+           <?php if (empty($orders)): ?>
+          <div class="no-orders">No orders found for your account.</div>
+           <?php else: ?>
             <div class="orders-list">
               <?php foreach ($orders as $o): ?>
                 <article class="order-card">
@@ -135,9 +130,9 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
                 </article>
               <?php endforeach; ?>
             </div>
-          <?php endif; ?>
+           <?php endif; ?>
 
-        </div>
+         </div>
 
         <?php if ($order_preview): ?>
           <div class="card" style="margin-top:16px">

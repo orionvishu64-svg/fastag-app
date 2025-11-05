@@ -115,16 +115,12 @@ try {
   <main class="container">
     <header class="topbar">
       <div class="brand">
-        <div class="logo">APS</div>
         <div>
           <h1>Order details</h1>
           <p class="lead">Order #<?= e($order['id']) ?> — <?= e($order['status'] ?? '') ?></p>
         </div>
       </div>
       <div>
-        <small class="lead">
-          Signed in as <strong><?= e($_SESSION['user']['email'] ?? $_SESSION['user']['name'] ?? 'User') ?></strong>
-        </small>
       </div>
     </header>
 

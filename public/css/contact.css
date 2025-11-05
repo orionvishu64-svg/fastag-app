@@ -1,84 +1,200 @@
 /* =========================
-   Base Styles
-   https://www.stitchtools.com/assets/images/contact/contact-banner.jpg
+   Contact Page — Dark Warm Theme
+   (structure preserved; colors updated)
+   Original image: https://www.stitchtools.com/assets/images/contact/contact-banner.jpg
 ========================= */
-body{margin:0;padding:0;font-family:'Arial',sans-serif;background-color:#f9fafb;color:#333;line-height:1.6;}
+
+/* ---------- Theme defaults (fallbacks) ---------- */
+:root{
+  --panel-dark: #0f0f10;
+  --panel-2: #141414;
+  --text: #f3f3f3;
+  --muted: #b0b0b0;
+  --warm-yellow: #ffb84d;
+  --warm-red: #e85c41;
+  --card-radius: 12px;
+  --shadow-soft: 0 12px 34px rgba(0,0,0,0.6);
+}
+
+/* =========================
+   Base Styles
+========================= */
+body{
+  margin:0;
+  padding:0;
+  font-family:'Arial',sans-serif;
+  background: linear-gradient(180deg,var(--panel-dark), #070707);
+  color:var(--text);
+  line-height:1.6;
+}
 .container{max-width:1200px;margin:0 auto;padding:20px;}
 
 /* =========================
    Contact Layout
 ========================= */
-.contact-header{background:url("https://www.stitchtools.com/assets/images/contact/contact-banner.jpg") no-repeat center center/cover;min-height:250px;padding:60px 20px;text-align:center;color:#fff;}
+.contact-header{
+  background: url("https://www.stitchtools.com/assets/images/contact/contact-banner.jpg") no-repeat center center/cover;
+  min-height:250px;
+  padding:60px 20px;
+  text-align:center;
+  color:var(--text);
+  position:relative;
+  overflow:hidden;
+}
+.contact-header::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg, rgba(11,11,12,0.72), rgba(15,15,16,0.64));
+  z-index:1;
+}
+.contact-header *{position:relative;z-index:2;}
+
 .contact-content{padding:40px 0;}
 .contact-grid{display:grid;grid-template-columns:1fr 2fr;gap:30px;}
-.info-card,.form-card,.emergency-card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:20px;}
+.info-card,.form-card,.emergency-card{
+  background: linear-gradient(180deg, var(--panel-dark), var(--panel-2));
+  padding:20px;
+  border-radius:12px;
+  box-shadow:var(--shadow-soft);
+  margin-bottom:20px;
+  border:1px solid rgba(255,255,255,0.03);
+  color:var(--text);
+}
 
 /* =========================
    Quick Help
 ========================= */
-.quick-help h3{margin-top:20px;font-size:18px;}
+.quick-help h3{margin-top:20px;font-size:18px;color:var(--warm-yellow);}
 .help-buttons{display:flex;flex-direction:column;gap:10px;}
-.help-btn{background:#f3f4f6;border:none;padding:10px 15px;border-radius:8px;font-size:14px;cursor:pointer;text-align:left;transition:background 0.3s ease;}
-.help-btn:hover{background:#e5e7eb;}
+.help-btn{
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border:none;
+  padding:10px 15px;
+  border-radius:8px;
+  font-size:14px;
+  cursor:pointer;
+  text-align:left;
+  transition:background 0.18s ease, transform .12s ease;
+  color:var(--text);
+  border:1px solid rgba(255,255,255,0.03);
+  box-shadow:0 6px 18px rgba(0,0,0,0.6);
+}
+.help-btn:hover{background:linear-gradient(90deg, rgba(255,184,77,0.06), rgba(232,92,65,0.03)); transform:translateY(-2px);}
 
 /* =========================
    Form
 ========================= */
-.form-card{padding:30px;}
+.form-card{padding:30px;background:linear-gradient(180deg,var(--panel-dark),var(--panel-2));}
 .contact-form{display:flex;flex-direction:column;gap:15px;}
 .form-row{display:flex;gap:15px;}
 .form-group{flex:1;display:flex;flex-direction:column;}
-label{font-weight:bold;margin-bottom:5px;}
-input,select,textarea{padding:10px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;}
+label{font-weight:bold;margin-bottom:5px;color:var(--muted);}
+input,select,textarea{
+  padding:10px;
+  border:1px solid rgba(255,255,255,0.04);
+  border-radius:8px;
+  font-size:14px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  color:var(--text);
+  transition:box-shadow .16s ease, border-color .16s ease;
+}
 textarea{resize:vertical;}
-.checkbox-group{display:flex;align-items:center;gap:8px;}
-.submit-btn{background:#2563eb;color:#fff;padding:12px 20px;border:none;border-radius:8px;cursor:pointer;font-size:16px;font-weight:600;transition:background 0.3s ease;}
-.submit-btn:hover{background:#1e40af;}
-#successMessage{display:none;margin-top:20px;color:#22c55e;font-weight:600;}
+input::placeholder, textarea::placeholder{color:rgba(243,243,243,0.32);}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--warm-yellow);box-shadow:0 8px 26px rgba(255,184,77,0.04);}
+
+.checkbox-group{display:flex;align-items:center;gap:8px;color:var(--muted);}
+.checkbox-group input[type="checkbox"]{width:18px;height:18px;accent-color:var(--warm-yellow);}
+
+/* submit button */
+.submit-btn{
+  background: linear-gradient(90deg,var(--warm-yellow), #ffcf73);
+  color:#111;
+  padding:12px 20px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:16px;
+  font-weight:700;
+  transition:transform .12s ease, box-shadow .18s ease;
+  box-shadow:0 10px 30px rgba(255,184,77,0.06);
+}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(255,184,77,0.12);}
+#successMessage{display:none;margin-top:20px;color:#4ade80;font-weight:600;}
 
 /* =========================
    Conversation
 ========================= */
-#conversationBox{margin-top:30px;padding:20px;background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb;}
-#messagesThread{max-height:250px;overflow-y:auto;padding:10px;border:1px solid #d1d5db;border-radius:8px;margin-bottom:15px;background:#fff;}
-.user-msg,.admin-msg{padding:10px 15px;border-radius:8px;margin-bottom:10px;font-size:14px;}
-.user-msg{background:#e0f2fe;text-align:left;}
-.admin-msg{background:#dcfce7;text-align:right;}
+#conversationBox{
+  margin-top:30px;padding:20px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius:12px;border:1px solid rgba(255,255,255,0.03);
+}
+#messagesThread{
+  max-height:250px;overflow-y:auto;padding:10px;border-radius:8px;margin-bottom:15px;
+  background:linear-gradient(180deg, var(--panel-2), rgba(21,21,21,0.8));
+  border:1px solid rgba(255,255,255,0.02);
+}
+.user-msg,.admin-msg{
+  padding:10px 15px;border-radius:8px;margin-bottom:10px;font-size:14px;max-width:85%;
+}
+.user-msg{
+  background: linear-gradient(90deg, rgba(11,99,232,0.06), rgba(11,99,232,0.02));
+  color:var(--text);text-align:left;border:1px solid rgba(11,99,232,0.06);
+}
+.admin-msg{
+  background: linear-gradient(90deg, rgba(16,185,129,0.06), rgba(16,185,129,0.02));
+  color:var(--text);text-align:right;margin-left:auto;border:1px solid rgba(16,185,129,0.06);
+}
 #replyForm{display:flex;gap:10px;}
-#replyForm input{flex:1;padding:10px;border:1px solid #d1d5db;border-radius:8px;}
-#replyForm button{background:#16a34a;color:#fff;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;transition:background 0.3s ease;}
-#replyForm button:hover{background:#15803d;}
+#replyForm input{flex:1;padding:10px;border:1px solid rgba(255,255,255,0.04);border-radius:8px;background:transparent;color:var(--text);}
+#replyForm button{background: linear-gradient(90deg,#34d399,#10b981);color:#071214;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;transition:transform .12s ease;}
+#replyForm button:hover{transform:translateY(-2px);}
 
 /* =========================
    Emergency Contact
 ========================= */
 .emergency-contact{padding:60px 0;text-align:center;}
-.emergency-btn{background:#ef4444;color:#fff;padding:14px 24px;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;transition:background 0.3s ease;}
-.emergency-btn:hover{background:#b91c1c;}
+.emergency-card{padding:30px;background:linear-gradient(180deg,var(--panel-dark),var(--panel-2));}
+.emergency-btn{
+  background: linear-gradient(90deg,var(--warm-red), #f06a50);
+  color:#fff;padding:14px 24px;border:none;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;
+  box-shadow:0 12px 36px rgba(232,92,65,0.08);
+}
+.emergency-btn:hover{transform:translateY(-2px);box-shadow:0 20px 48px rgba(232,92,65,0.12);}
 
 /* =========================
-   Responsive (Merged + Cleaned)
+   Header text styling
+========================= */
+.contact-header h1{font-size:2.2rem;margin:0 0 6px;color:var(--warm-yellow);}
+.contact-header p{font-size:1rem;margin:0;color:var(--muted);}
+
+/* =========================
+   Responsive (preserved)
 ========================= */
 @media (max-width:992px){
-.contact-grid{grid-template-columns:1fr;gap:2rem;}
-.form-row{flex-direction:column;}
-#conversationBox{max-height:300px;}
+  .contact-grid{grid-template-columns:1fr;gap:2rem;}
+  .form-row{flex-direction:column;}
+  #conversationBox{max-height:300px;}
 }
 @media (max-width:768px){
-.contact-header{min-height:180px;padding:2rem 1rem;background-position:center top;}
-.contact-header h1{font-size:1.8rem;}
-.contact-header p{font-size:1rem;}
-.contact-method{flex-direction:column;align-items:center;text-align:center;}
-.method-details{text-align:center;}
-.checkbox-group{flex-direction:column;align-items:flex-start;}
-#replyForm{flex-direction:column;}
-#replyForm button{width:100%;}
-#conversationBox{max-height:200px;}
+  .contact-header{min-height:180px;padding:2rem 1rem;background-position:center top;}
+  .contact-header h1{font-size:1.8rem;}
+  .contact-header p{font-size:1rem;}
+  .contact-method{flex-direction:column;align-items:center;text-align:center;}
+  .method-details{text-align:center;}
+  .checkbox-group{flex-direction:column;align-items:flex-start;}
+  #replyForm{flex-direction:column;}
+  #replyForm button{width:100%;}
+  #conversationBox{max-height:200px;}
 }
 @media (max-width:480px){
-h1,h2,h3{font-size:1.2rem;}
-.info-card,.quick-help,.form-card{padding:1rem;}
-.submit-btn,.help-btn,.emergency-btn{width:100%;text-align:center;padding:14px 20px;}
-.emergency-card{padding:1rem;}
-.contact-content,.emergency-contact{padding:40px 0;}
+  h1,h2,h3{font-size:1.2rem;}
+  .info-card,.quick-help,.form-card{padding:1rem;}
+  .submit-btn,.help-btn,.emergency-btn{width:100%;text-align:center;padding:14px 20px;}
+  .emergency-card{padding:1rem;}
+  .contact-content,.emergency-contact{padding:40px 0;}
 }
+
+/* Accessibility focus */
+:focus{outline:3px solid rgba(255,184,77,0.08);outline-offset:2px;}
