@@ -129,18 +129,137 @@ function money($val) {
   <title>Request Return — Order #<?= e($order['id']) ?></title>
   <link rel="stylesheet" href="public/css/order_details.css" />
   <style>
-    /* page specific */
-    .return-form { margin-top: 12px; }
-    .field { margin-bottom: 10px; }
-    .field label { display:block; font-size:13px; margin-bottom:6px; }
-    .field textarea, .field input[type="text"] { width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px; }
-    .btn { display:inline-block; padding:8px 12px; border-radius:6px; background: #0b74de; color: #fff; text-decoration:none; border:0; cursor:pointer; }
-    .btn:hover{background: #f97316; color: #fff}
-    .btn.secondary { background: #6b7280; }
-    .btn.secondary:hover { background: #0b74de; color: #fff; }
-    .msg { margin-top:12px; padding:10px; border-radius:6px; }
-    .msg.success { background:#ecfdf5; color:#065f46; border:1px solid #bbf7d0; }
-    .msg.error { background:#fff1f2; color:#9b1c1c; border:1px solid #fecaca; }
+    /* page-specific — dark warm theme */
+.return-form { margin-top: 12px; }
+
+/* field layout */
+.field { margin-bottom: 10px; }
+.field label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: var(--muted);
+}
+
+/* inputs and textarea */
+.field textarea,
+.field input[type="text"],
+.field input,
+.field select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+
+  /* dark input surface */
+  background: linear-gradient(180deg, var(--panel-dark), var(--panel-2));
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.04);
+  transition: border-color .16s ease, box-shadow .16s ease, transform .12s ease;
+}
+
+/* placeholder color */
+.field input::placeholder,
+.field textarea::placeholder {
+  color: rgba(243,243,243,0.28);
+}
+
+/* focus */
+.field textarea:focus,
+.field input[type="text"]:focus,
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--warm-yellow);
+  box-shadow: 0 0 0 6px rgba(255,184,77,0.04);
+  transform: translateY(-1px);
+}
+
+/* textarea sizing */
+.field textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Buttons (primary / secondary) */
+.btn {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--warm-yellow), var(--warm-yellow-2));
+  color: #111;
+  text-decoration: none;
+  border: 0;
+  cursor: pointer;
+  font-weight: 700;
+  box-shadow: 0 8px 22px rgba(255,184,77,0.06);
+  transition: transform .12s ease, box-shadow .18s ease, filter .12s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(232,92,65,0.12);
+}
+
+/* secondary variant */
+.btn.secondary {
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.45);
+}
+.btn.secondary:hover {
+  background: linear-gradient(90deg, var(--warm-yellow), var(--warm-yellow-2));
+  color: #111;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(255,184,77,0.12);
+}
+
+/* small/compact */
+.btn.small { padding:6px 10px; font-size:.95rem; }
+
+/* messages / feedback */
+.msg {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.25;
+  box-sizing: border-box;
+  border: 1px solid rgba(255,255,255,0.02);
+}
+
+/* success (dark-friendly) */
+.msg.success {
+  background: linear-gradient(180deg, rgba(16,63,40,0.28), rgba(9,52,33,0.22));
+  color: #bbf7d0;           /* bright text */
+  border-color: rgba(11,99,232,0.04);
+  box-shadow: 0 8px 20px rgba(11,99,232,0.02);
+}
+
+/* error (dark-friendly) */
+.msg.error {
+  background: linear-gradient(180deg, rgba(94,7,7,0.16), rgba(44,3,3,0.12));
+  color: #fca5a5;           /* readable on dark */
+  border-color: rgba(232,92,65,0.06);
+  box-shadow: 0 8px 20px rgba(232,92,65,0.03);
+}
+
+/* subtle text colors inside messages */
+.msg strong { color: var(--text); font-weight:800; }
+
+/* accessibility: focus outline for actionable controls inside forms */
+.return-form :where(button, .btn, input, select, textarea):focus {
+  outline: 3px solid rgba(255,184,77,0.08);
+  outline-offset: 2px;
+}
+
+/* responsive tweaks for narrow screens */
+@media (max-width: 480px) {
+  .field label { font-size: 12px; }
+  .btn { width:100%; text-align:center; }
+}
   </style>
 </head>
 <body>

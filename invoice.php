@@ -80,21 +80,119 @@ $grand = $totalAmount + $shipping;
   <title>Invoice #<?php echo esc($order['id']); ?></title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    :root{--accent:#1976d2;--muted:#666}
-    body{font-family:Arial,Helvetica,sans-serif;color:#222;margin:16px}
-    .container{max-width:900px;margin:0 auto;border:1px solid #eee;padding:20px;border-radius:6px}
-    .header{display:flex;justify-content:space-between;align-items:center}
-    .company h2{margin:0;color:var(--accent)}
-    .meta{ text-align:right }
-    table{width:100%;border-collapse:collapse;margin-top:18px}
-    th,td{padding:8px;border:1px solid #e6e6e6;text-align:left}
-    th{background:#fafafa}
-    .right{text-align:right}
-    .small{font-size:0.9em;color:var(--muted)}
-    .totals{margin-top:12px;display:flex;justify-content:flex-end}
-    .totals table{width:360px}
-    .print-btn{display:inline-block;padding:8px 12px;background:var(--accent);color:#fff;border-radius:6px;text-decoration:none}
-    @media print { body{margin:0} .print-hide{display:none} .container{border:0;padding:0} }
+    :root{
+  /* theme tokens (matching styles.css) */
+  --bg-dark: #0b0b0c;
+  --panel-dark: #0f0f10;
+  --panel-2: #141414;
+  --text: #f3f3f3;
+  --muted: #b0b0b0;
+  --warm-yellow: #ffb84d;
+  --warm-yellow-2: #ffcf73;
+  --warm-red: #e85c41;
+  --accent-glow: rgba(255,184,77,0.12);
+
+  /* small helpers */
+  --card-radius: 8px;
+  --border-subtle: rgba(255,255,255,0.04);
+}
+
+/* base */
+body{
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  color:var(--text);
+  background: linear-gradient(180deg,var(--bg-dark), #070707);
+  margin:16px;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* container */
+.container{
+  max-width:900px;
+  margin:0 auto;
+  background: linear-gradient(180deg,var(--panel-dark),var(--panel-2));
+  border:1px solid var(--border-subtle);
+  padding:20px;
+  border-radius:var(--card-radius);
+  box-shadow:0 8px 30px rgba(0,0,0,0.6);
+}
+
+/* header */
+.header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.company h2{margin:0;color:var(--warm-yellow);font-weight:800}
+.meta{ text-align:right; color:var(--muted) }
+
+/* table */
+table{width:100%;border-collapse:collapse;margin-top:18px;background:transparent}
+th,td{
+  padding:10px 12px;
+  border:1px solid rgba(255,255,255,0.03);
+  text-align:left;
+  vertical-align:middle;
+}
+th{
+  background: linear-gradient(180deg, rgba(255,184,77,0.04), rgba(255,184,77,0.02));
+  color:var(--text);
+  font-weight:700;
+}
+td{color:var(--text)}
+
+/* right align helper */
+.right{text-align:right}
+
+/* small / muted */
+.small{font-size:.9em;color:var(--muted)}
+
+/* totals block */
+.totals{margin-top:12px;display:flex;justify-content:flex-end}
+.totals table{width:360px;border-collapse:collapse}
+.totals th, .totals td{padding:10px;border:1px solid rgba(255,255,255,0.03);background:transparent}
+.totals th{color:var(--muted);font-weight:600}
+.totals td{color:var(--text);font-weight:800}
+
+/* print button */
+.print-btn{
+  display:inline-block;
+  padding:8px 12px;
+  background:linear-gradient(90deg,var(--warm-yellow),var(--warm-yellow-2));
+  color:#111;
+  border-radius:8px;
+  text-decoration:none;
+  font-weight:700;
+  box-shadow:0 8px 22px rgba(255,184,77,0.06);
+  border:0;
+  cursor:pointer;
+}
+
+/* small responsive tweaks */
+@media (max-width:600px){
+  .header{flex-direction:column;align-items:flex-start}
+  .meta{text-align:left}
+  .totals{justify-content:flex-start}
+  .totals table{width:100%}
+  table, th, td{font-size:.95rem}
+}
+
+/* accessibility focus */
+a:focus, button:focus, .print-btn:focus {
+  outline:3px solid rgba(255,184,77,0.08);
+  outline-offset:3px;
+}
+
+/* Print rules:
+   - For printing, force a light palette (better contrast on paper).
+   - Keep content layout; hide UI elements you don't want printed.
+*/
+@media print {
+  body{background: #fff; color:#111; margin:0}
+  .container{background:#fff;border:0;box-shadow:none;padding:0}
+  .print-hide{display:none !important}
+  table, th, td{border:1px solid #e6e6e6;color:#111}
+  th{background:#f7f7f7;color:#111}
+  .company h2{color:#111}
+  .print-btn{display:none}
+}
   </style>
 </head>
 <body>
