@@ -1,240 +1,324 @@
-/* bank-pages.css — Dark Warm Theme + Light Cards */
+/* ===========================================================
+   bank-pages.css — Dark Warm Theme + Light Cards (FINAL REFINED)
+   Visual hierarchy: Header + Categories = warm dark, Benefits = slightly deeper
+   =========================================================== */
 
-:root{
+:root {
   --page-bg-1: #050404;
   --page-bg-2: #0b0b0b;
   --text-light: #eaeaea;
   --muted-light: #9aa0a6;
   --highlight: #ffb84d;
+
   --kotak-red: #e85c41;
   --sbi-blue: #1d4ed8;
   --bajaj-teal: #0ea5e9;
   --idfc-purple: #8b5cf6;
+
   --card-radius: 12px;
-  --card-shadow: 0 18px 48px rgba(0,0,0,0.85);
-  --card-shadow-soft: 0 8px 22px rgba(0,0,0,0.6);
-  --glass-border: rgba(255,255,255,0.04);
-  --transition: .22s cubic-bezier(.2,.9,.3,1);
+  --card-shadow: 0 18px 48px rgba(0, 0, 0, 0.85);
+  --card-shadow-soft: 0 8px 22px rgba(0, 0, 0, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.04);
+  --transition: 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
   --max-width: 1200px;
-  --font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 /* ========== RESET & BASE ========== */
-*{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;}
-body{
-  font-family:var(--font-family);
-  background: linear-gradient(180deg,var(--page-bg-1),var(--page-bg-2));
-  color:var(--text-light);
-  line-height:1.6;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
-.container{max-width:var(--max-width);margin:0 auto;padding:0 22px;}
+html,
+body {
+  height: 100%;
+}
+body {
+  font-family: var(--font-family);
+  background: linear-gradient(180deg, var(--page-bg-1), var(--page-bg-2));
+  color: var(--text-light);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 22px;
+}
 
-/* ========== HEADER / HERO ========== */
-.bank-header{
-  padding:120px 0 60px;
-  position:relative;
-  overflow:hidden;
-  color:var(--text-light);
-  border-bottom:1px solid var(--glass-border);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.85);
+/* ========== HEADER ========== */
+.bank-header {
+  padding: 120px 0 60px;
+  position: relative;
+  overflow: hidden;
+  color: var(--text-light);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
 }
-.bank-header::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="g" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0 L0 0 0 10" fill="none" stroke="%23ffffff" stroke-opacity="0.03" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23g)"/></svg>');
-  opacity:0.08;
+.bank-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><pattern id='g' width='10' height='10' patternUnits='userSpaceOnUse'><path d='M10 0 L0 0 0 10' fill='none' stroke='%23ffffff' stroke-opacity='0.03' stroke-width='0.5'/></pattern></defs><rect width='100' height='100' fill='url(%23g)'/></svg>");
+  opacity: 0.08;
   mix-blend-mode: overlay;
 }
-.bank-header-content{
-  display:flex;
-  align-items:center;
-  gap:40px;
-  position:relative;
-  z-index:1;
-  max-width:var(--max-width);
-  margin:0 auto;
-  padding:0 22px;
+.bank-header-content {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  position: relative;
+  z-index: 1;
 }
-.bank-logo-large img{
-  max-width:200px;
-  height:auto;
-  border-radius:12px;
-  box-shadow: 0 22px 48px rgba(0,0,0,0.9);
-  background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
-  border:1px solid rgba(255,255,255,0.02);
+.bank-logo-large img {
+  max-width: 200px;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.9);
 }
-.bank-info h1{
-  font-size:2.5rem;
-  font-weight:700;
-  margin-bottom:12px;
-  color:var(--highlight);
+.bank-info h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--highlight);
 }
-.bank-info p{
-  font-size:1.05rem;
-  color:var(--muted-light);
-  margin-bottom:12px;
-  line-height:1.6;
+.bank-info p {
+  font-size: 1.05rem;
+  color: var(--muted-light);
+  margin-bottom: 12px;
+  line-height: 1.6;
 }
-.bank-features{
-  display:flex;
-  gap:18px;
-  flex-wrap:wrap;
-  margin-top:8px;
+.bank-features {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 8px;
 }
-.feature-item{display:flex;align-items:center;gap:8px;color:var(--muted-light);}
-.feature-item i{font-size:1.05rem;color:var(--highlight);}
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted-light);
+}
+.feature-item i {
+  font-size: 1.05rem;
+  color: var(--highlight);
+}
 
-/* ========== BANK HEADER THEMES ========== */
-.kotak-theme .bank-header{
-  background:linear-gradient(135deg,#2a0404 0%,#0b0000 100%);
+/* ========== BANK THEMES ========== */
+/* Kotak header */
+.kotak-theme .bank-header {
+  background: linear-gradient(135deg, #2a0404 0%, #0b0000 100%);
 }
-.kotak-theme .feature-item i{color:var(--kotak-red);}
+.kotak-theme .feature-item i { color: var(--kotak-red); }
 
-.sbi-theme .bank-header{
-  background:linear-gradient(135deg,#001637 0%,#020611 100%);
+/* SBI header */
+.sbi-theme .bank-header {
+  background: linear-gradient(135deg, #001637 0%, #020611 100%);
 }
-.sbi-theme .feature-item i{color:var(--sbi-blue);}
+.sbi-theme .feature-item i { color: var(--sbi-blue); }
 
-.bajaj-theme .bank-header{
-  background:linear-gradient(135deg,#012b2f 0%,#010608 100%);
+/* Bajaj header */
+.bajaj-theme .bank-header {
+  background: linear-gradient(135deg, #012b2f 0%, #010608 100%);
 }
-.bajaj-theme .feature-item i{color:var(--bajaj-teal);}
+.bajaj-theme .feature-item i { color: var(--bajaj-teal); }
 
-.idfc-theme .bank-header{
-  background:linear-gradient(135deg,#1c003c 0%,#07010b 100%);
+/* IDFC header */
+.idfc-theme .bank-header {
+  background: linear-gradient(135deg, #1c003c 0%, #07010b 100%);
 }
-.idfc-theme .feature-item i{color:var(--idfc-purple);}
+.idfc-theme .feature-item i { color: var(--idfc-purple); }
 
 /* ========== CATEGORY SECTION ========== */
-.categories-section{
-  padding:70px 0;
-  background:linear-gradient(180deg,rgba(0,0,0,0.85) 0%,rgba(10,10,10,0.95) 100%);
-  border-top:1px solid rgba(255,255,255,0.05);
-}
-.categories-section h2{
-  text-align:left;
-  font-size:2.1rem;
-  font-weight:800;
-  color:var(--highlight);
-  margin-bottom:18px;
-  padding-left:22px;
-}
-.categories-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
-  gap:22px;
-  max-width:var(--max-width);
-  margin:18px auto 0;
-  padding:0 22px;
+.categories-section {
+  padding: 80px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: linear-gradient(180deg, rgba(10, 0, 0, 1) 0%, rgba(20, 0, 0, 0.98) 100%);
+  color: var(--text-light);
 }
 
-/* ========== LIGHT VEHICLE CARDS ========== */
-.category-card{
-  background:linear-gradient(180deg,#ffffff 0%,#f9f9f9 100%);
-  color:#0f172a;
-  border-radius:12px;
-  padding:14px;
-  border:2px solid rgba(0,0,0,0.06);
-  box-shadow:0 8px 24px rgba(2,6,23,0.08);
-  transition:transform var(--transition),box-shadow var(--transition),border-color var(--transition);
+/* BANK-SPECIFIC GRADIENTS */
+.kotak-theme .categories-section {
+  background: linear-gradient(180deg, #210202 0%, #0b0000 100%);
 }
-.category-card:hover{
-  transform:translateY(-8px);
-  box-shadow:0 22px 60px rgba(2,6,23,0.12);
+.sbi-theme .categories-section {
+  background: linear-gradient(180deg, #020819 0%, #000815 100%);
 }
-.category-card .card-image{
-  background:#fff;
-  padding:12px;
-  border-radius:10px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow:0 6px 16px rgba(2,6,23,0.05);
+.bajaj-theme .categories-section {
+  background: linear-gradient(180deg, #001c22 0%, #000a0f 100%);
 }
-.category-card h3{font-size:1rem;font-weight:800;color:#0f172a;margin:8px 0 6px;}
-.category-card p{color:#475569;margin:0 0 10px;}
-.category-card .price{color:var(--highlight);font-weight:900;font-size:1.15rem;}
-.category-card .badge{
-  background:#f3f4f6;
-  color:#475569;
-  font-size:.82rem;
-  border-radius:8px;
-  padding:6px 8px;
-  display:inline-block;
-  font-weight:700;
+.idfc-theme .categories-section {
+  background: linear-gradient(180deg, #1a0f2e 0%, #0a0016 100%);
+}
+
+/* HEADING STYLE */
+.categories-section h2 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 24px;
+  padding-left: 22px;
+  animation: fadeGlow 1s ease both;
+}
+
+/* HEADING GLOW PER BANK */
+.kotak-theme .categories-section h2 {
+  color: #ffb84d;
+  text-shadow: 0 0 10px rgba(232, 92, 65, 0.45), 0 0 20px rgba(232, 92, 65, 0.25);
+}
+.sbi-theme .categories-section h2 {
+  color: #60a5fa;
+  text-shadow: 0 0 10px rgba(96, 165, 250, 0.5), 0 0 20px rgba(59, 130, 246, 0.25);
+}
+.bajaj-theme .categories-section h2 {
+  color: #5de0fa;
+  text-shadow: 0 0 10px rgba(14, 165, 233, 0.5), 0 0 20px rgba(14, 165, 233, 0.25);
+}
+.idfc-theme .categories-section h2 {
+  color: #c4b5fd;
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.25);
+}
+
+/* CATEGORY GRID */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 22px;
+  max-width: var(--max-width);
+  margin: 18px auto 0;
+  padding: 0 22px;
+}
+
+/* ========== LIGHT CARDS ========== */
+.category-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f9f9f9 100%);
+  color: #0f172a;
+  border-radius: var(--card-radius);
+  padding: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.08);
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+.category-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 22px 60px rgba(2, 6, 23, 0.12);
+}
+.category-card .card-image {
+  background: #fff;
+  padding: 12px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(2, 6, 23, 0.05);
+}
+.category-card h3 { font-size: 1rem; font-weight: 800; color: #0f172a; margin: 8px 0 6px; }
+.category-card p { color: #475569; margin: 0 0 10px; }
+.category-card .price { color: var(--highlight); font-weight: 900; font-size: 1.15rem; }
+.category-card .badge {
+  background: #f3f4f6;
+  color: #475569;
+  font-size: .82rem;
+  border-radius: 8px;
+  padding: 6px 8px;
+  display: inline-block;
+  font-weight: 700;
 }
 
 /* ========== CARD ACCENTS BY BANK ========== */
-.kotak-theme .category-card{border-color:rgba(232,92,65,0.12);}
-.kotak-theme .category-card:hover{border-color:rgba(232,92,65,0.3);box-shadow:0 24px 70px rgba(232,92,65,0.08);}
-.sbi-theme .category-card{border-color:rgba(29,78,216,0.12);}
-.sbi-theme .category-card:hover{border-color:rgba(29,78,216,0.3);box-shadow:0 24px 70px rgba(59,130,246,0.08);}
-.bajaj-theme .category-card{border-color:rgba(14,165,233,0.12);}
-.bajaj-theme .category-card:hover{border-color:rgba(14,165,233,0.3);box-shadow:0 24px 70px rgba(14,165,233,0.08);}
-.idfc-theme .category-card{border-color:rgba(139,92,246,0.12);}
-.idfc-theme .category-card:hover{border-color:rgba(139,92,246,0.3);box-shadow:0 24px 70px rgba(139,92,246,0.08);}
+.kotak-theme .category-card { border-color: rgba(232, 92, 65, 0.15); }
+.kotak-theme .category-card:hover { border-color: rgba(232, 92, 65, 0.4); box-shadow: 0 24px 70px rgba(232,92,65,0.08); }
 
-/* ========== BENEFITS SECTION ========== */
-.benefits-section{
-  padding:80px 0;
-  background:linear-gradient(180deg,rgba(0,0,0,0.8) 0%,rgba(15,15,15,0.95) 100%);
-  color:var(--text-light);
-}
-.benefits-section h2{
-  text-align:center;
-  font-size:2.3rem;
-  font-weight:700;
-  color:var(--highlight);
-  margin-bottom:50px;
-}
-.benefits-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-  gap:28px;
-}
-.benefit-card{
-  text-align:center;
-  padding:28px 24px;
-  border-radius:14px;
-  background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));
-  border:1px solid rgba(255,255,255,0.04);
-  box-shadow:var(--card-shadow-soft);
-  transition:transform var(--transition),box-shadow var(--transition);
-}
-.benefit-card:hover{
-  transform:translateY(-8px);
-  box-shadow:var(--card-shadow);
-  border-color:var(--highlight);
-}
-.benefit-card i{font-size:2.8rem;color:var(--highlight);margin-bottom:12px;}
-.kotak-theme .benefit-card i{color:var(--kotak-red);}
-.sbi-theme .benefit-card i{color:var(--sbi-blue);}
-.bajaj-theme .benefit-card i{color:var(--bajaj-teal);}
-.idfc-theme .benefit-card i{color:var(--idfc-purple);}
-.benefit-card h3{color:var(--text-light);font-weight:700;margin-bottom:8px;}
-.benefit-card p{color:var(--muted-light);}
+.sbi-theme .category-card { border-color: rgba(29, 78, 216, 0.15); }
+.sbi-theme .category-card:hover { border-color: rgba(29, 78, 216, 0.4); box-shadow: 0 24px 70px rgba(59,130,246,0.08); }
 
-/* ========== UTILITY ========== */
-.fade-in{opacity:0;transform:translateY(30px);transition:all .6s ease;}
-.fade-in.visible{opacity:1;transform:translateY(0);}
-.loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.12);border-radius:50%;border-top-color:var(--highlight);animation:spin 1s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
+.bajaj-theme .category-card { border-color: rgba(14, 165, 233, 0.15); }
+.bajaj-theme .category-card:hover { border-color: rgba(14, 165, 233, 0.4); box-shadow: 0 24px 70px rgba(14,165,233,0.08); }
+
+.idfc-theme .category-card { border-color: rgba(139, 92, 246, 0.15); }
+.idfc-theme .category-card:hover { border-color: rgba(139, 92, 246, 0.4); box-shadow: 0 24px 70px rgba(139,92,246,0.08); }
+
+/* PRICE ACCENTS */
+.kotak-theme .category-card .price { color: var(--kotak-red); }
+.sbi-theme .category-card .price { color: var(--sbi-blue); }
+.bajaj-theme .category-card .price { color: var(--bajaj-teal); }
+.idfc-theme .category-card .price { color: var(--idfc-purple); }
+
+/* ========== BENEFITS SECTION (DEEPER GRADIENT) ========== */
+.benefits-section {
+  padding: 80px 0;
+  color: var(--text-light);
+  background: linear-gradient(180deg, rgba(5, 5, 5, 0.96) 0%, rgba(10, 0, 0, 0.99) 100%);
+}
+.kotak-theme .benefits-section {
+  background: linear-gradient(180deg, #180000 0%, #050000 100%);
+}
+.sbi-theme .benefits-section {
+  background: linear-gradient(180deg, #010511 0%, #00050a 100%);
+}
+.bajaj-theme .benefits-section {
+  background: linear-gradient(180deg, #001418 0%, #000406 100%);
+}
+.idfc-theme .benefits-section {
+  background: linear-gradient(180deg, #120021 0%, #05000a 100%);
+}
+
+.benefits-section h2 {
+  text-align: center;
+  font-size: 2.3rem;
+  font-weight: 700;
+  color: var(--highlight);
+  margin-bottom: 50px;
+}
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 28px;
+}
+.benefit-card {
+  text-align: center;
+  padding: 28px 24px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow: var(--card-shadow-soft);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.benefit-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--card-shadow);
+  border-color: var(--highlight);
+}
+.benefit-card i { font-size: 2.8rem; margin-bottom: 12px; }
+.kotak-theme .benefit-card i { color: var(--kotak-red); }
+.sbi-theme .benefit-card i { color: var(--sbi-blue); }
+.bajaj-theme .benefit-card i { color: var(--bajaj-teal); }
+.idfc-theme .benefit-card i { color: var(--idfc-purple); }
+.benefit-card h3 { color: var(--text-light); font-weight: 700; margin-bottom: 8px; }
+.benefit-card p { color: var(--muted-light); }
+
+/* ========== UTILITIES & ANIMATIONS ========== */
+.fade-in { opacity: 0; transform: translateY(30px); transition: all .6s ease; }
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+.loading { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.12); border-radius: 50%; border-top-color: var(--highlight); animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeGlow { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
 
 /* ========== RESPONSIVE ========== */
-@media(max-width:1000px){
-  .categories-grid{grid-template-columns:repeat(2,1fr);}
+@media (max-width: 1000px) {
+  .products-grid { grid-template-columns: repeat(2, 1fr); }
 }
-@media(max-width:768px){
-  .bank-header{padding:72px 0 40px;}
-  .bank-header-content{flex-direction:column;text-align:center;gap:20px;}
-  .bank-info h1{font-size:2rem;}
-  .categories-grid{grid-template-columns:1fr;gap:18px;padding:0 22px;}
-  .categories-section h2{text-align:center;padding-left:0;}
+@media (max-width: 768px) {
+  .bank-header { padding: 72px 0 40px; }
+  .bank-header-content { flex-direction: column; text-align: center; gap: 20px; }
+  .bank-info h1 { font-size: 2rem; }
+  .categories-section h2 { text-align: center; padding-left: 0; }
+  .products-grid { grid-template-columns: 1fr; gap: 18px; padding: 0 22px; }
 }
-@media(max-width:480px){
-  .bank-info h1{font-size:1.6rem;}
-  .categories-section{padding:40px 0;}
-  .benefits-section{padding:40px 0;}
+@media (max-width: 480px) {
+  .bank-info h1 { font-size: 1.6rem; }
+  .categories-section, .products-section { padding: 40px 0; }
+  .benefits-section { padding: 40px 0; }
 }

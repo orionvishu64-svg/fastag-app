@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/public/css/products.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body data-bank="SBI">
+<body class="sbi-theme" data-bank="SBI">
 <?php include __DIR__ . '/includes/header.php'; ?>
     <!-- Bank Header -->
     <section class="bank-header sbi-theme">
@@ -41,7 +41,7 @@
     </section>
 
     <!-- Vehicle Categories -->
-    <section class="products-section">
+    <section class="categories-section sbi-theme">
       <div class="container">
         <div class="products-header-info">
           <h2>Select Your Vehicle Category</h2>

@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/public/css/products.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body data-bank="Bajaj">
+<body class="bajaj-theme" data-bank="Bajaj">
 <?php include __DIR__ . '/includes/header.php'; ?>
     <!-- Bank Header -->
     <section class="bank-header bajaj-theme">
@@ -40,8 +40,7 @@
         </div>
     </section>
 
-    <!-- Vehicle Categories -->
-    <section class="products-section">
+    <section class="categories-section bajaj-theme">
       <div class="container">
         <div class="products-header-info">
           <h2>Select Your Vehicle Category</h2>

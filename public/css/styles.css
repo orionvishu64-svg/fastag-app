@@ -90,7 +90,7 @@ body{
 .feature-card h3{font-size:1.15rem;color:var(--text);margin-bottom:.6rem;}
 .feature-card p{color:var(--muted);}
 
-/* ---------- BANKS (cards) ---------- */
+/* ---------- BANKS (cards) ---------- */ 
 .banks{padding:80px 0;}
 .banks h2{text-align:center;font-size:2.25rem;margin-bottom:2rem;color:var(--text);}
 .banks-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;align-items:start;grid-auto-rows:minmax(160px,auto);width:100%;box-sizing:border-box;}
@@ -105,10 +105,10 @@ body{
 .bank-card .btn{margin-top:auto;align-self:flex-start;}
 
 /* Per-bank subtle accents (keeps your original identifiers) */
-.bank-card.kotak{border-color: rgba(232,92,65,0.12);}
-.bank-card.sbi{border-color: rgba(255,184,77,0.12);}
-.bank-card.bajaj{border-color: rgba(255,184,77,0.12);}
-.bank-card.idfc{border-color: rgba(232,92,65,0.12);}
+.bank-card.kotak{border-color: rgba(232,92,65,0.12); background: linear-gradient(135deg, #2a0404 0%, #0b0000 100%);}
+.bank-card.sbi{border-color: rgba(255,184,77,0.12); background: linear-gradient(135deg, #001637 0%, #020611 100%);}
+.bank-card.bajaj{border-color: rgba(255,184,77,0.12); background: linear-gradient(135deg, #012b2f 0%, #010608 100%);}
+.bank-card.idfc{border-color: rgba(232,92,65,0.12); background: linear-gradient(135deg, #1c003c 0%, #07010b 100%);}
 
 /* ---------- CTA ---------- */
 .cta{background:linear-gradient(90deg,var(--warm-red),var(--warm-yellow));color:#fff;padding:80px 0;text-align:center;}
