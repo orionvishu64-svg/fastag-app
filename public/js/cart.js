@@ -154,10 +154,7 @@ class CartManager {
                     <span class="item-badge bank">${item.bank ?? ''}</span>
                     <span class="item-badge category">${item.category ?? ''}</span>
                 </div>
-               <div class="item-price">₹${displayPrice.toLocaleString()} </div>
-                <div class="item-specs">
-                    Validity: 5 years • Activation: Within 24 hours
-                </div>
+                <div class="item-price">₹${displayPrice.toLocaleString()} </div>
             </div> 
             
             <div class="item-actions">

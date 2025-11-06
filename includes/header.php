@@ -1,9 +1,6 @@
 <?php
-require_once __DIR__ . '/../config/common_start.php'; 
-// Ensure session is started before any output
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../config/common_start.php';
+if (session_status() === PHP_SESSION_NONE) session_start();
 
 // Read user name and cart count from session (safe defaults)
 $user_name = $_SESSION['user']['name'] ?? $_SESSION['user_name'] ?? 'Guest';
@@ -175,23 +172,18 @@ $cart_count = isset($_SESSION['cart_count']) ? (int) $_SESSION['cart_count'] : 0
 
 (async function(){
   try {
-    const res = await fetch('/../config/check_login.php', { credentials: 'same-origin', cache: 'no-store' });
+    const res = await fetch('/config/check_login.php', { credentials: 'same-origin', cache: 'no-store' });
     if (res.ok) {
       const json = await res.json();
       if (json.logged_in) {
-        // server says you're logged in -> keep local UI
         localStorage.setItem('app_logged_in', '1');
-        // optionally set user display name
         if (json.name) localStorage.setItem('app_user', json.name);
       } else {
-        // server says you're not logged in -> clear local UI state
         localStorage.removeItem('app_logged_in');
         localStorage.removeItem('app_user');
-        // ensure profile links show login overlay instead of direct access
       }
     }
   } catch (e) {
-    // network error - keep local UI but prevent protected actions until server reachable
     console.warn('Auth check failed', e);
   }
 })();

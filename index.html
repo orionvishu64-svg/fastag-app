@@ -136,10 +136,22 @@
       const text = await r.text();
       let d;
       try { d = JSON.parse(text); } catch { console.error('Non-JSON response:', text); return say('Server error'); }
-      if (!r.ok || !d.success) {
-        console.error('Login error:', d);
+      if (!r.ok) {
+        console.error('HTTP error', r.status, d);
         return say(d.error || d.message || 'Login failed');
       }
+
+    // handle provider saying user doesn't exist on their side
+    if (d.status === 'not_registered' || (d.success === false && /not found|agent not found/i.test(d.message || ''))) {
+    // redirect to signup with mobile prefilled
+    const mob = phone;
+    return window.location.assign('/signup.html?mobile=' + encodeURIComponent(mob));
+  } 
+
+if (!d.success) {
+  console.error('Login error:', d);
+  return say(d.error || d.message || 'Invalid MPIN or credentials');
+}
       try { window.dispatchEvent(new CustomEvent('app:login', { detail: d.user || null })); } catch (e) {}
       const redirectTo = d.partner_required ? '/partner_form.php' : '/dashboard.php';
       window.location.assign(redirectTo);

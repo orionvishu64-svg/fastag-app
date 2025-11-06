@@ -358,8 +358,8 @@ body.sidebar-open .container, body.sidebar-open .page-wrap{margin-left:var(--sid
 
 /* ---------- RESPONSIVE ---------- */
 @media(max-width:1000px){.posts-grid{grid-template-columns:repeat(2,1fr);} .related-grid{grid-template-columns:repeat(2,1fr);} .blog-header{padding:70px 0 18px;}}
-@media(max-width:768px){.hero-content{grid-template-columns:1fr;text-align:center}.hero-text h1{font-size:2.5rem}.features-grid{grid-template-columns:1fr}.banks-grid{grid-template-columns:1fr}.hero-buttons,.cta-buttons{flex-direction:column;align-items:center}.btn{width:100%;max-width:300px}}
-@media(max-width:480px){.container{padding:0 14px}.hero{padding:100px 0 60px}.hero-text h1{font-size:2rem}.feature-card{padding:1.25rem}.bank-card{min-height:160px;padding:10px}.partner-card{width:100%;min-height:110px;padding:14px}.certifications-grid{grid-template-columns:1fr}}
+@media(max-width:768px){.hero-content{grid-template-columns:1fr;text-align:center}.hero-text h1{font-size:2.5rem}.features-grid{grid-template-columns:1fr}.hero-buttons,.cta-buttons{flex-direction:column;align-items:center}.btn{width:100%;max-width:300px}}
+@media(max-width:420px){.container{padding:0 14px}.hero{padding:100px 0 60px}.hero-text h1{font-size:2rem}.feature-card{padding:1.25rem}.bank-card{min-height:160px;padding:10px}.partner-card{width:100%;min-height:110px;padding:14px}.certifications-grid{grid-template-columns:1fr}}
 
 /* =========================
    End of stylesheet

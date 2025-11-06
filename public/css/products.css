@@ -63,7 +63,7 @@ img{max-width:100%;display:block;}
   width: 100%;
   padding: 12px 44px 12px 14px; /* room for right arrow */
   border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.04);
+  border: 1px solid rgba(255, 255, 255, 0.04);
   background: linear-gradient(180deg,#0b0b0c,#0f0f10);
   color: var(--text);
   font-size: 15px;
@@ -88,7 +88,7 @@ img{max-width:100%;display:block;}
 .bank-filter select option,
 .category-filter select option {
   background: linear-gradient(180deg,#0b0b0c,#0f0f10);
-  color: var(--text);
+  color: var(--warm-yellow);
 }
 
 .filters-section{padding:20px 0 28px;background:transparent;}
@@ -132,33 +132,38 @@ img{max-width:100%;display:block;}
 .products-header-info h2{font-size:2rem;margin:0;color:var(--warm-yellow);font-weight:800;}
 .results-count{color:var(--muted);}
 
-/* ---------- Products grid & card (equal-height) ---------- */
-/* Default: 1 column mobile, scales up */
+/* Products grid: mobile-first with 2 cards on mobile, 4 on large screens */
 .products-grid{
-  display:grid;
-  grid-template-columns:repeat(1,1fr);
-  gap:var(--gap);
-  align-items:start;
-  width:100%;
-  grid-auto-rows:minmax(220px,auto);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* default: 2 columns on mobile */
+  gap: var(--gap);
+  align-items: start;
+  width: 100%;
+  grid-auto-rows: minmax(180px, auto);
 }
 
-/* Desktop column rules (min-width style) */
-@media (min-width: 520px) {
-  .products-grid{grid-template-columns:repeat(2,1fr);}
-}
+/* Tablets and small laptops: 3 columns */
 @media (min-width: 860px) {
-  .products-grid{grid-template-columns:repeat(3,1fr);}
+  .products-grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: minmax(200px, auto);
+  }
 }
+
+/* Large screens: 4 columns */
 @media (min-width: 1200px) {
-  .products-grid{grid-template-columns:repeat(4,1fr);}
+  .products-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: calc(var(--gap) + 4px);
+    grid-auto-rows: minmax(220px, auto);
+  }
 }
 
 /* Card: stable flex column that fills its grid cell */
 .product-card{
   background: linear-gradient(180deg,var(--panel-dark),var(--panel-2));
-  border-radius:var(--card-radius);padding:12px;border:1px solid rgba(255,255,255,0.03);
-  box-shadow:0 8px 26px rgba(0,0,0,0.6);transition:transform .18s var(--transition-fast),box-shadow .18s ease;
+  border-radius:var(--card-radius);padding:12px;border:1px solid rgb(255, 255, 255);
+  box-shadow:0 8px 26px rgba(51, 51, 51, 0.6);transition:transform .18s var(--transition-fast),box-shadow .18s ease;
   cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;align-items:stretch;min-height:220px;height:100%;box-sizing:border-box;overflow:hidden;
 }
 .product-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);}
@@ -166,7 +171,7 @@ img{max-width:100%;display:block;}
 /* Image area: fixed square box so images don't resize cards */
 .product-image-wrap{
   position:relative;border-radius:10px;overflow:hidden;background:linear-gradient(180deg,#0b0b0c,#0f0f10);
-  width:100%;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;flex:0 0 auto;border:1px solid rgba(255,255,255,0.02);
+  width:100%;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;flex:0 0 auto;border:1px solid rgba(255, 255, 255, 0.364);
 }
 .product-image-wrap img{max-width:80%;max-height:80%;object-fit:contain;display:block;filter:brightness(1.05) saturate(1.05);}
 
@@ -193,10 +198,10 @@ img{max-width:100%;display:block;}
 .price{font-size:1.05rem;color:var(--warm-yellow);font-weight:800;margin-top:8px;}
 
 /* Bank-specific border colors (subtle on dark) */
-.product-card.kotak{box-shadow:0 10px 30px rgba(232,92,65,0.06);border-color:rgba(232,92,65,0.06);}
-.product-card.sbi{box-shadow:0 10px 30px rgba(255,184,77,0.04);border-color:rgba(255,184,77,0.04);}
-.product-card.bajaj{box-shadow:0 10px 30px rgba(43,188,255,0.04);border-color:rgba(43,188,255,0.04);}
-.product-card.idfc{box-shadow:0 10px 30px rgba(169,76,255,0.04);border-color:rgba(169,76,255,0.04);}
+.product-card.kotak{box-shadow:0 10px 30px rgba(232,92,65,0.06);border-color:rgba(238, 207, 201, 0.385);}
+.product-card.sbi{box-shadow:0 10px 30px rgba(255,184,77,0.04);border-color:rgba(213, 245, 245, 0.34);}
+.product-card.bajaj{box-shadow:0 10px 30px rgba(43,188,255,0.04);border-color:rgba(201, 232, 246, 0.207);}
+.product-card.idfc{box-shadow:0 10px 30px rgba(169,76,255,0.04);border-color:rgba(230, 209, 250, 0.31);}
 
 /* ---------- Product detail (grid) ---------- */
 .product-content{padding:12px 16px;background:transparent;}
@@ -222,7 +227,7 @@ img{max-width:100%;display:block;}
 
 /* ---------- Skeleton / loading ---------- */
 .loading-products{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;}
-.product-skeleton{background:linear-gradient(180deg,#0f0f10,#141414);border-radius:12px;padding:16px;animation:pulse 1.6s ease-in-out infinite;border:1px solid rgba(255,255,255,0.02);}
+.product-skeleton{background:linear-gradient(180deg,#0f0f10,#141414);border-radius:12px;padding:16px;animation:pulse 1.6s ease-in-out infinite;border:1px solid rgba(255, 255, 255, 0.299);}
 .skeleton-line{height:12px;background:rgba(255,255,255,0.03);border-radius:6px;margin-bottom:10px;}
 .skeleton-line.short{width:40%;}
 .skeleton-line.medium{width:75%;}
@@ -279,14 +284,12 @@ img{max-width:100%;display:block;}
   .products-header{padding:2rem 1rem;min-height:160px;background-position:top center;}
   .products-header h1{font-size:1.6rem;}
   .products-header-info{flex-direction:column;align-items:flex-start;gap:8px;}
-  .products-grid{grid-template-columns:repeat(1,1fr);gap:12px;grid-auto-rows:minmax(140px,auto);}
   .product-full-sheet .sheet-panel{height:86vh;}
   .product-full-sheet .sheet-content{flex-direction:column;gap:12px;}
   .product-full-sheet .sheet-left{width:100%;max-width:100%;}
 }
 @media(max-width:580px){
   /* user requested two cards visible on small devices earlier — we keep two on very small only if space allows */
-  .products-grid{grid-template-columns:repeat(1,1fr);gap:8px;grid-auto-rows:minmax(160px,auto);}
   .product-card{padding:10px;border-radius:10px;}
   .products-section{padding:20px 0;}
   .product-full-sheet .sheet-panel{height:90vh;border-top-left-radius:12px;border-top-right-radius:12px;}
