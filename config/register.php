@@ -16,7 +16,7 @@ try {
     if ($name === '')                                        throw new Exception('Name required');
     if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) throw new Exception('Valid email required');
     if ($phone !== '' && !preg_match('/^\d{10}$/', $phone))  throw new Exception('Phone must be 10 digits');
-    if (!preg_match('/^\d{4,6}$/', $mpin))                   throw new Exception('mPIN must be 4–6 digits');
+    if (!preg_match('/^\d{6}$/', $mpin))                   throw new Exception('mPIN must be 6 digits');
 
     // Signup requires OTPs: email always; phone if provided/required by your policy
     if (($_SESSION['email_verified'] ?? '') !== $email) throw new Exception('Verify email OTP first');
@@ -46,13 +46,13 @@ try {
         INSERT INTO users
             (name, email, phone, mpin_hash, google_id, login_type,
              email_verified_at, phone_verified_at, is_verified,
-             created_at, updated_at, has_filled_partner_form,
-             email_otp_code, email_otp_expires_at, phone_otp_code, phone_otp_expires_at)
+             created_at, updated_at, has_filled_partner_form
+             )
         VALUES
             (?,    ?,     ?,     ?,         NULL,     "manual",
              ?,                 ?,                0,
-             NOW(),    NOW(),    0,
-             NULL,             NULL,               NULL,             NULL)
+             NOW(),    NOW(),    0
+             )
     ');
     $ins->execute([
         $name, $email, ($phone ?: null), $mpin_hash,
