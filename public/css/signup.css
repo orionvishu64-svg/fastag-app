@@ -1,4 +1,5 @@
-/* signup-dark-warm.css — unified with dark warm theme */
+/* signup-dark-warm.css — merged + mobile toggle fix */
+
 /* ---------- Variables ---------- */
 :root{
   --bg-1:#0b0b0c;
@@ -8,11 +9,11 @@
   --muted:#b0b0b0;
   --card-bg:linear-gradient(180deg,rgba(18,18,18,0.85),rgba(14,14,14,0.95));
   --radius:16px;
-  --card-pad:26px;
+  --card-pad:30px;
   --shadow-1:0 14px 36px rgba(0,0,0,0.75);
   --shadow-soft:0 20px 40px rgba(0,0,0,0.6);
   --maxw:1100px;
-  --form-max:520px;
+  --form-max:560px;
   --info-w:320px;
   --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
 }
@@ -29,9 +30,10 @@ body{
     radial-gradient(900px 400px at 8% 10%, rgba(255,184,77,0.06), transparent),
     linear-gradient(180deg,var(--bg-1),var(--bg-2));
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   justify-content:center;
   padding:28px;
+  min-height:100vh;
 }
 
 /* ---------- Two-column wrapper ---------- */
@@ -39,28 +41,46 @@ body{
   width:100%;
   max-width:var(--maxw);
   display:grid;
-  grid-template-columns:1fr minmax(auto,var(--form-max)) 1fr;
-  gap:28px;
-  align-items:center;
-  align-content:center;
+  grid-template-columns: 220px minmax(auto,var(--form-max)) 1fr;
+  gap:36px;
+  align-items:start;
   padding:8px 0;
   margin:0 auto;
 }
 
-/* ---------- Left info card ---------- */
-.info-card{grid-column:1/2;display:flex;justify-content:flex-end;padding-right:20px;}
+/* ---------- Top-left logo block ---------- */
+.nav-logo{
+  grid-column:1/2;
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-start;
+  padding-left:6px;
+  padding-top:8px;
+}
+.nav-logo img{
+  display:block;
+  max-width:180px;
+  width:100%;
+  height:auto;
+  object-fit:contain;
+  filter: drop-shadow(0 8px 18px rgba(0,0,0,0.6));
+  border-radius:8px;
+}
+
+/* ---------- Left info card (optional) ---------- */
+.info-card{grid-column:1/2;display:flex;justify-content:flex-end;padding-right:18px;}
 .info-card .info-inner{
   width:var(--info-w);
-  background:linear-gradient(180deg,rgba(255,184,77,0.06),rgba(232,92,65,0.04));
+  background:linear-gradient(180deg,rgba(255,184,77,0.04),rgba(232,92,65,0.02));
   border-radius:var(--radius);
-  padding:28px 26px;
+  padding:22px;
   box-shadow:var(--shadow-soft);
-  border:1px solid rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.03);
 }
 .info-card h2{
   margin:0 0 8px;
   color:var(--accent);
-  font-size:22px;
+  font-size:20px;
   font-weight:800;
   line-height:1.05;
 }
@@ -72,7 +92,7 @@ body{
 }
 
 /* ---------- Right form column ---------- */
-.form-column{grid-column:2/3;display:block;}
+.form-column{grid-column:2/3;display:block;align-self:start;}
 .form-column > form,
 .form-column > .auth-card,
 form.auth-card,form.card{
@@ -91,11 +111,29 @@ form.auth-card,form.card{
   box-shadow:0 22px 46px rgba(0,0,0,0.8);
 }
 
+/* header */
 h1,h2,h3{margin:0 0 12px;font-weight:700;color:var(--accent);}
-h2{font-size:1.4rem;text-align:center;margin-bottom:8px;}
+h2{font-size:1.5rem;text-align:center;margin-bottom:14px;}
 
-.row{display:flex;align-items:center;gap:14px;margin:10px 0;flex-wrap:nowrap;}
-label{min-width:120px;font-size:.95rem;color:var(--muted);padding-left:2px;}
+/* ---------- Form rows & spacing ---------- */
+.row{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin:14px 0;
+  flex-wrap:nowrap;
+}
+label{
+  min-width:132px;
+  font-size:.98rem;
+  color:var(--muted);
+  padding-left:2px;
+  flex-shrink:0;
+}
+
+/* make rows wrap gracefully when needed */
+.row.wrap { flex-wrap:wrap; }
+.row .full-width { width:100%; }
 
 /* ---------- Inputs ---------- */
 input[type="text"],
@@ -106,10 +144,10 @@ input[pattern],
 .input,textarea{
   flex:1 1 auto;
   width:100%;
-  padding:10px 12px;
-  border-radius:10px;
+  padding:12px 14px;
+  border-radius:12px;
   border:1px solid rgba(255,255,255,0.05);
-  background:linear-gradient(180deg,rgba(30,30,30,0.9),rgba(20,20,20,0.95));
+  background:linear-gradient(180deg,rgba(30,30,30,0.92),rgba(18,18,18,0.96));
   font-size:15px;
   color:var(--text,#f3f3f3);
   transition:box-shadow .12s ease,border-color .12s ease,transform .08s ease;
@@ -117,48 +155,55 @@ input[pattern],
 input:focus,.input:focus,textarea:focus{
   outline:none;
   border-color:var(--accent);
-  box-shadow:0 8px 20px rgba(255,184,77,0.12);
+  box-shadow:0 10px 30px rgba(255,184,77,0.10);
   transform:translateY(-1px);
 }
-.row .field{display:flex;gap:10px;align-items:center;width:100%;flex-direction:column;}
+
+/* helper when placing small buttons next to inputs */
+.input-wrapper{ position:relative; width:100%; display:flex; align-items:center; }
+.toggle-btn{ position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--accent); cursor:pointer; padding:6px 8px; font-size:13px; border-radius:6px; }
+
+/* ensure inputs don't get hidden behind toggle on desktop */
+input[type=password], input[type=text], input[type=email], input[type=tel] { padding-right:72px; box-sizing:border-box; }
+
+/* field column variant */
+.row .field{display:flex;gap:12px;align-items:center;width:100%;flex-direction:column;}
 .row .field > .input,.row .field input{width:100%;margin:0;}
 
 /* ---------- Send OTP buttons ---------- */
 button.small,.small{
   display:inline-block;
   width:auto;
-  padding:8px 12px;
+  padding:9px 14px;
   border-radius:10px;
-  border:1px solid rgba(255,184,77,0.25);
-  background:linear-gradient(180deg,rgba(40,40,40,0.9),rgba(24,24,24,0.95));
+  border:1px solid rgba(255,184,77,0.22);
+  background:linear-gradient(180deg,rgba(40,40,40,0.94),rgba(24,24,24,0.98));
   color:var(--accent);
   font-weight:700;
   cursor:pointer;
   transition:transform .06s ease,filter .12s ease,box-shadow .12s ease;
-  box-shadow:0 6px 18px rgba(255,184,77,0.08);
+  box-shadow:0 6px 18px rgba(255,184,77,0.06);
 }
-button.small:hover{filter:brightness(1.08);transform:translateY(-1px);}
-button.small:active{transform:translateY(0);}
-.row .field > button.small,.row .field .otp-btn{width:100%;margin-top:8px;align-self:stretch;}
+button.small:hover{filter:brightness(1.06);transform:translateY(-1px);}
+.row .field > button.small,.row .field .otp-btn{width:auto;margin-top:0;align-self:flex-end;}
 .otp-row button.small,.otp-row .small{width:100%;}
 
 /* ---------- Primary buttons (Sign Up / Login) ---------- */
 button[type="submit"],#set{
   width:100%;
-  margin-top:10px;
-  padding:12px 14px;
-  border-radius:12px;
+  margin-top:16px;
+  padding:14px 16px;
+  border-radius:14px;
   border:none;
   background:linear-gradient(90deg,var(--warm-yellow,#ffb84d),var(--warm-red,#e85c41));
   color:#111;
   font-weight:800;
-  font-size:1rem;
+  font-size:1.02rem;
   cursor:pointer;
-  box-shadow:0 10px 26px rgba(255,184,77,0.18);
+  box-shadow:0 12px 28px rgba(255,184,77,0.18);
   transition:transform .06s ease,filter .12s ease;
 }
 button[type="submit"]:hover{transform:translateY(-1px);filter:brightness(1.04);}
-button[type="submit"]:active{transform:none;}
 
 /* ---------- Secondary / Google button ---------- */
 .btn.secondary,.google-btn,button.cont-secondary{
@@ -166,20 +211,20 @@ button[type="submit"]:active{transform:none;}
   display:inline-block;
   padding:12px 14px;
   border-radius:10px;
-  background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03));
+  background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.02));
   color:var(--text);
   border:1px solid rgba(255,255,255,0.06);
-  box-shadow:0 10px 20px rgba(0,0,0,0.4);
+  box-shadow:0 10px 20px rgba(0,0,0,0.32);
   text-align:center;
   font-weight:700;
 }
 
 /* ---------- Helper messages ---------- */
 .helper,.muted{color:var(--muted);font-size:13px;}
-.err{color:var(--warm-red);margin-top:6px;min-height:20px;font-size:13px;}
+.err{color:var(--accent-dark);margin-top:6px;min-height:20px;font-size:13px;}
 .ok{color:#22c55e;font-weight:700;display:none;}
 
-/* ---------- Step/OTP panels transitions ---------- */
+/* ---------- Transitions ---------- */
 #emailOtpRow,#phoneOtpRow,#step2,#step3{transition:all .18s ease;}
 #emailOtpRow[style*="display: none"],
 #phoneOtpRow[style*="display: none"],
@@ -196,6 +241,7 @@ button[type="submit"]:active{transform:none;}
   justify-content:space-between;
   align-items:center;
   gap:12px;
+  flex-wrap:wrap;
 }
 .footer-links a{
   color:var(--accent);
@@ -207,35 +253,98 @@ button[type="submit"]:active{transform:none;}
 /* ---------- Align padding ---------- */
 .info-card .info-inner,.form-column > form{padding-top:28px;padding-bottom:28px;}
 
-/* ---------- Responsive ---------- */
-@media(max-width:980px){
-  .auth-layout{grid-template-columns:1fr;gap:18px;padding:8px;}
-  .info-card{grid-column:1/-1;justify-content:center;padding-right:0;}
-  .info-card .info-inner{width:92%;margin:0 auto;}
-  .form-column{grid-column:1/-1;}
-  .form-column > form{box-shadow:none;border-radius:12px;padding:18px;}
-  .row{gap:10px;flex-wrap:wrap;}
-  label{min-width:92px;}
-  body{padding:18px;}
-}
-@media(max-width:520px){
-  label{min-width:80px;font-size:14px;}
-  .info-card .info-inner{padding:18px;font-size:14px;}
-  .form-column > form{padding:18px;}
-}
-
 /* ---------- Google button container ---------- */
 #google-signup{
   display:flex;
   justify-content:center;
   align-items:center;
-  margin-top:10px;
-  margin-bottom:10px;
-  padding:6px;
+  margin-top:12px;
+  margin-bottom:8px;
+  padding:8px;
   border-radius:10px;
   background:rgba(30,30,30,0.9);
-  box-shadow:0 4px 10px rgba(255,184,77,0.08);
+  box-shadow:0 4px 10px rgba(255,184,77,0.06);
 }
 @media(max-width:520px){#google-signup{width:100%;}}
 
-/* ---------- End of signup-dark-warm.css ---------- */
+/* ---------- toggle button: keep absolute on desktop, switch to inline on small screens --- */
+.toggle-btn{
+  flex: 0 0 auto;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 6px 8px;
+  font-size: 13px;
+  border-radius: 6px;
+  background: transparent;
+}
+
+/* input has big right padding for desktop so absolute button fits */
+input[type=password],
+input[type=text],
+input[type=email],
+input[type=tel]{
+  padding-right:72px;
+  box-sizing:border-box;
+}
+
+/* ---------- Responsiveness: stack nicely ---------- */
+@media(max-width:980px){
+  .auth-layout{
+    grid-template-columns: 1fr;
+    gap:18px;
+    padding:8px;
+  }
+  .nav-logo{ grid-column:1/-1; justify-content:center; padding-top:6px; }
+  .nav-logo img{ max-width:160px; }
+  .info-card{grid-column:1/-1;justify-content:center;padding-right:0;}
+  .info-card .info-inner{width:92%;margin:0 auto;}
+  .form-column{grid-column:1/-1;}
+  .form-column > form{box-shadow:none;border-radius:12px;padding:18px;}
+  .row{gap:12px;flex-wrap:wrap;}
+  label{min-width:100px;}
+  body{padding:18px;}
+}
+
+/* Mobile: move toggle out of input & reduce padding to avoid overlap */
+@media(max-width:520px){
+  label{min-width:80px;font-size:14px;}
+  .info-card .info-inner{padding:16px;font-size:14px;}
+  .form-column > form{padding:16px;}
+  .row{margin:10px 0;}
+
+  /* make wrapper use normal row layout */
+  .input-wrapper {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    position: relative;
+  }
+
+  /* place toggle button after the input (not absolute) */
+  .toggle-btn {
+    position: static;
+    transform: none;
+    margin-left: 6px;
+    padding: 6px 8px;
+    font-size: 13px;
+    min-width: 56px;
+  }
+
+  /* reduce input right padding so it doesn't leave a large empty area */
+  input[type=password],
+  input[type=text],
+  input[type=email],
+  input[type=tel]{
+    padding-right: 12px;
+  }
+
+  /* ensure inputs and button don't wrap awkwardly */
+  .input-wrapper input{
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
+/* ---------- End of merged signup-dark-warm.css ---------- */
