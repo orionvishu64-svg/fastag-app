@@ -296,8 +296,6 @@ input[type=tel]{
     gap:18px;
     padding:8px;
   }
-  .nav-logo{ grid-column:1/-1; justify-content:center; padding-top:6px; }
-  .nav-logo img{ max-width:160px; }
   .info-card{grid-column:1/-1;justify-content:center;padding-right:0;}
   .info-card .info-inner{width:92%;margin:0 auto;}
   .form-column{grid-column:1/-1;}
