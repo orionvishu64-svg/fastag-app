@@ -207,7 +207,7 @@ body, html {
 .team-card .description{ color:var(--muted); }
 
 /* =========================
-   Partner / Certifications — Clear & vivid
+   Partner / Certifications — Clear & vivid 
    ========================= */
 .certifications {
   background: linear-gradient(180deg,#0f0f10,#0b0b0c);
@@ -250,22 +250,6 @@ body, html {
   margin-top:10px; color:var(--accent-yellow); font-weight:700; font-size:.95rem;
 }
 
-/* certification grid (cards) */
-.certifications-grid{
-  display:grid;
-  grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
-  gap:1.25rem;
-  margin-top:1rem;
-}
-.cert-card{
-  background: linear-gradient(180deg,#121212,#0f0f10);
-  padding:1.25rem; border-radius:12px; text-align:center;
-  border:1px solid var(--soft-border); box-shadow: var(--card-shadow);
-  transition: transform .22s ease;
-}
-.cert-card:hover{ transform: translateY(-6px); box-shadow: 0 18px 45px rgba(0,0,0,0.7); }
-.cert-logo img{ max-width:120px; height:auto; display:block; margin:0 auto; filter: none; }
-
 /* =========================
    CTA / Join section
    ========================= */
@@ -301,14 +285,62 @@ hr{ border:0; height:1px; background: linear-gradient(90deg, rgba(255,255,255,0)
 .text-muted{ color:var(--muted); }
 .center{ text-align:center; }
 
-/* =========================
-   Responsive
-   ========================= */
+/* certification grid (cards) */
+.certifications-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* default: 3 columns on large screens */
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.cert-card {
+  background: linear-gradient(180deg, #121212, #0f0f10);
+  padding: 1.25rem;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid var(--soft-border);
+  box-shadow: var(--card-shadow);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.cert-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.7);
+}
+
+.cert-logo img {
+  max-width: 120px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  filter: none;
+}
+
+/* Tablets / mid screens (optional, 2 or 3 columns) */
+@media (max-width: 980px) {
+  .certifications-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Mobile screens: 2 cards per row */
+@media (max-width: 600px) {
+  .certifications-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Very small screens (optional: single column if needed) */
+@media (max-width: 360px) {
+  .certifications-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 980px){
   .story-content, .mv-grid{ grid-template-columns: 1fr; gap:1.75rem; }
   .values-grid{ grid-template-columns: 1fr; }
   .team-grid{ grid-template-columns: repeat(2,1fr); }
-  .certifications-grid{ grid-template-columns: repeat(2,1fr); }
   .partner-card{ width: 180px; }
   .hero-content h1{ font-size:2.4rem; }
 }
@@ -316,7 +348,6 @@ hr{ border:0; height:1px; background: linear-gradient(90deg, rgba(255,255,255,0)
   .hero-content h1{ font-size:2rem; }
   .stats-grid{ grid-template-columns: 1fr; }
   .partner-card{ width: 100%; min-height:110px; padding:14px; }
-  .certifications-grid{ grid-template-columns: 1fr; }
   .about-hero{ padding: 80px 12px 48px; margin-top: 56px; }
   .container{ padding: 0 14px; }
 }

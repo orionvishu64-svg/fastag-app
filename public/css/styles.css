@@ -57,7 +57,7 @@ body{
 .btn-primary{background:linear-gradient(90deg,var(--warm-yellow),var(--warm-yellow-2));color:#111;box-shadow:0 8px 24px rgba(255,184,77,0.08);}
 .btn-primary:hover{background:linear-gradient(90deg,var(--warm-red),var(--warm-yellow));transform:translateY(-2px);color:#fff;box-shadow:0 14px 40px rgba(232,92,65,0.12);}
 .btn-secondary{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,0.06);padding:10px 18px;}
-.btn-secondary:hover{background:rgba(255,255,255,0.03);transform:translateY(-2px);}
+.btn-secondary:hover{background:rgba(0, 0, 0, 0.219);transform:translateY(-2px); border: 1px solid rgba(105, 104, 104, 0.416);}
 
 /* tiny buttons */
 .btn-sm{padding:6px 10px;font-size:.9rem;border-radius:8px;}

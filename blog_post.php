@@ -61,7 +61,7 @@ if (!empty($post['tag'])) {
 <body>
 <?php include __DIR__ . '/includes/header.php'; ?>
 
-<a href="blog.php" class="btn-back">Go Back</a>
+<a href="blog.php" class="btn btn-back">Go Back</a>
 
 <main class="single-post">
   <div class="container">

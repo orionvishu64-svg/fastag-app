@@ -59,8 +59,8 @@
                                     <h3>Office Address</h3>
                                     <p>Apna Payment Services Pvt Ltd,<br>
                                     A-40, KARDHANI, GOVINDPURA,<br>
-          JAIPUR, RAJASTHAN, 302012,<br>
-          KARDHANI, Rajasthan, PIN: 302012</p>
+                                    JAIPUR, RAJASTHAN, 302012,<br>
+                                    KARDHANI, Rajasthan, PIN: 302012</p>
                                 </div>
                             </div>
                             
@@ -81,20 +81,28 @@
                         <h3>Quick Help</h3>
                         <div class="help-buttons">
                             <button class="help-btn">
+                              <a href="/faqs.php" style="color: inherit; text-decoration: none;">
                                 <i class="fas fa-question-circle"></i>
                                 How to install FASTag?
+                              </a>
                             </button>
                             <button class="help-btn">
+                              <a href="/faqs.php" style="color: inherit; text-decoration: none;">
                                 <i class="fas fa-exclamation-triangle"></i>
                                 FASTag not working?
+                              </a>
                             </button>
                             <button class="help-btn">
+                              <a href="/faqs.php" style="color: inherit; text-decoration: none;">
                                 <i class="fas fa-credit-card"></i>
                                 Recharge your FASTag
+                              </a>
                             </button>
                             <button class="help-btn">
+                              <a href="/track_orders.php" style="color: inherit; text-decoration: none;">
                                 <i class="fas fa-truck"></i>
                                 Track your order
+                              </a>
                             </button>
                         </div>
                     </div>
@@ -154,7 +162,11 @@
             </form>
 
             <div style="margin-top:20px; text-align:center;">
-              <button  style="color: #1e75daff; hover: #100750ff;" class="btn btn-secondary" onclick="window.location.href='conversations_list.php'">
+              <button class="btn btn-secondary"
+                  style="color: #ffb84d; border: 1px solid #ffb84d;"
+                  onmouseover="this.style.color='#e85c41'; this.style.borderColor='#e85c41';"
+                  onmouseout="this.style.color='#ffb84d'; this.style.borderColor='#ffb84d';"
+                  onclick="window.location.href='conversations_list.php'">
                 🗨️ View All Conversations
               </button>
             </div>

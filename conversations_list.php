@@ -89,16 +89,18 @@ body{
 }
 .info-card a{
   text-decoration:none;
-  background: linear-gradient(180deg, rgba(20,20,20,0.9), rgba(28,28,28,0.95));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.17));
   padding:10px 16px;
   border-radius:10px;
-  color:var(--warm-yellow);
+  color: #fff;
   font-weight:700;
-  border:1px solid rgba(255,184,77,0.06);
+  border:1px solid rgba(255, 255, 255, 0.17);
   box-shadow:0 8px 20px rgba(0,0,0,0.6);
   transition:all .12s ease;
 }
 .info-card a:hover{
+  background: linear-gradient(180deg, var(--warm-yellow), var(--warm-yellow-2));
+  color: #000;
   transform:translateY(-1px);
   filter:brightness(1.06);
 }
@@ -136,12 +138,12 @@ body{
   vertical-align:middle;
 }
 tr.open td{
-  background: linear-gradient(180deg, rgba(34, 49, 36, 0.35), rgba(20,20,20,0.15));
+  background: linear-gradient(180deg, rgba(43, 71, 47, 0.53), rgba(20,20,20,0.15));
   color: #dff7e6;
 }
 tr.closed td{
-  background: linear-gradient(180deg, rgba(45,28,22,0.18), rgba(20,20,20,0.06));
-  color:var(--muted);
+  background: linear-gradient(180deg, rgba(92, 51, 36, 0.45), rgba(20,20,20,0.06));
+  color: #ffc7b8cc;
 }
 
 /* ---------- Buttons ---------- */
@@ -149,24 +151,24 @@ tr.closed td{
   padding:8px 12px;
   border-radius:10px;
   font-weight:700;
-  text-decoration:none;
   display:inline-block;
-  border:none;
   cursor:pointer;
   transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
 }
 .btn-open{
-  background: linear-gradient(90deg, rgba(255,184,77,1), rgba(232,92,65,1));
-  color:#111;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.23));
+  color: #ffcf73;
+  border: 1px solid rgba(255, 255, 255, 0.21);
   box-shadow:0 8px 18px rgba(232,92,65,0.12);
 }
-.btn-open:hover{ transform:translateY(-2px); filter:brightness(1.02); }
+.btn-open:hover{ transform:translateY(-2px); filter:brightness(1.02); background: linear-gradient(90deg, rgba(255,184,77,1), rgba(232,92,65,1)); color: #ffffff;}
 .btn-view{
-  background: linear-gradient(90deg, rgba(255,184,77,0.92), rgba(255,204,102,0.95));
-  color:#111;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.23));
+  color: #e85c41;
+  border: 1px solid rgba(255, 255, 255, 0.21);
   box-shadow:0 8px 18px rgba(255,184,77,0.10);
 }
-.btn-view:hover{ transform:translateY(-2px); filter:brightness(1.02); }
+.btn-view:hover{ transform:translateY(-2px); filter:brightness(1.02); background: linear-gradient(90deg, rgba(232,92,65,1), rgba(255,184,77,1)); color: #ffffff;}
 
 /* Fine-tune table rows for better dark readability */
 .main-card tbody tr{ transition:background .14s ease, transform .12s ease; }

@@ -63,6 +63,9 @@ body.profile-page {
   border: 1px solid rgba(255,255,255,0.03);
   box-shadow: var(--card-shadow);
 }
+.card .profile-card{
+  background: linear-gradient(180deg, #ffffff00, #ffffff22);
+}
 
 /* Flash messages */
 .flash {

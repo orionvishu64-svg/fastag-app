@@ -1,8 +1,4 @@
-/* ======================================================
-   blog.css — Dark Blog Theme (Warm Yellow + Red Edition)
-   Consistent with site-wide dark theme
-   Colors: #ffb84d (yellow), #e85c41 (red)
-====================================================== */
+/* blog.css */
 
 :root {
   --container-width: 1200px;
@@ -350,19 +346,29 @@ body {
 }
 
 /* ----------------- Buttons ----------------- */
+/* ----------------- Go Back Button (Refined) ----------------- */
 .btn.btn-back {
+  display: inline-block;
   font-size: 13px !important;
-  padding: 4px 10px !important;
-  border-radius: 6px !important;
-  border: 1px solid rgba(255, 184, 77, 0.14) !important;
+  font-weight: 600;
+  padding: 6px 14px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   color: var(--text) !important;
-  background: transparent !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)) !important;
+  text-decoration: none !important;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+  transition: all 0.22s ease;
+  width: auto;
 }
 
 .btn.btn-back:hover {
-  background: linear-gradient(180deg, var(--warm-yellow), var(--warm-yellow-2)) !important;
+  background: linear-gradient(90deg, var(--warm-yellow), var(--warm-yellow-2)) !important;
   color: #000 !important;
   border-color: transparent !important;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(255,184,77,0.1);
 }
 
 /* ----------------- Responsive ----------------- */
@@ -406,4 +412,20 @@ body {
 
 .text-muted {
   color: var(--muted);
+}
+/* --- Remove unwanted underline and link styles in blog cards --- */
+.post-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.post-link * {
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
+/* optional: keep a subtle color shift on hover if you like */
+.post-card:hover .post-title {
+  color: var(--warm-yellow);
+  text-shadow: 0 0 8px rgba(255,184,77,0.25);
 }

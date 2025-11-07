@@ -109,9 +109,11 @@ try {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Order #<?= e($order['id']) ?> — Details</title>
+  <link rel="stylesheet" href="/public/css/styles.css">
   <link rel="stylesheet" href="/public/css/order_details.css">
 </head>
 <body>
+  <?php include __DIR__ . '/includes/header.php'; ?>
   <main class="container">
     <header class="topbar">
       <div class="brand">
