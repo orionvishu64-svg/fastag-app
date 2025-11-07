@@ -71,13 +71,13 @@ main{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:
 
 /* closed / open variations */
 #closedTicketsContainer .ticket{
-  background: linear-gradient(180deg,#0f0b07 0%, #120b05 100%);
-  border:1px solid rgba(232,92,65,0.06);
+  background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  border:1px solid rgb(255, 255, 255);
 }
 
 #openTicketContainer .ticket{
-  background: linear-gradient(180deg,#0f1012 0%, #191414 100%);
-  border:1px solid rgba(255,184,77,0.06);
+  background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  border:1px solid rgb(255, 255, 255);
 }
 
 .btn.btn-primary {

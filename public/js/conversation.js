@@ -1,7 +1,7 @@
 (() => {
-  const ENDPOINT_GET_CONV = '/config/get_conversation.php';          // GET ?ticket_id=...
+  const ENDPOINT_GET_CONV = '/config/get_conversation.php';
   const ENDPOINT_GET_CLOSED = '/config/get_closed_conversation.php';
-  const ENDPOINT_ADD_REPLY = '/config/contact_replies.php';          // POST { ticket_id|query_id, message, local_id, origin_socket_id }
+  const ENDPOINT_ADD_REPLY = '/config/contact_replies.php';
 
   // ===== Utility Functions =====
   async function safeFetchJson(url, opts = {}) {
@@ -332,7 +332,6 @@ async function loadClosedTickets() {
   }
 
   // ===== Expose a handler for incoming socket events (so chat-socket.js can call it) =====
-  // payload should include at least: inserted_id/id/reply_id, local_id (if included), reply_text/message/content, is_admin, created_at
   function handleIncomingSocketReply(payload) {
     if (!payload) return;
     // Normalize payload into message object and call centralized renderer
@@ -356,7 +355,6 @@ async function loadClosedTickets() {
     loadClosedTickets();
   });
 
-  // Public API
   window.CONVERSATION = {
     reloadOpen: loadOpenTicket,
     reloadClosed: loadClosedTickets,
