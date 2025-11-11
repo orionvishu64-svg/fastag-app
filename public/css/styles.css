@@ -56,8 +56,8 @@ body{
 .btn{display:inline-block;padding:12px 24px;border-radius:8px;font-weight:600;text-align:center;transition:all .18s ease;border:0;cursor:pointer;font-size:16px;}
 .btn-primary{background:linear-gradient(90deg,var(--warm-yellow),var(--warm-yellow-2));color:#111;box-shadow:0 8px 24px rgba(255,184,77,0.08);}
 .btn-primary:hover{background:linear-gradient(90deg,var(--warm-red),var(--warm-yellow));transform:translateY(-2px);color:#fff;box-shadow:0 14px 40px rgba(232,92,65,0.12);}
-.btn-secondary{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,0.06);padding:10px 18px;}
-.btn-secondary:hover{background:rgba(0, 0, 0, 0.219);transform:translateY(-2px); border: 1px solid rgba(105, 104, 104, 0.416);}
+.btn-secondary{background:transparent;color:var(--text);border:1px solid rgba(255, 255, 255, 0.218);padding:10px 18px;}
+.btn-secondary:hover{background:rgba(0, 0, 0, 0.219);transform:translateY(-2px); border: 1px solid rgba(105, 104, 104, 0.436);}
 
 /* tiny buttons */
 .btn-sm{padding:6px 10px;font-size:.9rem;border-radius:8px;}
@@ -84,8 +84,8 @@ body{
 .features{padding:80px 0;background:linear-gradient(180deg,var(--panel-dark),var(--panel-2));}
 .features h2{text-align:center;font-size:2.25rem;margin-bottom:2.5rem;color:var(--text);}
 .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;}
-.feature-card{background:linear-gradient(180deg,#0f0f10,#141414);padding:1.75rem;border-radius:12px;text-align:center;box-shadow:var(--shadow-soft);border:1px solid rgba(255,255,255,0.03);transition:transform .22s var(--transition-fast),box-shadow .22s ease;}
-.feature-card:hover{transform:translateY(-6px);box-shadow:0 18px 45px rgba(0,0,0,0.7);}
+.feature-card{background:linear-gradient(180deg,#0f0f10,#343434);padding:1.75rem;border-radius:12px;text-align:center;box-shadow:var(--shadow-soft);border:1px solid rgba(255, 255, 255, 0.197);transition:transform .22s var(--transition-fast),box-shadow .22s ease;}
+.feature-card:hover{transform:translateY(-6px);box-shadow:0 18px 45px rgba(62, 62, 62, 0.349);}
 .feature-card i{font-size:2.6rem;color:var(--warm-yellow);margin-bottom:.75rem;display:block;}
 .feature-card h3{font-size:1.15rem;color:var(--text);margin-bottom:.6rem;}
 .feature-card p{color:var(--muted);}
@@ -101,14 +101,22 @@ body{
 .bank-card h3{margin:6px 0 4px;font-size:1.05rem;font-weight:700;color:var(--text);}
 .bank-card p{margin:0 0 8px;color:var(--muted);font-size:.92rem;}
 .bank-card .categories{margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;}
-.bank-card .category{font-size:.78rem;color:var(--muted);background:rgba(255,255,255,0.02);padding:6px 8px;border-radius:6px;}
+.bank-card .category{
+  font-size:0.8rem;
+  color:var(--warm-yellow);
+  background:rgba(255,184,77,0.08);
+  padding:0.5rem 0.75rem;
+  border-radius:6px;
+  font-weight:500;
+  border:0.5px solid rgba(255,184,77,0.15);
+}
 .bank-card .btn{margin-top:auto;align-self:flex-start;}
 
 /* Per-bank subtle accents (keeps your original identifiers) */
-.bank-card.kotak{border-color: rgba(232,92,65,0.12); background: linear-gradient(135deg, #2a0404 0%, #0b0000 100%);}
-.bank-card.sbi{border-color: rgba(255,184,77,0.12); background: linear-gradient(135deg, #001637 0%, #020611 100%);}
-.bank-card.bajaj{border-color: rgba(255,184,77,0.12); background: linear-gradient(135deg, #012b2f 0%, #010608 100%);}
-.bank-card.idfc{border-color: rgba(232,92,65,0.12); background: linear-gradient(135deg, #1c003c 0%, #07010b 100%);}
+.bank-card.kotak{border-color: rgba(232,92,65,0.15); background: linear-gradient(135deg, rgba(42,4,4,0.9) 0%, rgba(11,0,0,0.7) 100%);}
+.bank-card.sbi{border-color: rgba(255,184,77,0.15); background: linear-gradient(135deg, rgba(0,22,55,0.9) 0%, rgba(2,6,17,0.7) 100%);}
+.bank-card.bajaj{border-color: rgba(255,184,77,0.15); background: linear-gradient(135deg, rgba(1,43,47,0.9) 0%, rgba(1,6,8,0.7) 100%);}
+.bank-card.idfc{border-color: rgba(232,92,65,0.15); background: linear-gradient(135deg, rgba(28,0,60,0.9) 0%, rgba(7,1,11,0.7) 100%);}
 
 /* ---------- CTA ---------- */
 .cta{background:linear-gradient(90deg,var(--warm-red),var(--warm-yellow));color:#fff;padding:80px 0;text-align:center;}
