@@ -109,7 +109,6 @@
                     <p>Available for vehicle categories:</p>
                     <div class="categories">
                         <span class="category">VC4</span>
-                        <span class="category">VC4max</span>
                         <span class="category">VC5</span>
                         <span class="category">VC6</span>
                         <span class="category">VC7</span>
