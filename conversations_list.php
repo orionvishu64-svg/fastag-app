@@ -1,18 +1,39 @@
-<?php 
-// conversations_list.php
+<?php
+// conversations_list.php - shows only tickets for the currently-logged-in user
+require_once __DIR__ . '/config/config_auth.php'; // your auth file location
 require_once __DIR__ . '/config/db.php';
+
 header('Content-Type: text/html; charset=utf-8');
-// fetch open and closed conversations
+
+/* Ensure session/login */
+if (function_exists('require_login')) {
+    // If your auth helper forces login, call it
+    require_login();
+}
+// start session if not started
+if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+
+// try common session keys produced by your auth
+$userId = $_SESSION['user_id'] ?? $_SESSION['id'] ?? $_SESSION['uid'] ?? null;
+
+if (empty($userId)) {
+    // not logged in — change redirect if your app uses different login page
+    header('Location: login.php');
+    exit;
+}
+
 try {
-    // open tickets first
-    $stmtOpen = $pdo->prepare("SELECT id, ticket_id, subject, status, viewed 
-                               FROM contact_queries
-                               ORDER BY FIELD(status,'open','closed'), submitted_at DESC");
-    $stmtOpen->execute();
-    $tickets = $stmtOpen->fetchAll(PDO::FETCH_ASSOC);
+    $stmt = $pdo->prepare(
+        "SELECT id, user_id, ticket_id, subject, status, viewed, submitted_at
+         FROM contact_queries
+         WHERE user_id = :user_id
+         ORDER BY FIELD(status,'open','closed'), submitted_at DESC"
+    );
+    $stmt->execute([':user_id' => $userId]);
+    $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo "<h3>DB Error</h3><pre>" . htmlspecialchars($e->getMessage()) . "</pre>";
+    echo "<h3>DB Error</h3><pre>" . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . "</pre>";
     exit;
 }
 ?>
@@ -21,7 +42,7 @@ try {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Conversations list</title>
+  <title>My Conversations</title>
   <style>
 /* convo-table-dark-warm.css — dark warm theme (keeps all IDs/classes unchanged) */
 /* ---------- THEME VARIABLES ---------- */
@@ -268,7 +289,7 @@ tr.closed td{
 <body>
 <div class="convo-page">
   <div class="info-card">
-    <h1>All Conversations</h1>
+    <h1>My Conversations</h1>
     <a href="contact.php">Back to Contact</a>
   </div>
 
@@ -276,6 +297,7 @@ tr.closed td{
     <table>
       <thead>
         <tr>
+          <th>User Id</th>
           <th>Ticket</th>
           <th>Subject</th>
           <th>Status</th>
@@ -285,10 +307,11 @@ tr.closed td{
       <tbody id="conversations-body">
       <?php foreach ($tickets as $t): ?>
         <?php $cls = ($t['status'] === 'open') ? 'open' : 'closed'; ?>
-        <tr class="<?= $cls ?>" data-contact-query-id="<?= htmlspecialchars($t['id']) ?>">
-          <td data-label="Ticket"><?= htmlspecialchars($t['ticket_id']) ?></td>
-          <td data-label="Subject"><?= htmlspecialchars($t['subject']) ?></td>
-          <td data-label="Status"><?= htmlspecialchars($t['status']) ?></td>
+        <tr class="<?= $cls ?>" data-contact-query-id="<?= htmlspecialchars($t['id'], ENT_QUOTES, 'UTF-8') ?>">
+          <td data-label="User ID"><?= htmlspecialchars($t['user_id'], ENT_QUOTES, 'UTF-8') ?></td>
+          <td data-label="Ticket"><?= htmlspecialchars($t['ticket_id'], ENT_QUOTES, 'UTF-8') ?></td>
+          <td data-label="Subject"><?= htmlspecialchars($t['subject'], ENT_QUOTES, 'UTF-8') ?></td>
+          <td data-label="Status"><?= htmlspecialchars($t['status'], ENT_QUOTES, 'UTF-8') ?></td>
           <td data-label="Actions">
             <div class="actions-wrap">
             <?php if ($t['status'] === 'open'): ?>
