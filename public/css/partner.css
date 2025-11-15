@@ -1,0 +1,165 @@
+:root {
+  --bg-dark: #0b0b0c;
+  --panel-dark: #0f0f10;
+  --panel-2: #141414;
+  --text: #f3f3f3;
+  --muted: #b0b0b0;
+  --warm-yellow: #ffb84d;
+  --warm-yellow-2: #ffcf73;
+  --warm-red: #e85c41;
+  --shadow-1: 0 14px 36px rgba(0,0,0,0.6);
+  --radius: 14px;
+  --form-max: 720px;
+  --font: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ---------- Base ---------- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  font-family: var(--font);
+  background: linear-gradient(180deg, var(--bg-dark), #070707);
+  color: var(--text);
+  height: 100%;
+  width: 100%;
+}
+body {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 100px 16px 40px;
+}
+
+/* ---------- Logo ---------- */
+.nav-logo { position: fixed; top: 20px; left: 24px; z-index: 10; }
+.nav-logo img { height: 38px; width: auto; display: block; }
+
+/* ---------- Container ---------- */
+.container {
+  width: 100%;
+  max-width: var(--form-max);
+  background: linear-gradient(180deg, var(--panel-dark), var(--panel-2));
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: var(--shadow-1);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+/* ---------- Headings ---------- */
+.container h2 {
+  text-align: center;
+  font-size: 1.4rem;
+  color: var(--warm-yellow);
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+.container p {
+  text-align: center;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+/* ---------- Form ---------- */
+label {
+  display: block;
+  margin: 10px 0 6px;
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+input, select, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  background: linear-gradient(180deg,#0b0b0c,#0f0f10);
+  color: var(--text);
+  font-size: 15px;
+  transition: all 0.18s ease;
+}
+input::placeholder { color: rgba(243,243,243,0.28); }
+input:focus {
+  border-color: var(--warm-yellow);
+  box-shadow: 0 0 0 6px rgba(255,184,77,0.04);
+  outline: none;
+}
+
+/* ---------- Buttons ---------- */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 700;
+  transition: transform 0.06s ease, filter 0.12s ease;
+}
+.save-btn {
+  width: 100%;
+  background: linear-gradient(90deg, var(--warm-yellow), var(--warm-yellow-2));
+  color: #111;
+  margin-top: 10px;
+  box-shadow: 0 10px 26px rgba(255,184,77,0.08);
+}
+.save-btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
+.save-partner, .save-gv {
+  background: linear-gradient(90deg, var(--warm-yellow), var(--warm-yellow-2));
+  color: #111;
+}
+.delete-btn {
+  background: linear-gradient(180deg, var(--warm-red), #b9301f);
+  color: #111;
+  padding: 8px 10px;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(232,92,65,0.1);
+}
+
+/* ---------- Messages ---------- */
+.msg {
+  padding: 10px;
+  border-radius: 8px;
+  margin: 10px 0;
+  font-weight: 700;
+  font-size: 14px;
+  border: 1px solid rgba(255,255,255,0.02);
+}
+.msg.success {
+  background: linear-gradient(180deg, rgba(255,248,236,0.04), rgba(255,248,236,0.02));
+  color: var(--warm-yellow);
+  border-color: rgba(255,184,77,0.06);
+}
+.msg.error {
+  background: linear-gradient(180deg, rgba(60,10,10,0.1), rgba(40,6,6,0.08));
+  color: var(--warm-red);
+  border-color: rgba(232,92,65,0.06);
+}
+
+/* ---------- Saved Partner Cards ---------- */
+.cards { margin-top: 18px; }
+.cards h3 {
+  margin-bottom: 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.card {
+  background: linear-gradient(180deg, #0b0b0c, #0f0f10);
+  border: 1px solid rgba(255,255,255,0.03);
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+}
+.card p { margin: 6px 0; color: var(--muted); font-size: 14px; }
+
+/* ---------- Utility ---------- */
+.btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+.or-divider { text-align: center; font-weight: 700; color: var(--muted); margin: 18px 0; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .container { padding: 18px; }
+  .nav-logo { top: 14px; left: 16px; }
+}
+
+/* Accessibility */
+:focus { outline: 3px solid rgba(255,184,77,0.08); outline-offset: 2px; }

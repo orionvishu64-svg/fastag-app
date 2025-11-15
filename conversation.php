@@ -54,7 +54,7 @@ try {
 <body>
   <header>
     <div class="header-left">
-      <a href="contact.php" class="btn btn-primary">⬅ Back</a>
+      <a href="conversations_list.php" class="btn btn-primary">⬅ Back</a>
       <h2>🗨️ Conversation — <?= $ticket_id_public ?></h2>
     </div>
     <div class="header-right">

@@ -10,7 +10,6 @@
 </head>
 <body>
 <?php include __DIR__ . '/includes/header.php'; ?>
-    <!-- Header -->
     <section class="contact-header">
         <div class="container">
             <h1>We're here to help</h1>
