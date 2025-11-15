@@ -52,6 +52,20 @@ function safeFetch(...args) {
     if (sidebar.contains(e.target) || toggle.contains(e.target)) return;
     setState(false);
   });
+// logo chnage
+  function setTheme(isLight){
+  const root = document.documentElement;
+  if (isLight) {
+    root.classList.add('theme-light');
+    root.setAttribute('data-theme', 'light');
+    localStorage.setItem(KEY, 'light');
+  } else {
+    root.classList.remove('theme-light');
+    root.removeAttribute('data-theme');
+    localStorage.setItem(KEY, 'dark');
+  }
+  syncToggleUI();
+}
 })();
 
 // Smooth scrolling for anchor links

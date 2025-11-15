@@ -1,11 +1,4 @@
-/* about.css — Refined Dark theme (warm yellow #ffb84d & warm red #e85c41)
-   - Cleaner variables, improved contrast for partner/cert logos, accessible focus states
-   - Drop this file in place of your current about.css
-*/
-
-/* =========================
-   Variables
-   ========================= */
+/* about.css */
 :root{
   --bg-dark: #070707;
   --panel-a: #0b0b0c;

@@ -5,7 +5,8 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <div class="footer-logo">
-                        <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png" alt="Apna Payment Logo" style="max-width: 180px; margin-bottom: 1rem;">
+                        <img class="logo-dark" src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png" alt="Apna Payment Logo" style="max-width: 180px; margin-bottom: 1rem;">
+                        <img class="logo-light" src="https://www.apnapayment.com/website/img/logo/ApnaPayment200Black.png" alt="Apna Payment Logo" style="max-width: 180px; margin-bottom: 1rem;">
                     </div>
                     <p>Apna Payment Services Private Limited -  A-40, KARDHANI, GOVINDPURA,<br>
           JAIPUR, RAJASTHAN, 302012,<br>

@@ -1,10 +1,4 @@
-/* ===========================================================
-   profile.css — Full rewrite (Dark Warm Theme, spacious inputs)
-   - 3-column partner grid
-   - visible edit/delete/save UI
-   - tall, roomy input fields and textareas
-   - responsive and accessible
-   =========================================================== */
+/* profile.css */
 
 :root{
   --bg-page-1: #000000;

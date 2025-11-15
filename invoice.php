@@ -79,6 +79,7 @@ $grand = $totalAmount + $shipping;
   <meta charset="utf-8">
   <title>Invoice #<?php echo esc($order['id']); ?></title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="/public/css/styles.css">
   <link rel="stylesheet" href="public/css/invoice.css" />
 </head>
 <body>

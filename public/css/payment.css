@@ -1,9 +1,4 @@
-/* =======================
-   payment.css — Dark Warm Theme (structure preserved)
-   Converted from original light version; keep same selectors/layout.
-   ======================= */
-
-/* Theme variables (fallbacks) */
+/* payment.css */
 :root{
   --panel-dark: #0b0b0c;
   --panel-2: #101012;

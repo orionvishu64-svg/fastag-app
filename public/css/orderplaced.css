@@ -1,3 +1,4 @@
+/* orderplaced.css */
 body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;background:linear-gradient(180deg, #070707, #0b0b0c);}
 .order-success{text-align:center;background:#000000;padding:40px;border-radius:12px;box-shadow:0 4px 10px rgba(216, 174, 7, 0.301);}
 .order-success img{width:150px;margin-bottom:20px;}

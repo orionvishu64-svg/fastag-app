@@ -1,5 +1,4 @@
-/* order_details.css — Dark warm theme rewrite
-   Keeps original class names & layout but updates colors/contrast
+/* order_details.css
 */
 :root{
   --bg: #0b0b0c;                 /* page background */

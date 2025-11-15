@@ -49,6 +49,7 @@ try {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Conversation — <?= $ticket_id_public ?></title>
+  <link rel="stylesheet" href="/public/css/styles.css">
   <link rel="stylesheet" href="/public/css/conversation.css">
 </head>
 <body>

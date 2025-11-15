@@ -32,6 +32,7 @@ try {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>My Conversations</title>
+  <link rel="stylesheet" href="/public/css/styles.css">
   <link rel="stylesheet" href="/public/css/conversation_list.css">
 </head>
 <body>

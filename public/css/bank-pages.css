@@ -1,7 +1,4 @@
-/* ===========================================================
-   bank-pages.css — Dark Warm Theme + Light Cards (FINAL REFINED)
-   Visual hierarchy: Header + Categories = warm dark, Benefits = slightly deeper
-   =========================================================== */
+/* bank-pages.css */
 
 :root {
   --page-bg-1: #050404;
@@ -9,7 +6,6 @@
   --text-light: #eaeaea;
   --muted-light: #9aa0a6;
   --highlight: #ffb84d;
-
   --kotak-red: #e85c41;
   --sbi-blue: #1d4ed8;
   --bajaj-teal: #0ea5e9;
