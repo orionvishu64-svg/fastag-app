@@ -2,8 +2,6 @@
 // /config_auth.php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
-// NOTE: Some callers included this file for AJAX endpoints; keep header if desired.
-// If you include this file from page templates, you may want to remove the header().
 if (!headers_sent()) {
   header('Content-Type: application/json; charset=utf-8');
 }
@@ -11,14 +9,9 @@ if (!headers_sent()) {
 /* ----------------- Configuration constants ----------------- */
 const AUTH_COOKIE_NAME   = 'login_user';
 const AUTH_COOKIE_SECRET = 'CHANGE_ME_TO_A_LONG_RANDOM_SECRET_AT_LEAST_64_BYTES';
-/*
- * AUTH_COOKIE_TTL is seconds (default: 120 days).
- * You may change to any number of seconds you want the cookie to live.
- */
 const AUTH_COOKIE_TTL    = 60 * 60 * 24 * 365;
-
 const AUTH_COOKIE_PATH   = '/';
-const AUTH_COOKIE_DOMAIN = ''; // set if needed (e.g. '.example.com')
+const AUTH_COOKIE_DOMAIN = '';
 const AUTH_COOKIE_SAMESITE = 'Lax';
 
 /* ----------------- Low-level cookie helpers ----------------- */
@@ -52,10 +45,6 @@ function clearAuthCookie(): void {
     unset($_COOKIE[AUTH_COOKIE_NAME]);
 }
 
-/**
- * createAuthToken
- * - inserts token_hash into auth_tokens and returns raw token for client cookie
- */
 function createAuthToken(PDO $pdo, int $user_id, int $ttl = AUTH_COOKIE_TTL) : string {
     $raw = bin2hex(random_bytes(32)); // 64 hex chars
     $hash = hash('sha256', $raw);
@@ -75,13 +64,6 @@ function createAuthToken(PDO $pdo, int $user_id, int $ttl = AUTH_COOKIE_TTL) : s
     return $raw;
 }
 
-/**
- * verifyAuthToken
- * - Verifies raw token against auth_tokens table.
- * - If $rotate is true, removes the used DB row and creates a new token, returning the NEW raw token string.
- * - If $rotate is false, returns user_id (int) on success.
- * - Returns false on failure.
- */
 function verifyAuthToken(PDO $pdo, string $rawToken, bool $rotate = true) {
     $hash = hash('sha256', $rawToken);
     $now = (new DateTime())->format('Y-m-d H:i:s');
@@ -120,29 +102,17 @@ function verifyAuthToken(PDO $pdo, string $rawToken, bool $rotate = true) {
     }
 }
 
-/**
- * clearAuthTokenByHash
- * - removes a single token by its raw token hash (used on logout)
- */
 function clearAuthTokenByRaw(PDO $pdo, string $rawToken) : void {
     $hash = hash('sha256', $rawToken);
     $stmt = $pdo->prepare("DELETE FROM auth_tokens WHERE token_hash = :th");
     $stmt->execute([':th' => $hash]);
 }
 
-/**
- * clearAllTokensForUser
- * - optionally clear all tokens for a user (logout everywhere)
- */
 function clearAllTokensForUser(PDO $pdo, int $user_id) : void {
     $stmt = $pdo->prepare("DELETE FROM auth_tokens WHERE user_id = :uid");
     $stmt->execute([':uid' => $user_id]);
 }
 
-/* ----------------- Backwards-compatible (signed payload) helpers kept for reference -----------------
-   The project previously used a signed JSON payload cookie. We are now using random tokens,
-   but keeping these functions does not interfere. You may remove them if not used.
----------------------------------------------------------------------------- */
 function sign_token(array $payload): string {
     $b = base64_encode(json_encode($payload));
     $sig = hash_hmac('sha256', $b, AUTH_COOKIE_SECRET);

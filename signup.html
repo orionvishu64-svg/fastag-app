@@ -128,7 +128,7 @@
       const email = $('#emailInput').value.trim();
       if (!email) return say('Enter your email first');
       try {
-        const res = await fetch('/config/otp_send_email.php', {
+        const res = await fetch('/config/email_otp.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -150,7 +150,7 @@
       const code  = $('#emailOtp').value.trim();
       if (!/^\d{4,6}$/.test(code) && !/^\d{6}$/.test(code)) { /* accept 4-6 or 6 digits depending provider */ }
       try {
-        const res = await fetch('/config/otp_verify_email.php', {
+        const res = await fetch('/config/email_otp.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',

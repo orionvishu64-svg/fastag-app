@@ -1,6 +1,5 @@
 <?php
 // db.php
-
 // Database Settings
 $host = 'fastag-db.cfm8y6ie68r7.ap-south-1.rds.amazonaws.com';
 $dbname = 'myappdb';
