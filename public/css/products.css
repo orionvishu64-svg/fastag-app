@@ -13,8 +13,6 @@
   --warm-red: #e85c41;
   --warm-red-2: #f06a50;
   --accent-glow: rgba(255,184,77,0.12);
-
-  /* page/product-specific tokens */
   --card-radius: 12px;
   --radius-lg: 12px;
   --radius: 8px;
@@ -22,10 +20,8 @@
   --shadow-sm: 0 6px 18px rgba(0,0,0,0.5);
   --shadow-lg: 0 18px 60px rgba(0,0,0,0.6);
   --max-width: 1200px;
-
-  /* bank accent colors (kept but in darker tone) */
   --bank-kotak: rgba(232,92,65,0.9);
-  --bank-sbi: rgba(255,184,77,0.12); /* subtle alt for sbi accent on dark */
+  --bank-sbi: rgba(255,184,77,0.12);
   --bank-bajaj: rgba(255,184,77,0.14);
   --bank-idfc: rgba(232,92,65,0.12);
 }
@@ -304,8 +300,4 @@ img{max-width:100%;display:block;}
   .product-card:hover{transform:none !important;box-shadow:0 8px 24px rgba(0,0,0,0.5) !important;}
   .product-full-sheet .sheet-panel{transition:none !important;}
 }
-
-/* ---------- Active nav ---------- */
 .nav-link.active{color:var(--warm-yellow);font-weight:800;}
-
-/* ---------- End of file ---------- */

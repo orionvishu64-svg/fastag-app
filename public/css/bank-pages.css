@@ -1,57 +1,13 @@
-/* bank-pages.css */
+/* bank-pages.css
 
-:root {
-  --page-bg-1: #050404;
-  --page-bg-2: #0b0b0b;
-  --text-light: #eaeaea;
-  --muted-light: #9aa0a6;
-  --highlight: #ffb84d;
-  --kotak-red: #e85c41;
-  --sbi-blue: #1d4ed8;
-  --bajaj-teal: #0ea5e9;
-  --idfc-purple: #8b5cf6;
-
-  --card-radius: 12px;
-  --card-shadow: 0 18px 48px rgba(0, 0, 0, 0.85);
-  --card-shadow-soft: 0 8px 22px rgba(0, 0, 0, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.04);
-  --transition: 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
-  --max-width: 1200px;
-  --font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
-/* ========== RESET & BASE ========== */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-html,
-body {
-  height: 100%;
-}
-body {
-  font-family: var(--font-family);
-  background: linear-gradient(180deg, var(--page-bg-1), var(--page-bg-2));
-  color: var(--text-light);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-.container {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0 22px;
-}
-
-/* ========== HEADER ========== */
+/* ========== HEADER / PAGE HERO ========== */
 .bank-header {
   padding: 120px 0 60px;
   position: relative;
   overflow: hidden;
-  color: var(--text-light);
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 1px solid rgba(255,255,255,0.04); /* light glass border; kept here as page-specific */
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
+  color: var(--text);
 }
 .bank-header::before {
   content: "";
@@ -60,7 +16,9 @@ body {
   background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><pattern id='g' width='10' height='10' patternUnits='userSpaceOnUse'><path d='M10 0 L0 0 0 10' fill='none' stroke='%23ffffff' stroke-opacity='0.03' stroke-width='0.5'/></pattern></defs><rect width='100' height='100' fill='url(%23g)'/></svg>");
   opacity: 0.08;
   mix-blend-mode: overlay;
+  pointer-events: none;
 }
+
 .bank-header-content {
   display: flex;
   align-items: center;
@@ -68,24 +26,32 @@ body {
   position: relative;
   z-index: 1;
 }
+
+/* Bank logo (page-specific larger style) */
 .bank-logo-large img {
   max-width: 200px;
   height: auto;
   border-radius: 12px;
   box-shadow: 0 22px 48px rgba(0, 0, 0, 0.9);
+  display: block;
+  object-fit: contain;
 }
+
+/* Bank info text */
 .bank-info h1 {
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 12px;
-  color: var(--highlight);
+  color: var(--accent-warm); /* prefer global accent variable */
 }
 .bank-info p {
   font-size: 1.05rem;
-  color: var(--muted-light);
+  color: var(--muted);
   margin-bottom: 12px;
   line-height: 1.6;
 }
+
+/* Features row */
 .bank-features {
   display: flex;
   gap: 18px;
@@ -96,47 +62,45 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--muted-light);
+  color: var(--muted);
 }
 .feature-item i {
   font-size: 1.05rem;
-  color: var(--highlight);
+  color: var(--accent-warm);
 }
 
-/* ========== BANK THEMES ========== */
-/* Kotak header */
+/* ========== BANK THEMES (page-specific overrides) ========== */
+/* These override the header / section backgrounds for specific bank-themed pages.
+   They are intentionally page-scoped and therefore retained here. */
+
 .kotak-theme .bank-header {
   background: linear-gradient(135deg, #2a0404 0%, #0b0000 100%);
 }
-.kotak-theme .feature-item i { color: var(--kotak-red); }
+.kotak-theme .feature-item i { color: #e85c41; } /* kotak red */
 
-/* SBI header */
 .sbi-theme .bank-header {
   background: linear-gradient(135deg, #001637 0%, #020611 100%);
 }
-.sbi-theme .feature-item i { color: var(--sbi-blue); }
+.sbi-theme .feature-item i { color: #1d4ed8; } /* sbi blue */
 
-/* Bajaj header */
 .bajaj-theme .bank-header {
   background: linear-gradient(135deg, #012b2f 0%, #010608 100%);
 }
-.bajaj-theme .feature-item i { color: var(--bajaj-teal); }
+.bajaj-theme .feature-item i { color: #0ea5e9; } /* bajaj teal */
 
-/* IDFC header */
 .idfc-theme .bank-header {
   background: linear-gradient(135deg, #1c003c 0%, #07010b 100%);
 }
-.idfc-theme .feature-item i { color: var(--idfc-purple); }
+.idfc-theme .feature-item i { color: #8b5cf6; } /* idfc purple */
 
 /* ========== CATEGORY SECTION ========== */
 .categories-section {
   padding: 80px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   background: linear-gradient(180deg, rgba(10, 0, 0, 1) 0%, rgba(20, 0, 0, 0.98) 100%);
-  color: var(--text-light);
+  color: var(--text);
 }
 
-/* BANK-SPECIFIC GRADIENTS */
 .kotak-theme .categories-section {
   background: linear-gradient(180deg, #210202 0%, #0b0000 100%);
 }
@@ -150,7 +114,6 @@ body {
   background: linear-gradient(180deg, #1a0f2e 0%, #0a0016 100%);
 }
 
-/* HEADING STYLE */
 .categories-section h2 {
   font-size: 2.2rem;
   font-weight: 800;
@@ -159,9 +122,9 @@ body {
   animation: fadeGlow 1s ease both;
 }
 
-/* HEADING GLOW PER BANK */
+/* Heading glow per bank (kept as page-specific decorative override) */
 .kotak-theme .categories-section h2 {
-  color: #ffb84d;
+  color: var(--accent-warm);
   text-shadow: 0 0 10px rgba(232, 92, 65, 0.45), 0 0 20px rgba(232, 92, 65, 0.25);
 }
 .sbi-theme .categories-section h2 {
@@ -177,7 +140,7 @@ body {
   text-shadow: 0 0 10px rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.25);
 }
 
-/* CATEGORY GRID */
+/* CATEGORY GRID (page-specific layout) */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -187,15 +150,16 @@ body {
   padding: 0 22px;
 }
 
-/* ========== LIGHT CARDS ========== */
+/* ========== CATEGORY / LIGHT CARDS ========== */
+/* These card styles intentionally create a "light card" look on bank pages */
 .category-card {
   background: linear-gradient(180deg, #ffffff 0%, #f9f9f9 100%);
   color: #0f172a;
-  border-radius: var(--card-radius);
+  border-radius: 12px; /* keep moderate radius */
   padding: 16px;
   border: 2px solid rgba(0, 0, 0, 0.06);
   box-shadow: 0 8px 24px rgba(2, 6, 23, 0.08);
-  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+  transition: transform 0.22s cubic-bezier(0.2,0.9,0.3,1), box-shadow 0.22s cubic-bezier(0.2,0.9,0.3,1), border-color 0.22s cubic-bezier(0.2,0.9,0.3,1);
 }
 .category-card:hover {
   transform: translateY(-8px);
@@ -212,7 +176,7 @@ body {
 }
 .category-card h3 { font-size: 1rem; font-weight: 800; color: #0f172a; margin: 8px 0 6px; }
 .category-card p { color: #475569; margin: 0 0 10px; }
-.category-card .price { color: var(--highlight); font-weight: 900; font-size: 1.15rem; }
+.category-card .price { color: var(--accent-warm); font-weight: 900; font-size: 1.15rem; }
 .category-card .badge {
   background: #f3f4f6;
   color: #475569;
@@ -223,7 +187,7 @@ body {
   font-weight: 700;
 }
 
-/* ========== CARD ACCENTS BY BANK ========== */
+/* Card accents by bank (kept — page specific) */
 .kotak-theme .category-card { border-color: rgba(232, 92, 65, 0.15); }
 .kotak-theme .category-card:hover { border-color: rgba(232, 92, 65, 0.4); box-shadow: 0 24px 70px rgba(232,92,65,0.08); }
 
@@ -236,16 +200,16 @@ body {
 .idfc-theme .category-card { border-color: rgba(139, 92, 246, 0.15); }
 .idfc-theme .category-card:hover { border-color: rgba(139, 92, 246, 0.4); box-shadow: 0 24px 70px rgba(139,92,246,0.08); }
 
-/* PRICE ACCENTS */
-.kotak-theme .category-card .price { color: var(--kotak-red); }
-.sbi-theme .category-card .price { color: var(--sbi-blue); }
-.bajaj-theme .category-card .price { color: var(--bajaj-teal); }
-.idfc-theme .category-card .price { color: var(--idfc-purple); }
+/* Price accents */
+.kotak-theme .category-card .price { color: #e85c41; }
+.sbi-theme .category-card .price { color: #1d4ed8; }
+.bajaj-theme .category-card .price { color: #0ea5e9; }
+.idfc-theme .category-card .price { color: #8b5cf6; }
 
-/* ========== BENEFITS SECTION (DEEPER GRADIENT) ========== */
+/* ========== BENEFITS SECTION ========== */
 .benefits-section {
   padding: 80px 0;
-  color: var(--text-light);
+  color: var(--text);
   background: linear-gradient(180deg, rgba(5, 5, 5, 0.96) 0%, rgba(10, 0, 0, 0.99) 100%);
 }
 .kotak-theme .benefits-section {
@@ -265,7 +229,7 @@ body {
   text-align: center;
   font-size: 2.3rem;
   font-weight: 700;
-  color: var(--highlight);
+  color: var(--accent-warm);
   margin-bottom: 50px;
 }
 .benefits-grid {
@@ -279,26 +243,26 @@ body {
   border-radius: 14px;
   background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
   border: 1px solid rgba(255,255,255,0.04);
-  box-shadow: var(--card-shadow-soft);
-  transition: transform var(--transition), box-shadow var(--transition);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.6);
+  transition: transform 0.22s cubic-bezier(0.2,0.9,0.3,1), box-shadow 0.22s cubic-bezier(0.2,0.9,0.3,1);
 }
 .benefit-card:hover {
   transform: translateY(-8px);
-  box-shadow: var(--card-shadow);
-  border-color: var(--highlight);
+  box-shadow: 0 18px 48px rgba(0,0,0,0.85);
+  border-color: var(--accent-warm);
 }
 .benefit-card i { font-size: 2.8rem; margin-bottom: 12px; }
-.kotak-theme .benefit-card i { color: var(--kotak-red); }
-.sbi-theme .benefit-card i { color: var(--sbi-blue); }
-.bajaj-theme .benefit-card i { color: var(--bajaj-teal); }
-.idfc-theme .benefit-card i { color: var(--idfc-purple); }
-.benefit-card h3 { color: var(--text-light); font-weight: 700; margin-bottom: 8px; }
-.benefit-card p { color: var(--muted-light); }
+.kotak-theme .benefit-card i { color: #e85c41; }
+.sbi-theme .benefit-card i { color: #1d4ed8; }
+.bajaj-theme .benefit-card i { color: #0ea5e9; }
+.idfc-theme .benefit-card i { color: #8b5cf6; }
+.benefit-card h3 { color: var(--text); font-weight: 700; margin-bottom: 8px; }
+.benefit-card p { color: var(--muted); }
 
-/* ========== UTILITIES & ANIMATIONS ========== */
+/* ========== UTILITIES & ANIMATIONS (page-specific) ========== */
 .fade-in { opacity: 0; transform: translateY(30px); transition: all .6s ease; }
 .fade-in.visible { opacity: 1; transform: translateY(0); }
-.loading { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.12); border-radius: 50%; border-top-color: var(--highlight); animation: spin 1s linear infinite; }
+.loading { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.12); border-radius: 50%; border-top-color: var(--accent-warm); animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fadeGlow { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
 

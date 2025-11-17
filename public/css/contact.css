@@ -1,31 +1,5 @@
-/* Contact Page */
-:root{
-  --panel-dark: #0f0f10;
-  --panel-2: #141414;
-  --text: #f3f3f3;
-  --muted: #b0b0b0;
-  --warm-yellow: #ffb84d;
-  --warm-red: #e85c41;
-  --card-radius: 12px;
-  --shadow-soft: 0 12px 34px rgba(0,0,0,0.6);
-}
-
-/* =========================
-   Base Styles
-========================= */
-body{
-  margin:0;
-  padding:0;
-  font-family:'Arial',sans-serif;
-  background: linear-gradient(180deg,var(--panel-dark), #070707);
-  color:var(--text);
-  line-height:1.6;
-}
-.container{max-width:1200px;margin:0 auto;padding:20px;}
-
-/* =========================
-   Contact Layout
-========================= */
+/* contact.cleaned.css */
+/* ========== CONTACT LAYOUT / HERO ========== */
 .contact-header{
   background: url("https://www.stitchtools.com/assets/images/contact/contact-banner.jpg") no-repeat center center/cover;
   min-height:250px;
@@ -44,22 +18,23 @@ body{
 }
 .contact-header *{position:relative;z-index:2;}
 
+/* page content */
 .contact-content{padding:40px 0;}
 .contact-grid{display:grid;grid-template-columns:1fr 2fr;gap:30px;}
+
+/* cards (info/form/emergency) */
 .info-card,.form-card,.emergency-card{
-  background: linear-gradient(180deg, var(--panel-dark), var(--panel-2));
+  background: linear-gradient(180deg, var(--panel-1), var(--panel-2));
   padding:20px;
-  border-radius:12px;
+  border-radius:var(--card-radius,12px);
   box-shadow:var(--shadow-soft);
   margin-bottom:20px;
-  border:1px solid rgba(255, 255, 255, 0);
+  border:1px solid rgba(255,255,255,0);
   color:var(--text);
 }
 
-/* =========================
-   Quick Help
-========================= */
-.quick-help h3{margin-top:20px;font-size:18px;color:var(--warm-yellow);border: 1px solid rgba(255, 255, 255, 0.104) }
+/* quick help */
+.quick-help h3{margin-top:20px;font-size:18px;color:var(--accent-warm);border: 1px solid rgba(255,255,255,0.104);}
 .help-buttons{display:flex;flex-direction:column;gap:10px;}
 .help-btn{
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255, 255, 255, 0.205));
@@ -69,24 +44,25 @@ body{
   font-size:14px;
   cursor:pointer;
   text-align:left;
-  transition:background 0.18s ease, transform .12s ease;
+  transition:background .18s ease, transform .12s ease;
   color:var(--text);
-  border:1px solid rgba(255, 255, 255, 0.325);
+  border:1px solid rgba(255,255,255,0.325);
   box-shadow:0 6px 18px rgba(0,0,0,0.6);
 }
-.help-btn:hover{background:linear-gradient(90deg, rgba(255,184,77,0.06), rgba(232,92,65,0.03)); transform:translateY(-2px);}
+.help-btn:hover{
+  background:linear-gradient(90deg, rgba(255,184,77,0.06), rgba(232,92,65,0.03));
+  transform:translateY(-2px);
+}
 
-/* =========================
-   Form
-========================= */
-.form-card{padding:30px;background:linear-gradient(180deg,var(--panel-dark),var(--panel-2));}
+/* ========== FORM ========== */
+.form-card{padding:30px;background:linear-gradient(180deg,var(--panel-1),var(--panel-2));}
 .contact-form{display:flex;flex-direction:column;gap:15px;}
 .form-row{display:flex;gap:15px;}
 .form-group{flex:1;display:flex;flex-direction:column;}
 label{font-weight:bold;margin-bottom:5px;color:var(--muted);}
 input,select,textarea{
   padding:10px;
-  border:1px solid rgba(255, 255, 255, 0.163);
+  border:1px solid rgba(255,255,255,0.163);
   border-radius:8px;
   font-size:14px;
   background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
@@ -99,14 +75,13 @@ input,select,textarea{
 }
 textarea{resize:vertical;}
 input::placeholder, textarea::placeholder{color:rgba(243,243,243,0.32);}
-input:focus,textarea:focus,select:focus{outline:none;border-color:var(--warm-yellow);box-shadow:0 8px 26px rgba(255,184,77,0.04);}
-
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent-warm);box-shadow:0 8px 26px rgba(255,184,77,0.04);}
 .checkbox-group{display:flex;align-items:center;gap:8px;color:var(--muted);}
-.checkbox-group input[type="checkbox"]{width:18px;height:18px;accent-color:var(--warm-yellow);}
+.checkbox-group input[type="checkbox"]{width:18px;height:18px;accent-color:var(--accent-warm);}
 
 /* submit button */
 .submit-btn{
-  background: linear-gradient(90deg,var(--warm-yellow), #ffcf73);
+  background: linear-gradient(90deg,var(--accent-warm), var(--accent-warm-2, #ffcf73));
   color:#111;
   padding:12px 20px;
   border:none;
@@ -120,13 +95,11 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--warm-yel
 .submit-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(255,184,77,0.12);}
 #successMessage{display:none;margin-top:20px;color:#4ade80;font-weight:600;}
 
-/* =========================
-   Conversation
-========================= */
+/* ========== CONVERSATION / MESSAGES ========== */
 #conversationBox{
   margin-top:30px;padding:20px;
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border-radius:12px;border:1px solid rgba(255,255,255,0.03);
+  border-radius:var(--card-radius,12px);border:1px solid rgba(255,255,255,0.03);
 }
 #messagesThread{
   max-height:250px;overflow-y:auto;padding:10px;border-radius:8px;margin-bottom:15px;
@@ -149,27 +122,21 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--warm-yel
 #replyForm button{background: linear-gradient(90deg,#34d399,#10b981);color:#071214;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;transition:transform .12s ease;}
 #replyForm button:hover{transform:translateY(-2px);}
 
-/* =========================
-   Emergency Contact
-========================= */
+/* ========== EMERGENCY CONTACT ========== */
 .emergency-contact{padding:60px 0;text-align:center;}
-.emergency-card{padding:30px;background:linear-gradient(180deg,var(--panel-dark),var(--panel-2));}
+.emergency-card{padding:30px;background:linear-gradient(180deg,var(--panel-1),var(--panel-2));}
 .emergency-btn{
-  background: linear-gradient(90deg,var(--warm-red), #f06a50);
+  background: linear-gradient(90deg,var(--accent-warm-red), var(--accent-warm-red-2, #f06a50));
   color:#fff;padding:14px 24px;border:none;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;
   box-shadow:0 12px 36px rgba(232,92,65,0.08);
 }
 .emergency-btn:hover{transform:translateY(-2px);box-shadow:0 20px 48px rgba(232,92,65,0.12);}
 
-/* =========================
-   Header text styling
-========================= */
-.contact-header h1{font-size:2.2rem;margin:0 0 6px;color:var(--warm-yellow);}
+/* header text styling (kept) */
+.contact-header h1{font-size:2.2rem;margin:0 0 6px;color:var(--accent-warm);}
 .contact-header p{font-size:1rem;margin:0;color:var(--muted);}
 
-/* =========================
-   Responsive (preserved)
-========================= */
+/* ========== RESPONSIVE ========== */
 @media (max-width:992px){
   .contact-grid{grid-template-columns:1fr;gap:2rem;}
   .form-row{flex-direction:column;}
@@ -194,5 +161,5 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--warm-yel
   .contact-content,.emergency-contact{padding:40px 0;}
 }
 
-/* Accessibility focus */
+/* Accessibility focus (kept global focus behavior) */
 :focus{outline:3px solid rgba(255,184,77,0.08);outline-offset:2px;}

@@ -1,52 +1,24 @@
-/* conversation_list.css */
-:root{
-  --bg-dark: #0b0b0c;
-  --panel-dark: #0f0f10;
-  --panel-2: #141414;
-  --text: #f3f3f3;
-  --muted: #b0b0b0;
-  --warm-yellow: #ffb84d;
-  --warm-yellow-2: #ffcf73;
-  --warm-red: #e85c41;
-  --card-bg: linear-gradient(180deg, rgba(18,18,18,0.85), rgba(14,14,14,0.9));
-  --radius:14px;
-  --shadow: 0 14px 36px rgba(0,0,0,0.75);
-  --shadow-soft: 0 20px 40px rgba(0,0,0,0.6);
-  --font: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-  --maxw:1100px;
-  --glass-border: rgba(255,255,255,0.04);
-}
+/* conversation_list.cleaned.css
+   Cleaned to rely on global styles.css (no :root, no global resets).
+   Replaced page-local token usage with global variables so theme toggles apply.
+   Kept only page-specific layout, card/table styles, responsive conversions and interactions.
+*/
 
-/* ---------- Base Layout ---------- */
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;padding:0;}
-body{
-  font-family:var(--font);
-  color:var(--text);
-  background:
-    radial-gradient(900px 400px at 8% 10%, rgba(255,184,77,0.02), transparent),
-    linear-gradient(180deg,var(--bg-dark), #070707);
-  display:flex;
-  justify-content:center;
-  padding:28px;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-}
-
-/* Wrapper for entire page */
+/* ---------- Wrapper for entire page ---------- */
 .convo-page{
   width:100%;
-  max-width:var(--maxw);
+  max-width:var(--max-width,1100px);
   display:flex;
   flex-direction:column;
   gap:22px;
+  margin: 0 auto;
 }
 
 /* ---------- Top Header Card ---------- */
 .info-card{
   width:100%;
   background: linear-gradient(180deg, rgba(255,184,77,0.03), rgba(232,92,65,0.02));
-  border-radius:var(--radius);
+  border-radius:var(--card-radius);
   box-shadow:var(--shadow-soft);
   border:1px solid rgba(255,255,255,0.03);
   padding:20px 26px;
@@ -58,7 +30,7 @@ body{
 .info-card h1{
   font-size:22px;
   font-weight:800;
-  color:var(--warm-yellow);
+  color:var(--accent-warm);
   margin:0;
 }
 .info-card a{
@@ -66,31 +38,31 @@ body{
   background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.17));
   padding:10px 16px;
   border-radius:10px;
-  color: #fff;
+  color: var(--text);
   font-weight:700;
   border:1px solid rgba(255, 255, 255, 0.17);
   box-shadow:0 8px 20px rgba(0,0,0,0.6);
   transition:all .12s ease;
 }
 .info-card a:hover{
-  background: linear-gradient(180deg, var(--warm-yellow), var(--warm-yellow-2));
+  background: linear-gradient(180deg, var(--accent-warm), var(--accent-warm-2));
   color: #000;
   transform:translateY(-1px);
   filter:brightness(1.06);
 }
 
-/* ---------- Main Table Card ---------- */
+/* ---------- Main Card / Table ---------- */
 .main-card{
-  background: var(--card-bg);
-  border-radius:var(--radius);
-  box-shadow:var(--shadow);
+  background: var(--card-bg, linear-gradient(180deg, rgba(18,18,18,0.85), rgba(14,14,14,0.9)));
+  border-radius:var(--card-radius);
+  box-shadow:0 14px 36px rgba(0,0,0,0.75);
   border:1px solid rgba(255,255,255,0.03);
   padding:20px 22px;
   width:100%;
   overflow:auto;
 }
 
-/* desktop table */
+/* Desktop table */
 .main-card table{
   width:100%;
   border-collapse:collapse;
@@ -100,7 +72,7 @@ body{
 .main-card th{
   text-align:left;
   font-weight:700;
-  color:var(--warm-yellow-2);
+  color:var(--accent-warm-2);
   padding:12px 14px;
   border-bottom:1px solid rgba(255,255,255,0.03);
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
@@ -120,7 +92,7 @@ tr.closed td{
   color: #ffc7b8cc;
 }
 
-/* ---------- Buttons ---------- */
+/* Buttons */
 .btn{
   padding:8px 12px;
   border-radius:10px;
@@ -131,26 +103,36 @@ tr.closed td{
 }
 .btn-open{
   background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.23));
-  color: #ffcf73;
+  color: var(--accent-warm-2);
   border: 1px solid rgba(255, 255, 255, 0.21);
   box-shadow:0 8px 18px rgba(232,92,65,0.12);
 }
-.btn-open:hover{ transform:translateY(-2px); filter:brightness(1.02); background: linear-gradient(90deg, rgba(255,184,77,1), rgba(232,92,65,1)); color: #ffffff;}
+.btn-open:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.02);
+  background: linear-gradient(90deg, var(--accent-warm), var(--accent-warm-2));
+  color: #ffffff;
+}
 .btn-view{
   background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.23));
-  color: #e85c41;
+  color: var(--accent-warm-red);
   border: 1px solid rgba(255, 255, 255, 0.21);
   box-shadow:0 8px 18px rgba(255,184,77,0.10);
 }
-.btn-view:hover{ transform:translateY(-2px); filter:brightness(1.02); background: linear-gradient(90deg, rgba(232,92,65,1), rgba(255,184,77,1)); color: #ffffff;}
+.btn-view:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.02);
+  background: linear-gradient(90deg, var(--accent-warm-red), var(--accent-warm));
+  color: #ffffff;
+}
 
-/* Fine-tune table rows for better dark readability */
+/* Table row interactions */
 .main-card tbody tr{ transition:background .14s ease, transform .12s ease; }
 .main-card tbody tr:hover{ transform:translateY(-3px); box-shadow:0 12px 30px rgba(0,0,0,0.6); }
 
 /* ---------- Responsive: convert rows to cards on small screens ---------- */
 @media (max-width:800px){
-  body{padding:16px;}
+  /* page padding handled by layout; make info-card stack */
   .info-card{flex-direction:column;gap:10px;text-align:center;}
   .info-card h1{font-size:20px;}
   .info-card a{margin-top:4px;}
@@ -164,7 +146,7 @@ tr.closed td{
   }
   .main-card tr{
     margin-bottom:12px;
-    border-radius:12px;
+    border-radius:var(--card-radius);
     padding:12px;
     box-shadow:0 6px 18px rgba(0,0,0,0.5);
     border:1px solid rgba(255,255,255,0.02);
@@ -189,7 +171,7 @@ tr.closed td{
     width:36%;
     min-width:95px;
     font-weight:700;
-    color:var(--warm-yellow-2);
+    color:var(--accent-warm-2);
     text-transform:capitalize;
     font-size:13px;
   }
@@ -204,25 +186,25 @@ tr.closed td{
     flex:0 0 auto;
     width:auto;
   }
+}
 
-  /* if extremely narrow, stack label and value vertically for readability */
-  @media (max-width:420px){
-    .main-card td{
-      flex-direction:column;
-      align-items:flex-start;
-    }
-    .main-card td::before{
-      width:auto;
-      margin-bottom:6px;
-    }
-    .main-card .actions-wrap{
-      width:100%;
-    }
-    .main-card .btn{
-      width:100%;
-      text-align:center;
-      padding:10px;
-    }
+/* nested smaller-device stacking */
+@media (max-width:420px){
+  .main-card td{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .main-card td::before{
+    width:auto;
+    margin-bottom:6px;
+  }
+  .main-card .actions-wrap{
+    width:100%;
+  }
+  .main-card .btn{
+    width:100%;
+    text-align:center;
+    padding:10px;
   }
 }
 
@@ -231,7 +213,6 @@ tr.closed td{
   .info-card h1{font-size:18px;}
   .info-card{padding:16px;}
   .main-card{padding:14px;}
-  body{padding:12px;}
 }
 /* reduced-motion support */
 @media (prefers-reduced-motion: reduce){

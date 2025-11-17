@@ -1,44 +1,10 @@
 /* blog.css */
-
-:root {
-  --container-width: 1200px;
-  --bg-dark: #0b0b0c;
-  --muted: #b0b0b0;
-  --text: #f3f3f3;
-  --warm-yellow: #ffb84d;
-  --warm-yellow-2: #ffcb6b;
-  --warm-red: #e85c41;
-  --warm-red-2: #f06a50;
-  --card-bg: #0f1113;
-  --card-border: rgba(255, 255, 255, 0.04);
-  --glass: rgba(255, 255, 255, 0.03);
-  --round: 12px;
-  --shadow-sm: 0 8px 30px rgba(0, 0, 0, 0.6);
-}
-
-body {
-  background: var(--bg-dark);
-  color: var(--text);
-  font-family: "Inter", "Poppins", sans-serif;
-  margin: 0;
-  padding: 0;
-  line-height: 1.6;
-}
-
-/* ----------------- Container ----------------- */
-.container {
-  max-width: var(--container-width);
-  margin: 0 auto;
-  padding: 0 20px;
-  box-sizing: border-box;
-}
-
 /* ----------------- Header / Hero ----------------- */
 .blog-header {
   padding: 110px 0 40px;
   background: linear-gradient(180deg, rgba(11, 11, 12, 0.95), rgba(15, 15, 16, 0.95)),
-    url('assets/img/hero-pattern.jpg') center/cover no-repeat;
-  color: var(--text);
+              url('assets/img/hero-pattern.jpg') center/cover no-repeat;
+  color: #f3f3f3;
   position: relative;
   overflow: hidden;
 }
@@ -52,7 +18,7 @@ body {
   font-weight: 800;
   letter-spacing: -0.5px;
   margin-bottom: 8px;
-  color: var(--warm-yellow);
+  color: #ffb84d;
   text-shadow: 0 3px 20px rgba(255, 184, 77, 0.25);
 }
 
@@ -71,10 +37,10 @@ body {
 }
 
 .post-card {
-  background: linear-gradient(180deg, var(--card-bg), #0c0d0e);
-  border-radius: var(--round);
-  border: 1px solid var(--card-border);
-  box-shadow: var(--shadow-sm);
+  background: linear-gradient(180deg, #0f1113, #0c0d0e);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -114,7 +80,7 @@ body {
   top: 12px;
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, var(--warm-yellow), var(--warm-red));
+  background: linear-gradient(135deg, #ffb84d, #e85c41);
   border-radius: 10px;
   opacity: 0;
   transform: translateY(-6px);
@@ -140,13 +106,13 @@ body {
   gap: 10px;
   align-items: center;
   font-size: 12px;
-  color: var(--muted);
+  color: #b0b0b0;
   flex-wrap: wrap;
 }
 
 .post-meta .category {
   background: rgba(255, 184, 77, 0.07);
-  color: var(--warm-yellow);
+  color: #ffb84d;
   padding: 6px 10px;
   border-radius: 999px;
   font-weight: 700;
@@ -155,13 +121,13 @@ body {
 
 .post-meta .read-time {
   font-weight: 600;
-  color: var(--muted);
+  color: #b0b0b0;
 }
 
 .post-title {
   font-size: 18px;
   font-weight: 800;
-  color: var(--text);
+  color: #f3f3f3;
   margin: 0;
   line-height: 1.3;
 }
@@ -175,7 +141,7 @@ body {
 .author {
   margin-top: auto;
   font-size: 13px;
-  color: var(--muted);
+  color: #b0b0b0;
 }
 
 /* ----------------- Pagination ----------------- */
@@ -188,7 +154,7 @@ body {
 }
 
 .pagination a {
-  color: var(--warm-red);
+  color: #e85c41;
   text-decoration: none;
   padding: 8px 12px;
   border-radius: 8px;
@@ -213,14 +179,14 @@ body {
 .single-article h1 {
   font-size: 34px;
   font-weight: 800;
-  color: var(--warm-yellow);
+  color: #ffb84d;
   letter-spacing: -0.3px;
   margin: 0 0 10px;
   text-shadow: 0 3px 20px rgba(255, 184, 77, 0.25);
 }
 
 .single-article .meta {
-  color: var(--muted);
+  color: #b0b0b0;
   font-size: 14px;
   display: flex;
   gap: 12px;
@@ -230,7 +196,7 @@ body {
 
 .single-article .meta .category {
   background: rgba(232, 92, 65, 0.08);
-  color: var(--warm-red);
+  color: #e85c41;
   padding: 4px 8px;
   border-radius: 999px;
   font-weight: 700;
@@ -262,7 +228,7 @@ body {
 
 .single-content h2 {
   font-size: 22px;
-  color: var(--warm-yellow);
+  color: #ffb84d;
   margin: 26px 0 12px;
 }
 
@@ -294,7 +260,7 @@ body {
   height: 42px;
   border-radius: 50%;
   font-size: 18px;
-  color: var(--text);
+  color: #f3f3f3;
   transition: transform 0.2s ease;
 }
 
@@ -311,12 +277,12 @@ body {
 }
 
 .share-btn[data-share="copy"] {
-  background: linear-gradient(180deg, var(--warm-yellow), var(--warm-yellow-2));
+  background: linear-gradient(180deg, #ffb84d, #ffcb6b);
   color: #000;
 }
 
 .share-btn[data-share="email"] {
-  background: linear-gradient(180deg, var(--warm-red), var(--warm-red-2));
+  background: linear-gradient(180deg, #e85c41, #f06a50);
   color: #fff;
 }
 
@@ -335,7 +301,7 @@ body {
   font-size: 20px;
   font-weight: 700;
   margin: 8px 0 18px;
-  color: var(--text);
+  color: #f3f3f3;
 }
 
 .related-grid {
@@ -345,8 +311,7 @@ body {
   margin-bottom: 40px;
 }
 
-/* ----------------- Buttons ----------------- */
-/* ----------------- Go Back Button (Refined) ----------------- */
+/* ----------------- Buttons: Go Back (page override) ----------------- */
 .btn.btn-back {
   display: inline-block;
   font-size: 13px !important;
@@ -354,7 +319,7 @@ body {
   padding: 6px 14px !important;
   border-radius: 8px !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  color: var(--text) !important;
+  color: #f3f3f3 !important;
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)) !important;
   text-decoration: none !important;
   cursor: pointer;
@@ -364,7 +329,7 @@ body {
 }
 
 .btn.btn-back:hover {
-  background: linear-gradient(90deg, var(--warm-yellow), var(--warm-yellow-2)) !important;
+  background: linear-gradient(90deg, #ffb84d, #ffcb6b) !important;
   color: #000 !important;
   border-color: transparent !important;
   transform: translateY(-2px);
@@ -399,21 +364,15 @@ body {
   }
 }
 
-/* ----------------- Utilities ----------------- */
+/* ----------------- Accessibility / Focus ----------------- */
 .post-card:focus-within,
 .post-card a:focus {
   outline: 2px solid rgba(255, 184, 77, 0.12);
   box-shadow: 0 14px 36px rgba(255, 184, 77, 0.08);
 }
 
-.center {
-  text-align: center;
-}
-
-.text-muted {
-  color: var(--muted);
-}
-/* --- Remove unwanted underline and link styles in blog cards --- */
+/* ----------------- Utilities (removed duplicates for global .center/.text-muted) --- */
+/* post-link rules kept */
 .post-link {
   text-decoration: none;
   color: inherit;
@@ -424,8 +383,8 @@ body {
   color: inherit !important;
 }
 
-/* optional: keep a subtle color shift on hover if you like */
+/* subtle hover title effect */
 .post-card:hover .post-title {
-  color: var(--warm-yellow);
+  color: #ffb84d;
   text-shadow: 0 0 8px rgba(255,184,77,0.25);
 }

@@ -1,25 +1,14 @@
-/* cart.css */
-
-/* Theme tokens */
-:root {
-  --bg-1: #111;
-  --bg-2: #1a1a1a;
-  --panel: #181818;
-  --panel-2: #141414;
-  --muted: #bbb;
-  --text: #f5f5f5;
-  --accent: #ffb84d;
-  --accent-strong: #ff6600;
-  --card-radius: 12px;
-  --gap: 16px;
-  --shadow-soft: 0 8px 22px rgba(0,0,0,0.5);
-}
+/* cart.cleaned.css
+   Cleaned to rely on global styles.css.
+   Removed page :root and global base rules (body, container, resets).
+   Kept only cart-page specific selectors, responsive rules and animations.
+*/
 
 /* ---------- Page / container ---------- */
 .cart-section {
   padding: 120px 0 80px;
   margin-top: 80px;
-  background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
+  background: linear-gradient(180deg, var(--bg-start, #111), var(--bg-end, #1a1a1a));
   min-height: 100vh;
   color: var(--text);
   box-sizing: border-box;
@@ -117,9 +106,10 @@
   color: #fff;
 }
 
+/* ---------- Cart item ---------- */
 .cart-item {
   display: flex;
-  flex-wrap: wrap;           
+  flex-wrap: wrap;
   gap: 1.2rem;
   align-items: flex-start;
   justify-content: space-between;
@@ -135,7 +125,7 @@
   box-shadow: 0 10px 28px rgba(0,0,0,0.55);
 }
 
-/* image block (fixed area in first flex row) */
+/* image block */
 .item-image {
   flex: 0 0 80px;
   min-width: 80px;
@@ -151,10 +141,10 @@
   border: 1px solid rgba(255,255,255,0.02);
 }
 
-/* details column (name / badges / price) - stays in first row */
+/* details column */
 .item-details {
   flex: 1 1 auto;
-  min-width: 0;             
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -169,7 +159,7 @@
   flex-wrap: wrap;
 }
 
-/* Name: allow wrapping if necessary but prefer single line */
+/* Name: prefer single line with ellipsis */
 .item-name {
   font-size: 1.125rem;
   font-weight: 600;
@@ -210,7 +200,7 @@
   color: #ff9900;
 }
 
-/* price remains pinned to the right on the meta row */
+/* price pinned to the right */
 .item-price {
   flex: 0 0 auto;
   margin-left: auto;
@@ -220,6 +210,7 @@
   white-space: nowrap;
 }
 
+/* actions column */
 .item-actions {
   flex: 0 0 auto;
   display: flex;
@@ -229,7 +220,7 @@
   min-width: 120px;
 }
 
-/* quantity controls & input (if using input) */
+/* quantity controls & input */
 .quantity-controls {
   display: flex;
   gap: 8px;

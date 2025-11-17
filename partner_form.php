@@ -7,7 +7,6 @@ if (empty($_SESSION['user']['id'])) {
     header("Location: /index.html");
     exit();
 }
-
 $user_id = (int)$_SESSION['user']['id'];
 $error_gv = $error_partner = $success_gv = $success_partner = $success_delete = "";
 
@@ -82,12 +81,12 @@ $savedPartners = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <link rel="stylesheet" href="/public/css/partner.css">
 </head>
 
-<body>
+<body class="partner-page">
 <div class="nav-logo">
   <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png" alt="ApnaPayment">
 </div>
 
-<div class="container">
+<div class="partner-container">
   <h2>Partner Information</h2>
   <p>Please fill this form to continue</p>
 

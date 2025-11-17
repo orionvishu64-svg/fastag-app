@@ -1,119 +1,143 @@
-/* Refund-cancel.css */
+/* Refund-cancel.css
+   Updated to use variables from styles.css (no layout changes)
+   Preserves original selectors & structure exactly, only replaces hard-coded colors/tokens.
+*/
 
+/* HERO */
 .refund-hero{
   background: linear-gradient(135deg, rgba(11,11,12,0.92) 0%, rgba(15,15,16,0.95) 100%);
   color: var(--text, #f3f3f3);
-  padding:120px 0 80px;
-  position:relative;
-  overflow:hidden;
-  border-bottom:1px solid rgba(255,255,255,0.03);
+  padding: 120px 0 80px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
 }
 
 /* subtle grain overlay tuned to warm glow */
 .refund-hero::before{
-  content:"";
-  position:absolute;
-  top:0;left:0;right:0;bottom:0;
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
   background:
     linear-gradient(180deg, rgba(255,184,77,0.02), rgba(232,92,65,0.02)),
     url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.03)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.03)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.02)"/></pattern></defs><rect width="100" height="100" fill="%23grain"/></svg>');
-  opacity:0.22;
-  z-index:1;
+  opacity: 0.22;
+  z-index: 1;
+  mix-blend-mode: overlay;
+  pointer-events: none;
 }
 
 /* content */
-.hero-content{text-align:center;position:relative;z-index:2;}
-.hero-content h1{
-  font-size:3.5rem;
-  font-weight:700;
-  margin-bottom:1rem;
-  text-shadow:0 6px 20px rgba(255,184,77,0.06);
-  color:var(--warm-yellow,#ffb84d);
+.hero-content {
+  text-align: center;
+  position: relative;
+  z-index: 2;
 }
+
+.hero-content h1{
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 0 6px 20px var(--accent-glow, rgba(255,184,77,0.06));
+  color: var(--accent-warm, var(--warm-yellow, #ffb84d));
+}
+
 .hero-content p{
-  font-size:1.25rem;
-  margin-bottom:2rem;
-  opacity:0.95;
-  max-width:720px;
-  margin-left:auto;
-  margin-right:auto;
-  color:var(--muted,#b0b0b0);
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  opacity: 0.95;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  color: var(--muted, #b0b0b0);
 }
 
 /* last updated chip styled to match the theme */
 .last-updated{
-  display:inline-flex;
-  align-items:center;
-  gap:0.5rem;
-  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  padding:0.75rem 1.5rem;
-  border-radius:50px;
-  backdrop-filter:blur(8px);
-  border:1px solid rgba(255,255,255,0.03);
-  color:var(--text);
-  box-shadow:0 6px 18px rgba(0,0,0,0.6);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.03);
+  color: var(--text, #f3f3f3);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
 }
-.last-updated i{color:var(--warm-yellow,#ffb84d);}
+.last-updated i{
+  color: var(--accent-warm, var(--warm-yellow, #ffb84d));
+}
 
-/* main content sheet — inverted to dark card look */
+/* main content sheet — keep original sizes and spacing */
 .refund-content{
-  background: linear-gradient(180deg, var(--panel-dark,#0f0f10), var(--panel-2,#141414));
-  border-radius:12px;
-  padding:2.5rem;
-  box-shadow:0 18px 60px rgba(0,0,0,0.6);
-  border:1px solid rgba(255,255,255,0.03);
-  color:var(--text);
+  background: linear-gradient(180deg, var(--panel-1, #0f0f10), var(--panel-2, #141414));
+  border-radius: var(--card-radius, 12px);
+  padding: 2.5rem;
+  box-shadow: var(--shadow-soft, 0 18px 60px rgba(0,0,0,0.6));
+  border: 1px solid rgba(255,255,255,0.03);
+  color: var(--text, #f3f3f3);
 }
 
 /* content header and spacing */
-.content-header{margin-bottom:2rem;}
+.content-header{ margin-bottom: 2rem; }
+
+/* reading progress bar (keeps fixed position and size) */
 .reading-progress{
-  position:fixed;
-  top:72px; /* slightly below header */
-  left:0;
-  width:100%;
-  height:8px; /* slimmer for dark UI */
-  background:rgba(255,255,255,0.02);
-  z-index:999;
+  position: fixed;
+  top: 72px; /* slightly below header */
+  left: 0;
+  width: 100%;
+  height: 8px; /* slimmer for dark UI */
+  background: rgba(255,255,255,0.02);
+  z-index: 999;
 }
 .progress-bar{
-  height:100%;
-  background: linear-gradient(90deg, var(--warm-red,#e85c41), var(--warm-yellow,#ffb84d));
-  width:0%;
-  transition:width 0.28s ease;
-  box-shadow:0 6px 18px rgba(255,184,77,0.06) inset;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-warm-red, var(--warm-red, #e85c41)), var(--accent-warm, var(--warm-yellow, #ffb84d)));
+  width: 0%;
+  transition: width 0.28s ease;
+  box-shadow: 0 6px 18px var(--accent-glow, rgba(255,184,77,0.06)) inset;
 }
 
-/* content sections */
-.content-section{margin-bottom:3rem;scroll-margin-top:120px;}
+/* content sections (typography preserved) */
+.content-section{
+  margin-bottom: 3rem;
+  scroll-margin-top: 120px;
+}
 .content-section h2{
-  font-size:1.75rem;
-  font-weight:600;
-  color:var(--warm-yellow,#ffb84d);
-  margin-bottom:1rem;
-  padding-bottom:0.5rem;
-  border-bottom:2px solid rgba(255,184,77,0.04);
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--accent-warm, var(--warm-yellow, #ffb84d));
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(255,184,77,0.04);
 }
 .content-section p{
-  color:var(--muted,#b0b0b0);
-  line-height:1.8;
-  margin-bottom:1rem;
+  color: var(--muted, #b0b0b0);
+  line-height: 1.8;
+  margin-bottom: 1rem;
 }
 
-/* subtle link / inline emphasis */
+/* subtle link / inline emphasis (use global accent) */
 .content-section a{
-  color:var(--warm-yellow);
-  text-decoration:underline;
+  color: var(--accent-warm, var(--warm-yellow, #ffb84d));
+  text-decoration: underline;
 }
-.content-section strong{color:var(--text);}
-
-/* responsive tweaks */
-@media(max-width:768px){
-  .hero-content h1{font-size:2.2rem;}
-  .hero-content p{font-size:1rem;}
-  .refund-hero{padding:80px 0 40px;}
-  .reading-progress{top:68px;height:6px;}
+.content-section strong{
+  color: var(--text, #f3f3f3);
 }
 
-/* accessibility focus */
-.refund-content :focus{outline:3px solid rgba(255,184,77,0.08);outline-offset:3px;}
+/* Responsive tweaks (layout intact) */
+@media (max-width: 768px){
+  .hero-content h1{ font-size: 2.2rem; }
+  .hero-content p{ font-size: 1rem; }
+  .refund-hero{ padding: 80px 0 40px; }
+  .reading-progress{ top: 68px; height: 6px; }
+}
+
+/* accessibility focus (use theme focus color) */
+.refund-content :focus{
+  outline: 3px solid rgba(255,184,77,0.08);
+  outline-offset: 3px;
+}

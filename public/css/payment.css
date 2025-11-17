@@ -1,247 +1,273 @@
 /* payment.css */
-:root{
-  --panel-dark: #0b0b0c;
-  --panel-2: #101012;
-  --card-bg: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  --text: #f3f3f3;
-  --muted: #b7b7bd;
-  --warm-yellow: #ffb84d;
-  --warm-red: #e85c41;
-  --accent: var(--warm-yellow);
-  --accent-2: var(--warm-red);
-  --glass: rgba(255,255,255,0.02);
-  --border: rgba(255,255,255,0.05);
-  --radius: 12px;
-  --shadow-soft: 0 18px 60px rgba(0,0,0,0.66);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+/* Page wrapper (use this instead of styling body directly) */
+.payment-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+  background: linear-gradient(180deg, var(--panel-1), var(--panel-2));
+  color: var(--text);
+  box-sizing: border-box;
 }
 
-/* ---------- Base layout ---------- */
-body{
-  margin:0;
-  padding:20px;
-  font-family:var(--font, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
-  background: linear-gradient(180deg, var(--panel-dark), #070707);
-  color:var(--text);
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  min-height:100vh;
-}
-.payment-container{
-  width:100%;
-  max-width:700px;
-  background: var(--card-bg);
-  padding:30px;
-  border-radius:12px;
-  box-shadow:var(--shadow-soft);
-  border:1px solid var(--border);
+/* Container card */
+.payment-container {
+  width: 100%;
+  max-width: 700px;
+  background: var(--card-bg, linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)));
+  padding: 30px;
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border-1, rgba(255,255,255,0.05));
+  box-sizing: border-box;
 }
 
-/* =======================
-   Headings
-   ======================= */
-h2{
-  text-align:center;
-  color:var(--warm-yellow);
-  margin-bottom:25px;
-  font-size:2em;
-  font-weight:600;
+/* Headings */
+.payment-container h2 {
+  text-align: center;
+  color: var(--accent-warm);
+  margin-bottom: 25px;
+  font-size: 2em;
+  font-weight: 600;
 }
-h3{
-  color:var(--text);
-  border-bottom:2px solid rgba(255,184,77,0.04);
-  padding-bottom:10px;
-  margin-top:30px;
-  margin-bottom:20px;
-  font-size:1.3em;
-  font-weight:500;
+.payment-container h3 {
+  color: var(--text);
+  border-bottom: 2px solid rgba(255,184,77,0.04);
+  padding-bottom: 10px;
+  margin-top: 30px;
+  margin-bottom: 20px;
+  font-size: 1.3em;
+  font-weight: 500;
 }
-h3.deliver_address{
-  text-align:center;
-  color:var(--warm-yellow);
-  margin-bottom:25px;
-  font-size:2em;
-  font-weight:600;
+.payment-container h3.deliver_address {
+  text-align: center;
+  color: var(--accent-warm);
+  margin-bottom: 25px;
+  font-size: 2em;
+  font-weight: 600;
 }
 
-/* =======================
-   Sections
-   ======================= */
-.order-summary,.address-section,.payment-methods{margin-bottom:30px;}
+/* Sections */
+.order-summary,
+.address-section,
+.payment-methods { margin-bottom: 30px; }
 
-/* =======================
-   Order Summary
-   ======================= */
-#order-items{
-  font-size:1em;
-  color:var(--muted);
-  margin-bottom:15px;
+/* Order summary & totals */
+#order-items {
+  font-size: 1em;
+  color: var(--muted);
+  margin-bottom: 15px;
 }
-.order-summary p{
-  font-weight:700;
-  font-size:1.4em;
-  color:var(--text);
-  border-top:1px solid rgba(255,255,255,0.03);
-  padding-top:15px;
-  margin-top:15px;
-  display:flex;
-  justify-content:space-between;
+.order-summary p {
+  font-weight: 700;
+  font-size: 1.4em;
+  color: var(--text);
+  border-top: 1px solid rgba(255,255,255,0.03);
+  padding-top: 15px;
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
 }
 
-/* =======================
-   Address & Saved Addresses
-   ======================= */
-#saved-addresses{display:grid;gap:15px;margin-bottom:20px;}
-.address-box{
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:15px 20px;
+/* Address boxes */
+#saved-addresses { display: grid; gap: 15px; margin-bottom: 20px; }
+.address-box {
+  border: 1px solid var(--border-1, rgba(255,255,255,0.05));
+  border-radius: 10px;
+  padding: 15px 20px;
   background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
-  transition:all 0.3s ease;
-  cursor:pointer;
-  font-size:1em;
-  color:var(--text);
-  position:relative;
-  box-shadow:0 10px 30px rgba(0,0,0,0.6);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  font-size: 1em;
+  color: var(--text);
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
 }
-.address-box:hover{
+.address-box:hover {
   border-color: rgba(255,184,77,0.16);
   background: linear-gradient(90deg, rgba(255,184,77,0.02), rgba(232,92,65,0.01));
   box-shadow: 0 18px 44px rgba(0,0,0,0.7);
 }
-.address-box.selected{
-  border-color: var(--accent);
+.address-box.selected {
+  border-color: var(--accent-warm);
   background: linear-gradient(90deg, rgba(255,184,77,0.06), rgba(232,92,65,0.03));
   box-shadow: 0 20px 60px rgba(0,0,0,0.74);
 }
-.address-box .remove-address{
-  position:absolute;top:8px;right:12px;font-size:1.1em;color:var(--warm-red);cursor:pointer;transition:transform 0.2s ease;
+.address-box .remove-address {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 1.1em;
+  color: var(--accent-warm-red);
+  cursor: pointer;
+  transition: transform 0.2s ease;
 }
-.address-box .remove-address:hover{transform:scale(1.12);}
+.address-box .remove-address:hover { transform: scale(1.12); }
 
-/* add address button */
-#add-address-btn{
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
-  color:#111;border:none;padding:12px 20px;font-size:1em;border-radius:6px;cursor:pointer;
-  transition:background 0.2s, transform .12s;
-  width:100%;
-  margin-top:15px;
-  font-weight:800;
-  box-shadow:0 12px 36px rgba(255,184,77,0.08);
+/* Add address button */
+#add-address-btn {
+  background: linear-gradient(90deg, var(--accent-warm), var(--accent-warm-2));
+  color: #111;
+  border: none;
+  padding: 12px 20px;
+  font-size: 1em;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, transform .12s;
+  width: 100%;
+  margin-top: 15px;
+  font-weight: 800;
+  box-shadow: 0 12px 36px rgba(255,184,77,0.08);
 }
-#add-address-btn:hover{ transform:translateY(-2px); filter:brightness(.98); }
+#add-address-btn:hover { transform: translateY(-2px); filter: brightness(.98); }
 
-/* new address form */
-#new-address-form{
-  display:none;
-  border:1px solid var(--border);
-  padding:20px;border-radius:8px;margin-top:20px;
+/* New address form */
+#new-address-form {
+  display: none;
+  border: 1px solid var(--border-1);
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
   background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
-  color:var(--text);
+  color: var(--text);
 }
 
-/* =======================
-   Form Inputs
-   ======================= */
-input[type="text"]{
-  width:100%;
-  padding:12px;
-  margin-top:8px;margin-bottom:15px;
-  border:1px solid rgba(255,255,255,0.04);
-  border-radius:6px;
-  box-sizing:border-box;font-size:1em;
+/* Form inputs */
+.payment-container input[type="text"],
+.payment-container input[type="tel"],
+.payment-container select,
+.payment-container textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  margin-bottom: 15px;
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 1em;
   background: transparent;
-  color:var(--text);
-  transition:border-color 0.2s, box-shadow 0.12s;
+  color: var(--text);
+  transition: border-color 0.2s, box-shadow 0.12s;
 }
-input[type="text"]:focus{
-  border-color:var(--accent);
-  outline:none;
-  box-shadow:0 8px 28px rgba(255,184,77,0.04);
+.payment-container input[type="text"]:focus,
+.payment-container input[type="tel"]:focus,
+.payment-container select:focus,
+.payment-container textarea:focus {
+  border-color: var(--accent-warm);
+  outline: none;
+  box-shadow: 0 8px 28px rgba(255,184,77,0.04);
 }
 
-/* save address */
-#save-address{
-  width:100%;
-  padding:12px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
-  color:#111;border:none;border-radius:6px;font-size:1em;cursor:pointer;
-  transition:background-color 0.2s, transform .12s;
-  font-weight:800;
-  box-shadow:0 12px 36px rgba(255,184,77,0.08);
+/* Save address button */
+#save-address {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(90deg, var(--accent-warm), var(--accent-warm-2));
+  color: #111;
+  border: none;
+  border-radius: 6px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.2s, transform .12s;
+  font-weight: 800;
+  box-shadow: 0 12px 36px rgba(255,184,77,0.08);
 }
-#save-address:hover{ transform:translateY(-2px); }
+#save-address:hover { transform: translateY(-2px); }
 
-/* =======================
-   Payment Methods
-   ======================= */
-.payment-option{
-  display:flex;align-items:center;margin:12px 0;font-size:16px;cursor:pointer;padding:10px 12px;
-  border:1px solid var(--border);border-radius:8px;transition:all 0.2s ease;
+/* Payment options */
+.payment-option {
+  display: flex;
+  align-items: center;
+  margin: 12px 0;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 10px 12px;
+  border: 1px solid var(--border-1);
+  border-radius: 8px;
+  transition: all 0.2s ease;
   background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
-  color:var(--text);
+  color: var(--text);
 }
-.payment-option:hover{
+.payment-option:hover {
   border-color: rgba(255,184,77,0.12);
   background: linear-gradient(90deg, rgba(255,184,77,0.02), rgba(232,92,65,0.01));
 }
-.payment-option input[type="radio"]{
-  accent-color:var(--accent);
-  margin-right:10px;transform:scale(1.18);
+.payment-option input[type="radio"] {
+  accent-color: var(--accent-warm);
+  margin-right: 10px;
+  transform: scale(1.18);
 }
 
-/* agent id box */
-#agent-id-box{display:none;margin-top:10px;}
-#agent-id-box .apply-btn{
-  margin-left:8px;padding:10px 14px;border:none;border-radius:8px;
-  background: linear-gradient(90deg, #6c63ff, #7b74ff);color:#fff;cursor:pointer;font-weight:700;
-  transition:transform 0.15s ease, box-shadow 0.15s ease, background 0.15s;
-  box-shadow:0 10px 30px rgba(108,99,255,0.12);
+/* Agent id */
+#agent-id-box { display: none; margin-top: 10px; }
+#agent-id-box .apply-btn {
+  margin-left: 8px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #6c63ff, #7b74ff);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s;
+  box-shadow: 0 10px 30px rgba(108,99,255,0.12);
 }
-#agent-id-box .apply-btn:hover{ transform:translateY(-2px); box-shadow:0 18px 44px rgba(108,99,255,0.16); }
-#agent-id-box .apply-btn:active{ transform:translateY(0); box-shadow:0 8px 22px rgba(108,99,255,0.10); }
-#agent-id-box.inline{ display:flex !important; align-items:center; }
-#agent-id-box.inline #agentid{ flex:1; }
+#agent-id-box .apply-btn:hover { transform: translateY(-2px); box-shadow: 0 18px 44px rgba(108,99,255,0.16); }
+#agent-id-box .apply-btn:active { transform: translateY(0); box-shadow: 0 8px 22px rgba(108,99,255,0.10); }
+#agent-id-box.inline { display: flex !important; align-items: center; }
+#agent-id-box.inline #agentid { flex: 1; }
 
-/* =======================
-   Proceed Button
-   ======================= */
-.payment-section #proceed-btn{
-  width:100%;margin-top:16px;padding:14px 18px;font-size:1.1em;font-weight:800;color:#111;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
-  border:none;border-radius:999px;cursor:pointer;
-  box-shadow:0 16px 40px rgba(255,184,77,0.14), inset 0 -2px 0 rgba(255,255,255,0.06);
-  transition:transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-  letter-spacing:0.2px;
+/* Proceed / CTA */
+.payment-section #proceed-btn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px 18px;
+  font-size: 1.1em;
+  font-weight: 800;
+  color: #111;
+  background: linear-gradient(135deg, var(--accent-warm) 0%, var(--accent-warm-2) 100%);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 16px 40px rgba(255,184,77,0.14), inset 0 -2px 0 rgba(255,255,255,0.06);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  letter-spacing: 0.2px;
 }
-.payment-section #proceed-btn:hover{
-  background: linear-gradient(135deg, var(--accent-2) 0%, #ffd88e 100%);
-  transform:translateY(-3px);
-  box-shadow:0 26px 68px rgba(255,184,77,0.18), inset 0 -2px 0 rgba(255,255,255,0.08);
+.payment-section #proceed-btn:hover {
+  background: linear-gradient(135deg, var(--accent-warm-2) 0%, #ffd88e 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 26px 68px rgba(255,184,77,0.18), inset 0 -2px 0 rgba(255,255,255,0.08);
 }
-.payment-section #proceed-btn:active{
-  transform:translateY(0);
+.payment-section #proceed-btn:active {
+  transform: translateY(0);
   background: linear-gradient(135deg, #e07930 0%, #d25a2a 100%);
-  box-shadow:0 10px 28px rgba(255,184,77,0.10), inset 0 2px 0 rgba(0,0,0,0.06);
+  box-shadow: 0 10px 28px rgba(255,184,77,0.10), inset 0 2px 0 rgba(0,0,0,0.06);
 }
-.payment-section #proceed-btn:focus{
-  outline:none;
-  box-shadow:0 0 0 6px rgba(255,184,77,0.06), 0 16px 40px rgba(255,184,77,0.14);
+.payment-section #proceed-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 6px rgba(255,184,77,0.06), 0 16px 40px rgba(255,184,77,0.14);
 }
-.payment-section #proceed-btn::after{ content:'→'; display:inline-block; margin-left:8px; transition:transform 0.18s ease; color:#111; }
-.payment-section #proceed-btn:hover::after{ transform:translateX(4px); }
+.payment-section #proceed-btn::after {
+  content: '→';
+  display: inline-block;
+  margin-left: 8px;
+  transition: transform 0.18s ease;
+  color: #111;
+}
+.payment-section #proceed-btn:hover::after { transform: translateX(4px); }
 
-/* pincode message */
-#pincode-msg{ font-size:0.9rem; margin-top:6px; color:var(--muted); }
+/* Pincode message */
+#pincode-msg { font-size: 0.9rem; margin-top: 6px; color: var(--muted); }
 
-/* small responsive tweaks */
-@media (max-width:520px){
-  .payment-container{ padding:18px; }
-  h2{ font-size:1.5rem; }
-  .order-summary p{ font-size:1.1rem; }
-  #add-address-btn, #save-address, .btn.primary{ padding:12px; }
+/* Responsive tweaks */
+@media (max-width: 520px) {
+  .payment-container { padding: 18px; }
+  .payment-container h2 { font-size: 1.5rem; }
+  .order-summary p { font-size: 1.1rem; }
+  #add-address-btn, #save-address, .btn.primary { padding: 12px; }
 }
 
 /* Accessibility focus */
-:focus{ outline: 3px solid rgba(255,184,77,0.08); outline-offset:2px; }
+:focus { outline: 3px solid rgba(255,184,77,0.08); outline-offset: 2px; }

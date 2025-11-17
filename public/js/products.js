@@ -1,11 +1,4 @@
-/* /public/js/products.js — single-file renderer + pagination style for products
-   - Renders products into #products-container / .products-grid
-   - Image handling fixed: pickLogo() supports logo/image/image_url/image_path + SVG placeholder fallback
-   - Clicking a product card opens the full-screen sheet
-   - addToCart fallback uses localStorage
-   - NEW: Add to cart button becomes “✔ Added”, stays disabled, and only reverts when item is removed from cart.
-   - NEW: Prevent duplicate adds (same product only once in cart).
-*/
+/* /public/js/products.js */
 
 (function () {
   /* ---------------- small helpers ---------------- */

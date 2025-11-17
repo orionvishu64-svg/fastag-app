@@ -14,7 +14,6 @@
 </head>
 <body>
 <?php include __DIR__ . '/includes/header.php'; ?>
- <!-- Main Content -->
     <main class="main-content">
         <!-- Hero Section -->
         <section class="refund-hero">
@@ -29,7 +28,6 @@
                 </div>
             </div>
         </section>
-<!--refund and cancel policy-->
  <main class="refund-main">
         <div class="container">
             <div class="content-wrapper">

@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+ <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Placed</title>
   <link rel="stylesheet" href="/public/css/styles.css">
   <link rel="stylesheet" href="/public/css/orderplaced.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
-</head>
-<body>
+ </head>
+ <body class="orderplaced-page">
   <div class="order-success">
     <div id="orderSuccess" style="width:200px;height:200px;margin:auto;"></div>
     <h2>Thank you! Your order has been placed.</h2>
@@ -24,6 +24,6 @@
     autoplay: true,
     path: 'https://assets10.lottiefiles.com/packages/lf20_jbrw3hcz.json'
   });
-</script>
-</body>
+  </script>
+ </body>
 </html>
