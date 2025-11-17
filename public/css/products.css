@@ -3,7 +3,7 @@
 /* ---------- Variables (theme-aligned) ---------- */
 :root{
   /* theme colors (from styles.css) */
-  --bg-dark: #0b0b0c;
+  --bg-dark: #0b0b0c; 
   --panel-dark: #0f0f10;
   --panel-2: #141414;
   --text: #f3f3f3;

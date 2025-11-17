@@ -12,7 +12,7 @@
   --shadow-soft:0 20px 40px rgba(0,0,0,0.6);
   --maxw:1100px;
   --form-max:560px;
-  --info-w:320px;
+  --info-w:320px; 
   --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
 }
 /* ---------- Base layout ---------- */
