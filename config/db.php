@@ -1,13 +1,16 @@
 <?php
-// db.php
-// Database Settings
-$host = 'fastag-db.cfm8y6ie68r7.ap-south-1.rds.amazonaws.com';
-$dbname = 'myappdb';
-$user = 'admin';
-$password = 'Optimus20050';
+// db.php (Correct configuration for Bitnami MariaDB)
+
+$host = "localhost";
+$dbname = "fastag_app";
+$user = "admin";
+$password = "Apna1234";
+
+// IMPORTANT: Bitnami MariaDB uses a custom socket path
+$dsn = "mysql:host=$host;dbname=$dbname;charset=utf8mb4;unix_socket=/opt/bitnami/mariadb/tmp/mysql.sock";
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $user, $password);
+    $pdo = new PDO($dsn, $user, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
     die("Database connection failed: " . $e->getMessage());
