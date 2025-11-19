@@ -1,4 +1,4 @@
-// chat-socket.js - robust client for ticket chat (replace /var/www/html/public/js/chat-socket.js)
+// chat-socket.js
 (function () {
   'use strict';
 
@@ -58,14 +58,13 @@
     return null;
   }
 
-  // ----- Seen sets + optimistic map ----- 
-  // used for dedupe and quick reconciliation
+  // ----- Seen sets + optimistic map -----
   const seenIds = new Set();
   const seenLocal = new Set();
   const seenHashes = new Set();
-  const localMap = new Map(); // local_id -> node
+  const localMap = new Map();
 
-  // ----- Build a lightweight index of current DOM replies for fuzzy matching ----- 
+  // ----- Build a lightweight index of current DOM replies for fuzzy matching -----
   function buildDOMIndex() {
     const container = findContainer();
     if (!container) return [];
@@ -87,13 +86,11 @@
     return idx;
   }
 
-  // ----- Fuzzy incoming match: local_id, reply_id, or text+ts ----- 
+  // ----- Fuzzy incoming match: local_id, reply_id, or text+ts -----
   function incomingMatchesExisting(msg) {
-    // 1) local id
     const local = msg.local_id || msg.localId || msg.localid || null;
     if (local) {
       try {
-        // CSS.escape may not exist in older browsers; fallback to simple selector
         const sel = `[data-local-id="${CSS && CSS.escape ? CSS.escape(String(local)) : String(local)}"]`;
         const el = document.querySelector(sel);
         if (el) {
@@ -108,7 +105,6 @@
       }
     }
 
-    // 2) reply/db id
     const id = msg.id || msg.reply_id || msg.reply_db_id || null;
     if (id) {
       try {
@@ -121,7 +117,6 @@
       }
     }
 
-    // 3) fuzzy match: text + timestamp
     const idx = buildDOMIndex();
     const replyNorm = normText(msg.reply_text || msg.message || msg.text || '');
     if (!replyNorm) return false;
@@ -129,7 +124,6 @@
 
     for (const d of idx) {
       const shortPartial = replyNorm.split(' ').slice(0,4).join(' ');
-      // rough containment check
       if (d.text.includes(replyNorm) || replyNorm.includes(d.text) || (shortPartial && d.text.includes(shortPartial))) {
         if (replyTs && d.ts) {
           const t1 = Date.parse(replyTs), t2 = Date.parse(d.ts);
@@ -176,7 +170,6 @@
         warn('chat-socket: container not found, cannot append message');
         return false;
       }
-      // dedupe quick checks
       const id = msg.id || msg.reply_id;
       if (id && seenIds.has(String(id))) return false;
       const local = localId || msg.local_id;
@@ -193,9 +186,8 @@
     } catch (e) { err('fallbackAppend error', e); return false; }
   }
 
-  // ----- High-level append: prefer conversation renderer if present ----- 
+  // ----- High-level append: prefer conversation renderer if present -----
   function appendMessage(msg, opts = {}) {
-    // If conversation module present, prefer it's renderer which is canonical
     if (window.CONVERSATION && typeof window.CONVERSATION.renderMessage === 'function') {
       try {
         const normalized = {
@@ -208,7 +200,6 @@
           user_id: msg.user_id
         };
         const node = window.CONVERSATION.renderMessage(normalized, { containerId: 'openThread', prepend: false });
-        // if conversation renderer returned a node we should mark seen sets
         const id = normalized.id;
         const local = normalized.local_id;
         if (id) seenIds.add(String(id));
@@ -221,12 +212,11 @@
         return fallbackAppend(msg, opts);
       }
     } else {
-      // fallback to internal append
       return fallbackAppend(msg, opts);
     }
   }
 
-  // ----- Socket init & handlers ----- 
+  // ----- Socket init & handlers -----
   async function lookupContactQueryId() {
     try {
       const url = `/config/lookup_ticket_id.php?ticket_id=${encodeURIComponent(PUBLIC_TICKET)}&json=1`;
@@ -243,7 +233,6 @@
 
   async function initSocket() {
     try {
-      // mark existing DOM nodes as seen
       (function markSeenFromDOM() {
         const idx = buildDOMIndex();
         for (const it of idx) {
@@ -256,14 +245,17 @@
 
       const contactQueryId = await lookupContactQueryId();
 
-      const ioOpts = { transports: ['websocket','polling'], reconnection: true, reconnectionAttempts: Infinity, reconnectionDelay: 2000, withCredentials: true };
-      if (!SOCKET_SERVER) ioOpts.path = ioOpts.path || '/socket.io';
-      // ensure we create single socket and don't re-init if already exists
+      // explicit path to match Apache proxy
+      const ioOpts = { transports: ['websocket','polling'], reconnection: true, reconnectionAttempts: Infinity, reconnectionDelay: 2000, withCredentials: true, path: '/socket.io/' };
+
+      // ensure single socket and don't re-init if already exists
       if (window.__chatSocket && window.__chatSocket.io) {
         log('chat-socket: socket appears already initialized');
         return window.__chatSocket;
       }
-      const socket = SOCKET_SERVER ? io(SOCKET_SERVER, ioOpts) : io(ioOpts);
+
+      // always create client with explicit SOCKET_SERVER (default is IP)
+      const socket = io(SOCKET_SERVER, ioOpts);
 
       socket.on('connect', () => {
         log('CONNECTED -> socket.id:', socket.id);
@@ -285,15 +277,12 @@
       socket.on('connect_error', (e) => warn('connect_error', e && e.message ? e.message : e));
       socket.on('disconnect', (reason) => warn('socket disconnected:', reason));
 
-      // Ensure single handler registration to avoid duplicates
       socket.off('new_message').on('new_message', (msg) => {
         try {
-          // If corresponds to an optimistic local node -> reconcile
           const local = msg.local_id || msg.localId || msg.localid || null;
           if (local && localMap.has(String(local))) {
             const el = localMap.get(String(local));
             if (msg.id || msg.reply_id) el.setAttribute('data-reply-id', String(msg.id || msg.reply_id));
-            // update text and meta if present
             const tEl = el.querySelector && (el.querySelector('.text') || el.querySelector('.bubble-text') || el.querySelector('.message'));
             const mEl = el.querySelector && (el.querySelector('.meta') || el.querySelector('.ts'));
             if (tEl && (msg.reply_text || msg.message)) tEl.textContent = msg.reply_text || msg.message;
@@ -301,18 +290,15 @@
             if (msg.id) seenIds.add(String(msg.id));
             seenLocal.add(String(local));
             if (msg.reply_text) seenHashes.add(normText(msg.reply_text));
-            // remove from local map to mark reconciled
             localMap.delete(String(local));
             return;
           }
 
-          // Dedupe check: if already exists skip
           if (incomingMatchesExisting(msg)) {
             log('chat-socket: skipped server message (already present)');
             return;
           }
 
-          // Otherwise append via canonical renderer or fallback
           appendMessage(msg);
         } catch (e) {
           err('new_message handler error', e);
@@ -332,13 +318,12 @@
   }
 
   // ----- Public send function (optimistic render + socket emit) -----
-  // Keep usage simple: window.sendChatMessage(text)
   window.sendChatMessage = function (text) {
     try {
       if (!text || typeof text !== 'string' || !text.trim()) return false;
       const localId = genLocalId();
       const payload = {
-        contact_query_id: null, // server will figure out from ticket (or you can set contact_query_id if known)
+        contact_query_id: null,
         ticket_public_id: PUBLIC_TICKET,
         is_admin: 0,
         admin_identifier: null,
@@ -348,21 +333,17 @@
         created_at: new Date().toISOString()
       };
 
-      // optimistic append via canonical renderer (if present) or fallback
       const appended = appendMessage(payload, { localId });
       if (appended) {
-        // ensure localMap holds the node for later reconciliation
         const node = document.querySelector(`[data-local-id="${localId}"]`);
         if (node) localMap.set(String(localId), node);
       }
 
-      // ensure socket exists
       const s = window.__chatSocket || null;
       try {
         if (s && s.connected) {
           s.emit('send_message', payload);
         } else {
-          // attempt lazy init then emit
           initSocket().then((socket) => {
             if (socket && socket.emit) socket.emit('send_message', payload);
           }).catch(e => warn('Lazy socket init/emit failed', e));
@@ -378,7 +359,6 @@
     }
   };
 
-  // ----- Boot (init socket on DOM ready) -----
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => { setTimeout(initSocket, 50); });
   } else {

@@ -14,7 +14,7 @@ if ($public_ticket_id === '') {
 }
 
 try {
-    // find the contact_query by ticket_id
+
     $stmt = $pdo->prepare("SELECT * FROM contact_queries WHERE ticket_id = ? LIMIT 1");
     $stmt->execute([$public_ticket_id]);
     $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -100,6 +100,7 @@ try {
     window.CONTACT_QUERY_ID = <?= json_encode($contact_query_id) ?>;
     window.TICKET_STATUS = <?= json_encode($ticket_status) ?>;
     window.CURRENT_USER_ID = <?= json_encode($current_user_id) ?>;
+    window.SOCKET_SERVER_URL = "<?php echo getenv("SOCKET_SERVER") ?: ""; ?>";
   </script>
 
   <!-- socket.io and your existing scripts -->

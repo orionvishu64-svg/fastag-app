@@ -165,7 +165,7 @@ try {
 
     // --- Prepare emit to Node socket server ---
     // Use environment variable SOCKET_SERVER to override default host (ex: http://15.207.50.101:3000)
-    $socketHost = getenv('SOCKET_SERVER') ?: 'http://127.0.0.1:3000';
+    $socketHost = getenv('SOCKET_SERVER') ?: '';
     $socketHost = rtrim($socketHost, '/');
     $socketServer = $socketHost . '/emit-reply';
 
