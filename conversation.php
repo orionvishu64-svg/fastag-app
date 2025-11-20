@@ -100,12 +100,8 @@ try {
     window.CONTACT_QUERY_ID = <?= json_encode($contact_query_id) ?>;
     window.TICKET_STATUS = <?= json_encode($ticket_status) ?>;
     window.CURRENT_USER_ID = <?= json_encode($current_user_id) ?>;
-    window.SOCKET_SERVER_URL = "<?php echo getenv("SOCKET_SERVER") ?: ""; ?>";
   </script>
 
-  <!-- socket.io and your existing scripts -->
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <script src="/public/js/chat-socket.js"></script>
   <script src="/public/js/script.js"></script>
   <script src="/public/js/conversation.js"></script>
 </body>

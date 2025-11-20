@@ -162,7 +162,7 @@
       const threadEl = document.getElementById('openThread');
       renderRepliesContainer(threadEl, data.replies || []);
 
-      // ===== Submit Handler (Optimistic Append + local_id/origin_socket_id) =====
+      // ===== Submit Handler (Optimistic Append) =====
       const form = document.getElementById('replyForm');
       if (form) {
         // remove previously attached handler if any (prevents double-binding)
@@ -174,10 +174,8 @@
           const msg = (msgEl && msgEl.value || '').trim();
           if (!msg) return;
 
-          // Prepare local_id + origin_socket_id
+          // Prepare local_id
           const localId = genLocalId();
-          let originSocketId = null;
-          try { originSocketId = sessionStorage.getItem('chat_socket_id') || null; } catch { originSocketId = null; }
 
           // Optimistic append (use centralized renderer)
           const nowIso = new Date().toISOString();
@@ -196,7 +194,6 @@
             fd.append('message', msg);
             fd.append('reply_text', msg);
             fd.append('local_id', localId);
-            if (originSocketId) fd.append('origin_socket_id', originSocketId);
 
             const res = await safeFetchJson(ENDPOINT_ADD_REPLY, {
               method: 'POST',
@@ -237,82 +234,82 @@
     }
   }
 
-// ===== Load Closed Tickets =====
-async function loadClosedTickets() {
-  try {
-    // Check if we have a specific ticket requested (URL param or global)
-    const requestedTicket = getRequestedTicketId(); // uses URL or window.TICKET_PUBLIC_ID
+  // ===== Load Closed Tickets =====
+  async function loadClosedTickets() {
+    try {
+      // Check if we have a specific ticket requested (URL param or global)
+      const requestedTicket = getRequestedTicketId(); // uses URL or window.TICKET_PUBLIC_ID
 
-    // If a specific ticket is requested, fetch full conversation via the "get conversation" endpoint
-    if (requestedTicket) {
-      // use the same endpoint as open ticket rendering so we get full replies
-      const url = ENDPOINT_GET_CONV + '?ticket_id=' + encodeURIComponent(requestedTicket);
-      const data = await safeFetchJson(url, { method: 'GET' });
+      // If a specific ticket is requested, fetch full conversation via the "get conversation" endpoint
+      if (requestedTicket) {
+        // use the same endpoint as open ticket rendering so we get full replies
+        const url = ENDPOINT_GET_CONV + '?ticket_id=' + encodeURIComponent(requestedTicket);
+        const data = await safeFetchJson(url, { method: 'GET' });
 
+        const container = document.getElementById('closedTicketsContainer');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (!data || (Array.isArray(data) && data.length === 0) ||
+            (typeof data === 'object' && Object.keys(data).length === 0)) {
+          container.innerHTML = `<div class="ticket"><p>No conversation found for #${escapeHtml(requestedTicket)}</p></div>`;
+          return;
+        }
+
+        // Normalize to ticket object (same as loadOpenTicket)
+        const t = data.query || (Array.isArray(data) ? data[0] : (data.ticket || data));
+        if (!t) {
+          container.innerHTML = `<div class="ticket"><p>No conversation found for #${escapeHtml(requestedTicket)}</p></div>`;
+          return;
+        }
+
+        // Render single ticket (same markup as open ticket)
+        const div = document.createElement('div');
+        div.className = 'ticket';
+        let inner = '';
+        inner += `<div class="status-badge">${t.status ? (t.status.charAt(0).toUpperCase() + t.status.slice(1)) : 'Closed'}</div>`;
+        inner += `<h4>Ticket #${escapeHtml(t.ticket_id || t.id || t.query_id)} - ${escapeHtml(t.subject || '')}</h4>`;
+        inner += `<p><strong>Message:</strong> ${escapeHtml(t.message || '')}</p>`;
+        inner += `<div id="openThread" class="replies"></div>`;
+        // We usually do not render the reply form for closed tickets, but keep the thread
+        div.innerHTML = inner;
+        container.appendChild(div);
+
+        // populate replies using centralized renderer (same as open)
+        const threadEl = document.getElementById('openThread');
+        renderRepliesContainer(threadEl, data.replies || t.replies || []);
+
+        return;
+      }
+
+      // No specific ticket requested: fallback to listing *all* closed tickets via the closed endpoint
+      const data = await safeFetchJson(ENDPOINT_GET_CLOSED, { method: 'GET' });
       const container = document.getElementById('closedTicketsContainer');
       if (!container) return;
       container.innerHTML = '';
 
-      if (!data || (Array.isArray(data) && data.length === 0) ||
-          (typeof data === 'object' && Object.keys(data).length === 0)) {
-        container.innerHTML = `<div class="ticket"><p>No conversation found for #${escapeHtml(requestedTicket)}</p></div>`;
-        return;
+      if (data && data.success && Array.isArray(data.queries) && data.queries.length) {
+        data.queries.forEach(q => {
+          const tdiv = document.createElement('div');
+          tdiv.className = 'ticket';
+          let html = '';
+          html += `<div class="status-badge">Closed</div>`;
+          html += `<h4>${escapeHtml(q.ticket_id || q.id)} - ${escapeHtml(q.subject || '')}</h4>`;
+          html += `<p><strong>Message:</strong> ${escapeHtml(q.message || '')}</p>`;
+          html += `<div class="replies"></div>`;
+          html += `<div class="meta">Closed: ${escapeHtml(fmtTimeToIST(q.closed_at ?? q.submitted_at))}</div>`;
+          tdiv.innerHTML = html;
+          container.appendChild(tdiv);
+          const repliesContainer = tdiv.querySelector('.replies');
+          renderClosedReplies(repliesContainer, q.replies || []);
+        });
+      } else {
+        container.innerHTML = '<div class="ticket"><p>No closed tickets. Please check back later.</p></div>';
       }
-
-      // Normalize to ticket object (same as loadOpenTicket)
-      const t = data.query || (Array.isArray(data) ? data[0] : (data.ticket || data));
-      if (!t) {
-        container.innerHTML = `<div class="ticket"><p>No conversation found for #${escapeHtml(requestedTicket)}</p></div>`;
-        return;
-      }
-
-      // Render single ticket (same markup as open ticket)
-      const div = document.createElement('div');
-      div.className = 'ticket';
-      let inner = '';
-      inner += `<div class="status-badge">${t.status ? (t.status.charAt(0).toUpperCase() + t.status.slice(1)) : 'Closed'}</div>`;
-      inner += `<h4>Ticket #${escapeHtml(t.ticket_id || t.id || t.query_id)} - ${escapeHtml(t.subject || '')}</h4>`;
-      inner += `<p><strong>Message:</strong> ${escapeHtml(t.message || '')}</p>`;
-      inner += `<div id="openThread" class="replies"></div>`;
-      // We usually do not render the reply form for closed tickets, but keep the thread
-      div.innerHTML = inner;
-      container.appendChild(div);
-
-      // populate replies using centralized renderer (same as open)
-      const threadEl = document.getElementById('openThread');
-      renderRepliesContainer(threadEl, data.replies || t.replies || []);
-
-      return;
+    } catch (err) {
+      console.error('Failed to load closed tickets', err);
     }
-
-    // No specific ticket requested: fallback to listing *all* closed tickets via the closed endpoint
-    const data = await safeFetchJson(ENDPOINT_GET_CLOSED, { method: 'GET' });
-    const container = document.getElementById('closedTicketsContainer');
-    if (!container) return;
-    container.innerHTML = '';
-
-    if (data && data.success && Array.isArray(data.queries) && data.queries.length) {
-      data.queries.forEach(q => {
-        const tdiv = document.createElement('div');
-        tdiv.className = 'ticket';
-        let html = '';
-        html += `<div class="status-badge">Closed</div>`;
-        html += `<h4>${escapeHtml(q.ticket_id || q.id)} - ${escapeHtml(q.subject || '')}</h4>`;
-        html += `<p><strong>Message:</strong> ${escapeHtml(q.message || '')}</p>`;
-        html += `<div class="replies"></div>`;
-        html += `<div class="meta">Closed: ${escapeHtml(fmtTimeToIST(q.closed_at ?? q.submitted_at))}</div>`;
-        tdiv.innerHTML = html;
-        container.appendChild(tdiv);
-        const repliesContainer = tdiv.querySelector('.replies');
-        renderClosedReplies(repliesContainer, q.replies || []);
-      });
-    } else {
-      container.innerHTML = '<div class="ticket"><p>No closed tickets. Please check back later.</p></div>';
-    }
-  } catch (err) {
-    console.error('Failed to load closed tickets', err);
   }
-}
 
   // ===== Post Reply (generic utility if needed elsewhere) =====
   async function postReply(queryIdOrTicketId, message, opts = {}) {
@@ -324,29 +321,10 @@ async function loadClosedTickets() {
     form.append('message', message);
     form.append('reply_text', message);
     form.append('local_id', localId);
-    if (opts.origin_socket_id) form.append('origin_socket_id', opts.origin_socket_id);
 
     const res = await safeFetchJson(ENDPOINT_ADD_REPLY, { method: 'POST', body: form, credentials: 'include' });
     if (!res || (res.success === false)) throw new Error(res && res.message ? res.message : 'Server rejected reply');
     return res;
-  }
-
-  // ===== Expose a handler for incoming socket events (so chat-socket.js can call it) =====
-  function handleIncomingSocketReply(payload) {
-    if (!payload) return;
-    // Normalize payload into message object and call centralized renderer
-    const m = {
-      id: payload.id ?? payload.inserted_id ?? payload.reply_id ?? null,
-      local_id: payload.local_id ?? payload.localId ?? payload.client_msg_id ?? null,
-      reply_text: payload.reply_text ?? payload.message ?? payload.content ?? '',
-      is_admin: (typeof payload.is_admin !== 'undefined') ? payload.is_admin : (payload.user_type === 'admin' ? 1 : 0),
-      created_at: payload.created_at ?? payload.replied_at ?? new Date().toISOString(),
-      admin_identifier: payload.admin_identifier ?? null,
-      user_id: payload.user_id ?? null
-    };
-
-    // Render using centralized function (it will dedupe by data-reply-id/data-local-id)
-    renderMessage(m, { containerId: 'openThread', prepend: false });
   }
 
   // ===== Initialize =====
@@ -359,7 +337,6 @@ async function loadClosedTickets() {
     reloadOpen: loadOpenTicket,
     reloadClosed: loadClosedTickets,
     postReply,
-    renderMessage,           // useful for other modules (socket) to call directly if needed
-    handleIncomingSocketReply
+    renderMessage
   };
 })();
