@@ -1,24 +1,54 @@
 /* bank-pages.css
+   Updated: make bank pages theme-aware and consistent with styles.css
+   - Uses global variables from styles.css
+   - Bank accents are set via per-theme CSS variables so both dark & light modes work
+*/
 
-/* ========== HEADER / PAGE HERO ========== */
+/* ---------- BASE / LAYOUT ---------- */
+:root {
+  /* fallback if styles.css missing - these are safe defaults */
+  --bank-panel-1: var(--panel-1);
+  --bank-panel-2: var(--panel-2);
+  --bank-accent: var(--accent-warm);
+  --bank-accent-2: var(--accent-warm-2);
+  --bank-text: var(--text);
+  --bank-muted: var(--muted);
+  --bank-card-bg: var(--card-bg);
+  --bank-card-border: var(--card-border);
+  --bank-shadow: var(--shadow-soft);
+}
+
+/* ensure the page inherits overall background */
+html, body {
+  background: linear-gradient(180deg, var(--bg-start), var(--bg-end));
+  color: var(--text);
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+/* ---------- HEADER / PAGE HERO ---------- */
 .bank-header {
-  padding: 120px 0 60px;
+  padding: 72px 0 40px;                  /* reduced so it fits light header well */
   position: relative;
   overflow: hidden;
-  border-bottom: 1px solid rgba(255,255,255,0.04); /* light glass border; kept here as page-specific */
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
-  color: var(--text);
+  border-bottom: 1px solid var(--card-border);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12); /* lighter shadow to work in light theme */
+  color: var(--bank-text);
+  background: linear-gradient(135deg, var(--bank-panel-1), var(--bank-panel-2));
 }
+
+/* decorative subtle SVG overlay */
 .bank-header::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><pattern id='g' width='10' height='10' patternUnits='userSpaceOnUse'><path d='M10 0 L0 0 0 10' fill='none' stroke='%23ffffff' stroke-opacity='0.03' stroke-width='0.5'/></pattern></defs><rect width='100' height='100' fill='url(%23g)'/></svg>");
-  opacity: 0.08;
+  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><pattern id='g' width='10' height='10' patternUnits='userSpaceOnUse'><path d='M10 0 L0 0 0 10' fill='none' stroke='%23ffffff' stroke-opacity='0.03' stroke-width='0.5'/></pattern></defs><rect width='100' height='100' fill='url(%23g)'/></svg>") repeat;
+  opacity: 0.06;
   mix-blend-mode: overlay;
   pointer-events: none;
+  z-index: 0;
 }
 
+/* content sits above overlay */
 .bank-header-content {
   display: flex;
   align-items: center;
@@ -32,7 +62,7 @@
   max-width: 200px;
   height: auto;
   border-radius: 12px;
-  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
   display: block;
   object-fit: contain;
 }
@@ -42,11 +72,11 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 12px;
-  color: var(--accent-warm); /* prefer global accent variable */
+  color: var(--bank-accent);
 }
 .bank-info p {
   font-size: 1.05rem;
-  color: var(--muted);
+  color: var(--bank-muted);
   margin-bottom: 12px;
   line-height: 1.6;
 }
@@ -62,56 +92,115 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--muted);
+  color: var(--bank-muted);
 }
 .feature-item i {
   font-size: 1.05rem;
-  color: var(--accent-warm);
+  color: var(--bank-accent);
 }
 
-/* ========== BANK THEMES (page-specific overrides) ========== */
-/* These override the header / section backgrounds for specific bank-themed pages.
-   They are intentionally page-scoped and therefore retained here. */
+/* ---------- BANK THEME VARIABLES (scoped) ----------
+   Each bank theme sets a small set of variables; the bank-header and page
+   use those variables. In light mode a later override adjusts the variables.
+*/
 
-.kotak-theme .bank-header {
-  background: linear-gradient(135deg, #2a0404 0%, #0b0000 100%);
+/* Kotak */
+.kotak-theme {
+  --bank-panel-1: #2a0404;
+  --bank-panel-2: #0b0000;
+  --bank-accent: #e85c41;
+  --bank-accent-2: #f06a50;
+  --category-card-bg: linear-gradient(180deg,#fff,#f9f9f9);
+  --category-text: #0f172a;
 }
-.kotak-theme .feature-item i { color: #e85c41; } /* kotak red */
 
-.sbi-theme .bank-header {
-  background: linear-gradient(135deg, #001637 0%, #020611 100%);
+/* SBI */
+.sbi-theme {
+  --bank-panel-1: #001637;
+  --bank-panel-2: #020611;
+  --bank-accent: #60a5fa;
+  --bank-accent-2: #3b82f6;
+  --category-card-bg: linear-gradient(180deg,#fff,#f8fbff);
+  --category-text: #0f172a;
 }
-.sbi-theme .feature-item i { color: #1d4ed8; } /* sbi blue */
 
-.bajaj-theme .bank-header {
-  background: linear-gradient(135deg, #012b2f 0%, #010608 100%);
+/* Bajaj */
+.bajaj-theme {
+  --bank-panel-1: #012b2f;
+  --bank-panel-2: #010608;
+  --bank-accent: #0ea5e9;
+  --bank-accent-2: #5de0fa;
+  --category-card-bg: linear-gradient(180deg,#fff,#f8fefd);
+  --category-text: #0f172a;
 }
-.bajaj-theme .feature-item i { color: #0ea5e9; } /* bajaj teal */
 
-.idfc-theme .bank-header {
-  background: linear-gradient(135deg, #1c003c 0%, #07010b 100%);
+/* IDFC */
+.idfc-theme {
+  --bank-panel-1: #1c003c;
+  --bank-panel-2: #07010b;
+  --bank-accent: #8b5cf6;
+  --bank-accent-2: #c4b5fd;
+  --category-card-bg: linear-gradient(180deg,#fff,#fbf7ff);
+  --category-text: #0f172a;
 }
-.idfc-theme .feature-item i { color: #8b5cf6; } /* idfc purple */
 
-/* ========== CATEGORY SECTION ========== */
+/* ---------- LIGHT THEME OVERRIDES FOR BANKS ----------
+   When .theme-light or [data-theme="light"] is present, we switch the
+   bank-panel to light surfaces but keep the bank accent colors.
+*/
+.theme-light .kotak-theme,
+[data-theme="light"] .kotak-theme {
+  --bank-panel-1: #ffffff;
+  --bank-panel-2: #f6f8fa;
+  --bank-accent: #e85c41;
+  --bank-accent-2: #f6b88f;
+  --bank-text: #0f1724;
+  --bank-muted: #556b7a;
+  --bank-card-bg: linear-gradient(180deg,#ffffff,#f6f8fa);
+  --bank-card-border: rgba(15,23,36,0.06);
+  --bank-shadow: 0 8px 30px rgba(18,25,35,0.04);
+}
+
+.theme-light .sbi-theme,
+[data-theme="light"] .sbi-theme {
+  --bank-panel-1: #ffffff;
+  --bank-panel-2: #f6fbff;
+  --bank-accent: #60a5fa;
+  --bank-text: #0f1724;
+  --bank-muted: #556b7a;
+  --bank-card-bg: linear-gradient(180deg,#ffffff,#f8fbff);
+  --bank-card-border: rgba(15,23,36,0.06);
+  --bank-shadow: 0 8px 30px rgba(18,25,35,0.04);
+}
+
+.theme-light .bajaj-theme,
+[data-theme="light"] .bajaj-theme {
+  --bank-panel-1: #ffffff;
+  --bank-panel-2: #f6fbfc;
+  --bank-accent: #0ea5e9;
+  --bank-text: #0f1724;
+  --bank-card-bg: linear-gradient(180deg,#ffffff,#f8fefd);
+  --bank-card-border: rgba(15,23,36,0.06);
+  --bank-shadow: 0 8px 30px rgba(18,25,35,0.04);
+}
+
+.theme-light .idfc-theme,
+[data-theme="light"] .idfc-theme {
+  --bank-panel-1: #ffffff;
+  --bank-panel-2: #fbf8ff;
+  --bank-accent: #8b5cf6;
+  --bank-text: #0f1724;
+  --bank-card-bg: linear-gradient(180deg,#ffffff,#fbf7ff);
+  --bank-card-border: rgba(15,23,36,0.06);
+  --bank-shadow: 0 8px 30px rgba(18,25,35,0.04);
+}
+
+/* ---------- CATEGORY SECTION ---------- */
 .categories-section {
-  padding: 80px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: linear-gradient(180deg, rgba(10, 0, 0, 1) 0%, rgba(20, 0, 0, 0.98) 100%);
-  color: var(--text);
-}
-
-.kotak-theme .categories-section {
-  background: linear-gradient(180deg, #210202 0%, #0b0000 100%);
-}
-.sbi-theme .categories-section {
-  background: linear-gradient(180deg, #020819 0%, #000815 100%);
-}
-.bajaj-theme .categories-section {
-  background: linear-gradient(180deg, #001c22 0%, #000a0f 100%);
-}
-.idfc-theme .categories-section {
-  background: linear-gradient(180deg, #1a0f2e 0%, #0a0016 100%);
+  padding: 64px 0;
+  border-top: 1px solid var(--bank-card-border);
+  background: linear-gradient(180deg, var(--bank-panel-1), var(--bank-panel-2));
+  color: var(--bank-text);
 }
 
 .categories-section h2 {
@@ -120,27 +209,16 @@
   margin-bottom: 24px;
   padding-left: 22px;
   animation: fadeGlow 1s ease both;
+  color: var(--bank-accent);
 }
 
-/* Heading glow per bank (kept as page-specific decorative override) */
-.kotak-theme .categories-section h2 {
-  color: var(--accent-warm);
-  text-shadow: 0 0 10px rgba(232, 92, 65, 0.45), 0 0 20px rgba(232, 92, 65, 0.25);
-}
-.sbi-theme .categories-section h2 {
-  color: #60a5fa;
-  text-shadow: 0 0 10px rgba(96, 165, 250, 0.5), 0 0 20px rgba(59, 130, 246, 0.25);
-}
-.bajaj-theme .categories-section h2 {
-  color: #5de0fa;
-  text-shadow: 0 0 10px rgba(14, 165, 233, 0.5), 0 0 20px rgba(14, 165, 233, 0.25);
-}
-.idfc-theme .categories-section h2 {
-  color: #c4b5fd;
-  text-shadow: 0 0 10px rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.25);
-}
+/* Heading glow per bank kept but expressed via variables for light mode */
+.kotak-theme .categories-section h2 { text-shadow: 0 0 10px rgba(232, 92, 65, 0.35), 0 0 20px rgba(232,92,65,0.18); }
+.sbi-theme .categories-section h2   { text-shadow: 0 0 10px rgba(96,165,250,0.35), 0 0 20px rgba(59,130,246,0.12); }
+.bajaj-theme .categories-section h2 { text-shadow: 0 0 10px rgba(14,165,233,0.35), 0 0 20px rgba(14,165,233,0.12); }
+.idfc-theme .categories-section h2  { text-shadow: 0 0 10px rgba(139,92,246,0.35), 0 0 20px rgba(139,92,246,0.12); }
 
-/* CATEGORY GRID (page-specific layout) */
+/* CATEGORY GRID */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -150,36 +228,36 @@
   padding: 0 22px;
 }
 
-/* ========== CATEGORY / LIGHT CARDS ========== */
-/* These card styles intentionally create a "light card" look on bank pages */
+/* ---------- CATEGORY / LIGHT CARDS (variable-driven) ---------- */
 .category-card {
-  background: linear-gradient(180deg, #ffffff 0%, #f9f9f9 100%);
-  color: #0f172a;
-  border-radius: 12px; /* keep moderate radius */
+  background: var(--category-card-bg, var(--bank-card-bg, var(--card-bg)));
+  color: var(--category-text, var(--bank-text, var(--text)));
+  border-radius: 12px;
   padding: 16px;
-  border: 2px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.08);
-  transition: transform 0.22s cubic-bezier(0.2,0.9,0.3,1), box-shadow 0.22s cubic-bezier(0.2,0.9,0.3,1), border-color 0.22s cubic-bezier(0.2,0.9,0.3,1);
+  border: 1px solid var(--bank-card-border, var(--card-border));
+  box-shadow: 0 8px 24px rgba(2,6,23,0.06);
+  transition: transform 0.22s cubic-bezier(0.2,0.9,0.3,1), box-shadow 0.22s cubic-bezier(0.2,0.9,0.3,1), border-color 0.22s ease;
 }
 .category-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 22px 60px rgba(2, 6, 23, 0.12);
+  box-shadow: 0 18px 48px rgba(2,6,23,0.08);
+  border-color: color-mix(in srgb, var(--bank-accent) 40%, transparent);
 }
 .category-card .card-image {
-  background: #fff;
+  background: transparent;
   padding: 12px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 16px rgba(2, 6, 23, 0.05);
+  box-shadow: 0 6px 16px rgba(2,6,23,0.05);
 }
-.category-card h3 { font-size: 1rem; font-weight: 800; color: #0f172a; margin: 8px 0 6px; }
-.category-card p { color: #475569; margin: 0 0 10px; }
-.category-card .price { color: var(--accent-warm); font-weight: 900; font-size: 1.15rem; }
+.category-card h3 { font-size: 1rem; font-weight: 800; margin: 8px 0 6px; }
+.category-card p { color: var(--bank-muted); margin: 0 0 10px; }
+.category-card .price { color: var(--bank-accent); font-weight: 900; font-size: 1.15rem; }
 .category-card .badge {
-  background: #f3f4f6;
-  color: #475569;
+  background: var(--badge-bg, #f3f4f6);
+  color: var(--badge-text, #475569);
   font-size: .82rem;
   border-radius: 8px;
   padding: 6px 8px;
@@ -187,50 +265,31 @@
   font-weight: 700;
 }
 
-/* Card accents by bank (kept — page specific) */
-.kotak-theme .category-card { border-color: rgba(232, 92, 65, 0.15); }
-.kotak-theme .category-card:hover { border-color: rgba(232, 92, 65, 0.4); box-shadow: 0 24px 70px rgba(232,92,65,0.08); }
+/* bank-specific border accents (keep subtle) */
+.kotak-theme .category-card { border-color: rgba(232, 92, 65, 0.12); }
+.sbi-theme .category-card   { border-color: rgba(29, 78, 216, 0.10); }
+.bajaj-theme .category-card { border-color: rgba(14, 165, 233, 0.10); }
+.idfc-theme .category-card  { border-color: rgba(139,92,246,0.10); }
 
-.sbi-theme .category-card { border-color: rgba(29, 78, 216, 0.15); }
-.sbi-theme .category-card:hover { border-color: rgba(29, 78, 216, 0.4); box-shadow: 0 24px 70px rgba(59,130,246,0.08); }
+/* On light theme, keep category cards readable while preserving accent */
+.theme-light .category-card,
+[data-theme="light"] .category-card {
+  border-color: var(--bank-card-border, rgba(15,23,36,0.06));
+  box-shadow: 0 8px 26px rgba(18,25,35,0.04);
+}
 
-.bajaj-theme .category-card { border-color: rgba(14, 165, 233, 0.15); }
-.bajaj-theme .category-card:hover { border-color: rgba(14, 165, 233, 0.4); box-shadow: 0 24px 70px rgba(14,165,233,0.08); }
-
-.idfc-theme .category-card { border-color: rgba(139, 92, 246, 0.15); }
-.idfc-theme .category-card:hover { border-color: rgba(139, 92, 246, 0.4); box-shadow: 0 24px 70px rgba(139,92,246,0.08); }
-
-/* Price accents */
-.kotak-theme .category-card .price { color: #e85c41; }
-.sbi-theme .category-card .price { color: #1d4ed8; }
-.bajaj-theme .category-card .price { color: #0ea5e9; }
-.idfc-theme .category-card .price { color: #8b5cf6; }
-
-/* ========== BENEFITS SECTION ========== */
+/* ---------- BENEFITS SECTION ---------- */
 .benefits-section {
-  padding: 80px 0;
-  color: var(--text);
-  background: linear-gradient(180deg, rgba(5, 5, 5, 0.96) 0%, rgba(10, 0, 0, 0.99) 100%);
+  padding: 64px 0;
+  color: var(--bank-text);
+  background: linear-gradient(180deg, var(--bank-panel-1), var(--bank-panel-2));
 }
-.kotak-theme .benefits-section {
-  background: linear-gradient(180deg, #180000 0%, #050000 100%);
-}
-.sbi-theme .benefits-section {
-  background: linear-gradient(180deg, #010511 0%, #00050a 100%);
-}
-.bajaj-theme .benefits-section {
-  background: linear-gradient(180deg, #001418 0%, #000406 100%);
-}
-.idfc-theme .benefits-section {
-  background: linear-gradient(180deg, #120021 0%, #05000a 100%);
-}
-
 .benefits-section h2 {
   text-align: center;
   font-size: 2.3rem;
   font-weight: 700;
-  color: var(--accent-warm);
-  margin-bottom: 50px;
+  color: var(--bank-accent);
+  margin-bottom: 40px;
 }
 .benefits-grid {
   display: grid;
@@ -239,39 +298,35 @@
 }
 .benefit-card {
   text-align: center;
-  padding: 28px 24px;
+  padding: 24px;
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-  border: 1px solid rgba(255,255,255,0.04);
-  box-shadow: 0 8px 22px rgba(0,0,0,0.6);
-  transition: transform 0.22s cubic-bezier(0.2,0.9,0.3,1), box-shadow 0.22s cubic-bezier(0.2,0.9,0.3,1);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid var(--bank-card-border);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.25);
+  transition: transform .22s cubic-bezier(0.2,0.9,0.3,1), box-shadow .22s cubic-bezier(0.2,0.9,0.3,1);
 }
 .benefit-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 18px 48px rgba(0,0,0,0.85);
-  border-color: var(--accent-warm);
+  box-shadow: 0 18px 48px rgba(0,0,0,0.35);
+  border-color: var(--bank-accent);
 }
-.benefit-card i { font-size: 2.8rem; margin-bottom: 12px; }
-.kotak-theme .benefit-card i { color: #e85c41; }
-.sbi-theme .benefit-card i { color: #1d4ed8; }
-.bajaj-theme .benefit-card i { color: #0ea5e9; }
-.idfc-theme .benefit-card i { color: #8b5cf6; }
-.benefit-card h3 { color: var(--text); font-weight: 700; margin-bottom: 8px; }
-.benefit-card p { color: var(--muted); }
+.benefit-card i { font-size: 2.4rem; margin-bottom: 12px; color: var(--bank-accent); }
+.benefit-card h3 { color: var(--bank-text); font-weight: 700; margin-bottom: 8px; }
+.benefit-card p { color: var(--bank-muted); }
 
-/* ========== UTILITIES & ANIMATIONS (page-specific) ========== */
+/* ---------- UTILITIES & ANIMATIONS (page-specific) ---------- */
 .fade-in { opacity: 0; transform: translateY(30px); transition: all .6s ease; }
 .fade-in.visible { opacity: 1; transform: translateY(0); }
-.loading { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.12); border-radius: 50%; border-top-color: var(--accent-warm); animation: spin 1s linear infinite; }
+.loading { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.12); border-radius: 50%; border-top-color: var(--bank-accent); animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fadeGlow { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
 
-/* ========== RESPONSIVE ========== */
+/* ---------- RESPONSIVE ---------- */
 @media (max-width: 1000px) {
   .products-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 768px) {
-  .bank-header { padding: 72px 0 40px; }
+  .bank-header { padding: 48px 0 30px; }
   .bank-header-content { flex-direction: column; text-align: center; gap: 20px; }
   .bank-info h1 { font-size: 2rem; }
   .categories-section h2 { text-align: center; padding-left: 0; }
@@ -279,6 +334,9 @@
 }
 @media (max-width: 480px) {
   .bank-info h1 { font-size: 1.6rem; }
-  .categories-section, .products-section { padding: 40px 0; }
-  .benefits-section { padding: 40px 0; }
+  .categories-section, .products-section { padding: 30px 0; }
+  .benefits-section { padding: 30px 0; }
 }
+
+/* small helpers */
+.center { text-align: center; }

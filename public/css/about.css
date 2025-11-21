@@ -21,19 +21,57 @@ html, body {
 
 /* Hero */
 .about-hero{
-  background: linear-gradient(135deg, rgba(0,0,0,0.9) 0%, var(--panel-2) 100%);
-  padding: 120px 0 80px;
-  margin-top: 80px;
+  position: relative;
+  background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+  color: var(--text);
+  padding: 60px 0 48px;     /* reduced top padding so content sits closer to navbar */
+  margin-top: 0;            /* remove fixed 80px gap */
   text-align: center;
+  overflow: hidden;
 }
+
+.about-hero::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, var(--hero-overlay, rgba(0,0,0,0.35)), rgba(0,0,0,0) 40%);
+  mix-blend-mode: normal;
+  z-index: 0;
+}
+
+.about-hero .hero-content,
+.about-hero .hero-text,
+.about-hero .hero-image { position: relative; z-index: 1; }
+
+/* tweak heading and text sizes if needed */
+.about-hero .hero-content h1,
 .hero-content h1{
   font-size: 3.2rem;
-  font-weight: 800;
   line-height: 1.05;
-  margin: 0 0 1.25rem;
+  margin-bottom: 1.25rem;
   color: var(--accent-warm);
-  text-wrap: balance;
 }
+
+/* mobile adjustments */
+@media (max-width: 768px){
+  .about-hero{ padding: 80px 12px 40px; }
+}
+
+/* light-theme override: make overlay white-ish and slightly stronger for readability */
+.theme-light .about-hero::before,
+[data-theme="light"] .about-hero::before {
+  background: linear-gradient(180deg, var(--hero-overlay-light, rgba(255,255,255,0.85)), rgba(255,255,255,0) 40%);
+}
+
+/* make sure hero-image has same z-index and looks elevated */
+.about-hero .hero-image img {
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--card-border);
+  display:block;
+}
+
 .hero-content p{
   font-size: 1.125rem;
   color: var(--muted);
@@ -48,9 +86,9 @@ html, body {
   gap:.6rem;
   padding:10px 22px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.02);
+  background: var(--card-bg);
   color: var(--text);
-  border: 1px solid rgba(255,184,77,0.06);
+  border: 1px solid rgba(57, 36, 3, 0.275);
   font-weight: 600;
 }
 .trust-badge i{ color: var(--accent-warm); }

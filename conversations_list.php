@@ -36,6 +36,7 @@ try {
   <link rel="stylesheet" href="/public/css/conversation_list.css">
 </head>
 <body>
+  <?php include __DIR__ . '/includes/header.php'; ?>
 <div class="convo-page">
   <div class="info-card">
     <h1>My Conversations</h1>
@@ -76,9 +77,6 @@ try {
     </table>
   </div>
 </div>
-<script>
-  // optional: simple auto-refresh every 45s (uncomment if you want)
-  // setInterval(()=> location.reload(), 45000);
-</script>
+<script src="/public/js/script.js"></script>
 </body>
 </html>

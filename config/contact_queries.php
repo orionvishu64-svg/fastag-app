@@ -68,7 +68,6 @@ try {
     } else {
         echo json_encode(['success' => false, 'message' => 'Failed to save ticket']);
     }
-
 } catch (Throwable $e) {
     error_log('[contact_queries] Exception: ' . $e->getMessage());
     http_response_code(500);
