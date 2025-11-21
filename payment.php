@@ -12,8 +12,9 @@ require_once __DIR__ . '/config/common_start.php';
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
+<?php include __DIR__ . '/includes/header.php'; ?>
   <div class="payment-container">
-    <a href="cart.php" class="back-btn">⬅ Go Back</a>
+    <a href="cart.php" class="btn-secondary">⬅ Go Back</a>
     <h2>Checkout</h2>
     <!-- Order Summary -->
     <div class="order-summary">

@@ -1,8 +1,4 @@
-/* conversation_list.cleaned.css
-   Cleaned to rely on global styles.css (no :root, no global resets).
-   Replaced page-local token usage with global variables so theme toggles apply.
-   Kept only page-specific layout, card/table styles, responsive conversions and interactions.
-*/
+/* conversation_list.cleaned.css */
 
 /* ---------- Wrapper for entire page ---------- */
 .convo-page{
