@@ -1,23 +1,34 @@
 /* payment.css */
 
-/* Page wrapper (use this instead of styling body directly) */
 .payment-page {
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 20px;
+  box-sizing: border-box;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
   background: linear-gradient(180deg, var(--panel-1), var(--panel-2));
   color: var(--text);
+  display: block;
+  width: 100%;
+  margin: 0 auto;
+  padding-top: 120px;
+}
+
+/* Constrain and center content */
+.payment-wrap {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 20px;
   box-sizing: border-box;
 }
 
-/* Container card */
+/* Main card */
 .payment-container {
   width: 100%;
   max-width: 700px;
+  margin: 0 auto;
   background: var(--card-bg);
-  padding: 30px;
+  padding: 28px;
   border-radius: var(--card-radius);
   box-shadow: var(--shadow-soft);
   border: 1px solid var(--border-1);
@@ -28,96 +39,98 @@
 .payment-container h2 {
   text-align: center;
   color: var(--accent-warm);
-  margin-bottom: 25px;
-  font-size: 2em;
-  font-weight: 600;
+  margin-bottom: 20px;
+  font-size: 1.875rem;
+  font-weight: 700;
 }
 .payment-container h3 {
   color: var(--text);
-  border-bottom: 2px solid rgba(255,184,77,0.04);
+  border-bottom: 2px solid var(--border-1);
   padding-bottom: 10px;
-  margin-top: 30px;
-  margin-bottom: 20px;
-  font-size: 1.3em;
-  font-weight: 500;
+  margin-top: 28px;
+  margin-bottom: 18px;
+  font-size: 1.125rem;
+  font-weight: 600;
 }
 .payment-container h3.deliver_address {
   text-align: center;
   color: var(--accent-warm);
-  margin-bottom: 25px;
-  font-size: 2em;
-  font-weight: 600;
+  margin-bottom: 18px;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 /* Sections */
 .order-summary,
 .address-section,
-.payment-methods { margin-bottom: 30px; }
+.payment-methods { margin-bottom: 24px; }
 
 /* Order summary & totals */
 #order-items {
-  font-size: 1em;
+  font-size: 1rem;
   color: var(--muted);
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 .order-summary p {
   font-weight: 700;
-  font-size: 1.4em;
+  font-size: 1.25rem;
   color: var(--text);
   border-top: 1px solid var(--border-1);
-  padding-top: 15px;
-  margin-top: 15px;
+  padding-top: 12px;
+  margin-top: 12px;
   display: flex;
   justify-content: space-between;
+  gap: 12px;
 }
 
 /* Address boxes */
-#saved-addresses { display: grid; gap: 15px; margin-bottom: 20px; }
+#saved-addresses { display: grid; gap: 12px; margin-bottom: 16px; }
 .address-box {
   border: 1px solid var(--border-1);
   border-radius: 10px;
-  padding: 15px 20px;
+  padding: 14px 16px;
   background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
-  transition: box-shadow .24s ease, border-color .18s ease, background .18s ease;
+  transition: box-shadow .18s ease, border-color .14s ease, background .14s ease, transform .12s ease;
   cursor: pointer;
-  font-size: 1em;
+  font-size: 0.98rem;
   color: var(--text);
   position: relative;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  box-shadow: 0 8px 26px rgba(0,0,0,0.36);
 }
 .address-box:hover {
-  border-color: color-mix(in srgb, var(--accent-warm) 20%, var(--border-1));
+  border-color: color-mix(in srgb, var(--accent-warm) 18%, var(--border-1));
   background: linear-gradient(90deg, rgba(255,184,77,0.02), rgba(232,92,65,0.01));
-  box-shadow: 0 18px 44px rgba(0,0,0,0.6);
+  box-shadow: 0 14px 38px rgba(0,0,0,0.5);
+  transform: translateY(-2px);
 }
 .address-box.selected {
   border-color: var(--accent-warm);
   background: linear-gradient(90deg, rgba(255,184,77,0.06), rgba(232,92,65,0.03));
-  box-shadow: 0 20px 60px rgba(0,0,0,0.66);
+  box-shadow: 0 18px 48px rgba(0,0,0,0.56);
 }
 .address-box .remove-address {
   position: absolute;
   top: 8px;
   right: 12px;
-  font-size: 1.1em;
+  font-size: 1.05rem;
   color: var(--accent-warm-red);
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform .12s ease;
 }
-.address-box .remove-address:hover { transform: scale(1.12); }
+.address-box .remove-address:hover { transform: scale(1.08); }
 
 /* Add address button */
 #add-address-btn {
   background: linear-gradient(90deg, var(--accent-warm), var(--accent-warm-2));
   color: #111;
   border: none;
-  padding: 12px 20px;
-  font-size: 1em;
-  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 1rem;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background .12s ease, transform .12s ease;
+  transition: transform .12s ease, box-shadow .12s ease;
   width: 100%;
-  margin-top: 15px;
+  margin-top: 12px;
   font-weight: 800;
   box-shadow: 0 12px 36px var(--accent-glow);
 }
@@ -127,9 +140,9 @@
 #new-address-form {
   display: none;
   border: 1px solid var(--border-1);
-  padding: 20px;
+  padding: 16px;
   border-radius: 8px;
-  margin-top: 20px;
+  margin-top: 16px;
   background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
   color: var(--text);
 }
@@ -140,16 +153,16 @@
 .payment-container select,
 .payment-container textarea {
   width: 100%;
-  padding: 12px;
+  padding: 10px 12px;
   margin-top: 8px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   border: 1px solid var(--border-1);
   border-radius: 6px;
   box-sizing: border-box;
-  font-size: 1em;
+  font-size: 1rem;
   background: linear-gradient(180deg, var(--panel-1), var(--panel-2));
   color: var(--text);
-  transition: border-color .18s ease, box-shadow .12s ease;
+  transition: border-color .14s ease, box-shadow .12s ease;
 }
 .payment-container input[type="text"]:focus,
 .payment-container input[type="tel"]:focus,
@@ -167,22 +180,27 @@
   background: linear-gradient(90deg, var(--accent-warm), var(--accent-warm-2));
   color: #111;
   border: none;
-  border-radius: 6px;
-  font-size: 1em;
+  border-radius: 8px;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background-color .12s ease, transform .12s ease;
+  transition: transform .12s ease, box-shadow .12s ease;
   font-weight: 800;
   box-shadow: 0 12px 36px var(--accent-glow);
 }
 #save-address:hover { transform: translateY(-2px); }
 
+/* Secondary button */
 .btn-secondary{
-  background: transparent; color: var(--text);
+  background: transparent;
+  color: var(--text);
   border: 1px solid var(--border-1);
   padding:10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .12s ease, transform .12s ease, border-color .12s ease;
 }
 .btn-secondary:hover{
-  background: rgba(0,0,0,0.08);
+  background: color-mix(in srgb, var(--panel-2) 80%, var(--accent-glow) 20%);
   transform: translateY(-2px);
   border: 1px solid var(--border-2);
 }
@@ -191,24 +209,25 @@
 .payment-option {
   display: flex;
   align-items: center;
-  margin: 12px 0;
-  font-size: 16px;
+  margin: 10px 0;
+  font-size: 1rem;
   cursor: pointer;
   padding: 10px 12px;
   border: 1px solid var(--border-1);
   border-radius: 8px;
-  transition: all .18s ease;
+  transition: background .12s ease, border-color .12s ease, transform .12s ease;
   background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
   color: var(--text);
 }
 .payment-option:hover {
-  border-color: color-mix(in srgb, var(--accent-warm) 16%, var(--border-1));
+  border-color: color-mix(in srgb, var(--accent-warm) 14%, var(--border-1));
   background: linear-gradient(90deg, rgba(255,184,77,0.02), rgba(232,92,65,0.01));
+  transform: translateY(-1px);
 }
 .payment-option input[type="radio"] {
   accent-color: var(--accent-warm);
   margin-right: 10px;
-  transform: scale(1.15);
+  transform: scale(1.12);
 }
 
 /* Agent id */
@@ -222,7 +241,7 @@
   color: #111;
   cursor: pointer;
   font-weight: 700;
-  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+  transition: transform .12s ease, box-shadow .12s ease;
   box-shadow: 0 10px 30px var(--accent-glow);
 }
 #agent-id-box .apply-btn:hover { transform: translateY(-2px); box-shadow: 0 18px 44px var(--accent-glow); }
@@ -235,7 +254,7 @@
   width: 100%;
   margin-top: 16px;
   padding: 14px 18px;
-  font-size: 1.1em;
+  font-size: 1.05rem;
   font-weight: 800;
   color: #111;
   background: linear-gradient(135deg, var(--accent-warm) 0%, var(--accent-warm-2) 100%);
@@ -276,16 +295,36 @@
 @media (max-width: 520px) {
   .payment-container { padding: 18px; }
   .payment-container h2 { font-size: 1.5rem; }
-  .order-summary p { font-size: 1.1rem; }
-  #add-address-btn, #save-address { padding: 12px; }
+  .order-summary p { font-size: 1.05rem; }
+  #add-address-btn, #save-address { padding: 10px; }
+  .payment-wrap { padding: 0 12px; }
 }
 
-/* Accessibility focus (use focus-visible pattern) */
+/* Focus-visible & reduced motion */
 :focus { outline: none; }
-:focus-visible { outline: 3px solid rgba(255,184,77,0.12); outline-offset: 3px; }
-
-/* Respect reduced-motion */
+:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent-warm) 18%, transparent 82%); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
-  .address-box, .payment-option, .payment-container { transition: none !important; }
+  .address-box, .payment-option, .payment-container, #add-address-btn, #proceed-btn { transition: none !important; transform: none !important; }
+}
+
+body.payment-page,
+.payment-page,
+.payment-wrap,
+.payment-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+}
+
+.main-content,
+.content-wrapper,
+.page-wrapper,
+.page-body,
+#page-content,
+.layout-grid,
+.dashboard-grid {
+  display: block !important;
+  grid-template-columns: none !important;
+  width: 100% !important;
 }

@@ -1,164 +1,330 @@
-/* contact.cleaned.css */
+/* contact.css */
+
+/* Page header / hero for contact */
 .contact-header{
-  background: url("https://www.stitchtools.com/assets/images/contact/contact-banner.jpg") no-repeat center center/cover;
-  min-height:250px;
-  padding:60px 20px;
-  text-align:center;
-  color:var(--text);
-  position:relative;
-  overflow:hidden;
+  background: url("https://www.stitchtools.com/assets/images/contact/contact-banner.jpg") no-repeat center/cover;
+  min-height: 250px;
+  padding: 60px 20px;
+  text-align: left;
+  color: var(--text);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 .contact-header::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:linear-gradient(180deg, rgba(11,11,12,0.72), rgba(15,15,16,0.64));
-  z-index:1;
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* keep subtle overlay but use theme variables for consistency */
+  background: linear-gradient(180deg, rgba(11,11,12,0.72), rgba(15,15,16,0.64));
+  z-index: 1;
 }
-.contact-header *{position:relative;z-index:2;}
+.contact-header * { position: relative; z-index: 2; }
 
-/* page content */
-.contact-content{padding:40px 0;}
-.contact-grid{display:grid;grid-template-columns:1fr 2fr;gap:30px;}
-
-/* cards (info/form/emergency) */
-.info-card,.form-card,.emergency-card{
-  background: linear-gradient(180deg, var(--panel-1), var(--panel-2));
-  padding:20px;
-  border-radius:var(--card-radius,12px);
-  box-shadow:var(--shadow-soft);
-  margin-bottom:20px;
-  border:1px solid rgba(255,255,255,0);
-  color:var(--text);
+/* page content wrapper */
+.contact-content {
+  padding: 40px 0;
+  box-sizing: border-box;
 }
 
-/* quick help */
-.quick-help h3{margin-top:20px;font-size:18px;color:var(--accent-warm);border: 1px solid rgba(255,255,255,0.104);}
-.help-buttons{display:flex;flex-direction:column;gap:10px;}
-.help-btn{
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255, 255, 255, 0.205));
-  border:none;
-  padding:10px 15px;
-  border-radius:8px;
-  font-size:14px;
-  cursor:pointer;
-  text-align:left;
-  transition:background .18s ease, transform .12s ease;
-  color:var(--text);
-  border:1px solid rgba(255,255,255,0.325);
-  box-shadow:0 6px 18px rgba(0,0,0,0.6);
-}
-.help-btn:hover{
-  background:linear-gradient(90deg, rgba(255,184,77,0.06), rgba(232,92,65,0.03));
-  transform:translateY(-2px);
+/* grid: left info column, right form column */
+.contact-grid{
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 30px;
+  align-items: start;
 }
 
-/* ========== FORM ========== */
-.form-card{padding:30px;background:linear-gradient(180deg,var(--panel-1),var(--panel-2));}
-.contact-form{display:flex;flex-direction:column;gap:15px;}
-.form-row{display:flex;gap:15px;}
-.form-group{flex:1;display:flex;flex-direction:column;}
-label{font-weight:bold;margin-bottom:5px;color:var(--muted);}
-input,select,textarea{
-  padding:10px;
-  border:1px solid rgba(255,255,255,0.163);
-  border-radius:8px;
-  font-size:14px;
-  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  color:var(--text);
-  transition:box-shadow .16s ease, border-color .16s ease;
+/* Card base (consistent with theme) */
+.info-card, .form-card, .emergency-card {
+  background: var(--card-bg);                  /* uses global card background */
+  padding: 20px;
+  border-radius: var(--card-radius, 12px);
+  box-shadow: var(--shadow-soft);
+  margin-bottom: 20px;
+  border: 1px solid var(--border-1);           /* primary border */
+  color: var(--text);
+  transition: transform .12s ease, box-shadow .18s ease, border-color .12s ease;
+  box-sizing: border-box;
 }
-.form-group option{
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.353), rgb(0, 0, 0));
-  color:#2d2d2d;
-}
-textarea{resize:vertical;}
-input::placeholder, textarea::placeholder{color:rgba(243,243,243,0.32);}
-input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent-warm);box-shadow:0 8px 26px rgba(255,184,77,0.04);}
-.checkbox-group{display:flex;align-items:center;gap:8px;color:var(--muted);}
-.checkbox-group input[type="checkbox"]{width:18px;height:18px;accent-color:var(--accent-warm);}
 
-/* submit button */
-.submit-btn{
-  background: linear-gradient(90deg,var(--accent-warm), var(--accent-warm-2, #ffcf73));
-  color:#111;
-  padding:12px 20px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  font-size:16px;
-  font-weight:700;
-  transition:transform .12s ease, box-shadow .18s ease;
-  box-shadow:0 10px 30px rgba(255,184,77,0.06);
-}
-.submit-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(255,184,77,0.12);}
-#successMessage{display:none;margin-top:20px;color:#4ade80;font-weight:600;}
-
-/* ========== CONVERSATION / MESSAGES ========== */
-#conversationBox{
-  margin-top:30px;padding:20px;
+/* keep special darker inner card you had for profile block (if needed) */
+.info-card.alt {
+  /* preserve any special gradient you already used; fallback to var(--card-bg) */
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border-radius:var(--card-radius,12px);border:1px solid rgba(255,255,255,0.03);
 }
-#messagesThread{
-  max-height:250px;overflow-y:auto;padding:10px;border-radius:8px;margin-bottom:15px;
-  background:linear-gradient(180deg, var(--panel-2), rgba(21,21,21,0.8));
-  border:1px solid rgba(255,255,255,0.02);
+
+/* Quick help header */
+.quick-help h3 {
+  margin-top: 6px;
+  font-size: 18px;
+  color: var(--accent-warm);
+  font-weight: 700;
+  /* subtle border to separate header in both themes */
+  padding: 8px 10px;
+  border-radius: 10px;
+  display: inline-block;
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  border: 1px solid var(--border-1);
 }
-.user-msg,.admin-msg{
-  padding:10px 15px;border-radius:8px;margin-bottom:10px;font-size:14px;max-width:85%;
+
+/* Help buttons (keep your original hover animation & shadow) */
+.help-buttons{ display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+
+.help-btn{
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.18));
+  border: 1px solid var(--border-1);
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: background .18s ease, transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+  color: var(--text);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.help-btn i { color: var(--accent-warm); min-width: 22px; text-align:center; }
+
+/* Hover animation preserved */
+.help-btn:hover{
+  background: linear-gradient(90deg, rgba(255,184,77,0.06), rgba(232,92,65,0.03));
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent-warm) 12%, var(--border-1));
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+}
+
+/* ===== FORM STYLES (clear, visible in light + dark) ===== */
+
+/* Form card uses same base .form-card */
+.form-card{ padding: 30px; }
+
+/* form layout */
+.contact-form{ display:flex; flex-direction:column; gap:15px; }
+.form-row{ display:flex; gap:15px; flex-wrap:wrap; }
+
+/* group */
+.form-group{ flex:1; display:flex; flex-direction:column; }
+
+/* labels */
+.form-card label,
+.form-card .label {
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* inputs / textarea / select
+   - Use transparent or panel-ish backgrounds but ensure border shows in light theme.
+   - On light theme var(--panel-1) may be white; borders use var(--border-1) so they're visible.
+*/
+input, select, textarea {
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid var(--border-1);
+  transition: box-shadow .16s ease, border-color .16s ease, transform .06s ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+/* In light theme inputs should still show: fallback if card-bg is white */
+.theme-light input,
+.theme-light select,
+.theme-light textarea {
+  background: linear-gradient(180deg, #fff, #fff);
+  color: var(--text); /* your styles.css sets --text for light theme too */
+  border: 1px solid var(--border-1);
+  box-shadow: 0 6px 18px rgba(18,25,35,0.04);
+}
+
+/* placeholder and subtle text */
+input::placeholder, textarea::placeholder {
+  color: rgba(243,243,243,0.36);
+}
+.theme-light input::placeholder, .theme-light textarea::placeholder {
+  color: rgba(85,107,122,0.45); /* readable on light */
+}
+
+/* textarea sizing */
+textarea { min-height: 110px; resize: vertical; }
+
+/* focus states (visible and accessible) */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent-warm);
+  box-shadow: 0 8px 26px var(--accent-glow);
+  transform: translateY(-1px);
+}
+:focus-visible { outline-offset: 3px; }
+
+/* checkbox look */
+.checkbox-group{ display:flex; align-items:center; gap:8px; color:var(--muted); }
+.checkbox-group input[type="checkbox"]{ width:18px; height:18px; accent-color: var(--accent-warm); }
+
+/* subtle option background for selects list */
+.form-group option {
+  background: var(--card-bg);
+  color: var(--text);
+}
+
+/* Submit button - keep your warm gradient + shadow but use global variables */
+.submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(90deg, var(--accent-warm), var(--accent-warm-2));
+  color: #111;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  transition: transform .12s ease, box-shadow .18s ease, filter .12s ease;
+  box-shadow: 0 12px 36px var(--accent-glow);
+  width: 100%;
+}
+.submit-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(.98);
+  box-shadow: 0 18px 48px rgba(255,184,77,0.16);
+}
+
+/* secondary button (view conversations) - matches global .btn-secondary */
+.view-conv-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  justify-content:center;
+  width: auto;
+  padding:10px 18px;
+  border-radius:10px;
+  border:1px solid var(--border-1);
+  background: transparent;
+  color: var(--text);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.view-conv-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-2);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+/* success message area */
+#successMessage { display:none; margin-top: 12px; color: var(--success, #4ade80); font-weight:700; }
+
+/* Conversation UI */
+#conversationBox {
+  margin-top: 30px;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius: var(--card-radius);
+  border: 1px solid var(--border-1);
+}
+#messagesThread {
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  background: linear-gradient(180deg, var(--panel-2), rgba(21,21,21,0.8));
+  border: 1px solid var(--border-1);
+}
+
+/* message bubbles */
+.user-msg, .admin-msg {
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  max-width: 85%;
+  box-sizing: border-box;
 }
 .user-msg{
   background: linear-gradient(90deg, rgba(11,99,232,0.06), rgba(11,99,232,0.02));
-  color:var(--text);text-align:left;border:1px solid rgba(11,99,232,0.06);
+  color: var(--text);
+  text-align: left;
+  border: 1px solid rgba(11,99,232,0.06);
 }
 .admin-msg{
   background: linear-gradient(90deg, rgba(16,185,129,0.06), rgba(16,185,129,0.02));
-  color:var(--text);text-align:right;margin-left:auto;border:1px solid rgba(16,185,129,0.06);
+  color: var(--text);
+  text-align: right;
+  margin-left: auto;
+  border: 1px solid rgba(16,185,129,0.06);
 }
-#replyForm{display:flex;gap:10px;}
-#replyForm input{flex:1;padding:10px;border:1px solid rgba(255,255,255,0.04);border-radius:8px;background:transparent;color:var(--text);}
-#replyForm button{background: linear-gradient(90deg,#34d399,#10b981);color:#071214;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;transition:transform .12s ease;}
-#replyForm button:hover{transform:translateY(-2px);}
+#replyForm{ display:flex; gap:10px; align-items:center; }
+#replyForm input{ flex:1; padding:10px; border:1px solid var(--border-1); border-radius:8px; background: transparent; color:var(--text); }
+#replyForm button{
+  background: linear-gradient(90deg,#34d399,#10b981);
+  color: #071214;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform .12s ease;
+}
+#replyForm button:hover{ transform: translateY(-2px); }
 
-/* ========== EMERGENCY CONTACT ========== */
-.emergency-contact{padding:60px 0;text-align:center;}
-.emergency-card{padding:30px;background:linear-gradient(180deg,var(--panel-1),var(--panel-2));}
+/* Emergency contact CTA */
+.emergency-contact{ padding: 60px 0; text-align: center; }
+.emergency-card{ padding: 30px; background: var(--card-bg); border: 1px solid var(--border-1); }
+
+/* big emergency button */
 .emergency-btn{
-  background: linear-gradient(90deg,var(--accent-warm-red), var(--accent-warm-red-2, #f06a50));
-  color:#fff;padding:14px 24px;border:none;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;
-  box-shadow:0 12px 36px rgba(232,92,65,0.08);
+  background: linear-gradient(90deg, var(--accent-warm-red), var(--accent-warm-red-2, #f06a50));
+  color: #fff;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease;
+  box-shadow: 0 12px 36px rgba(232,92,65,0.08);
 }
-.emergency-btn:hover{transform:translateY(-2px);box-shadow:0 20px 48px rgba(232,92,65,0.12);}
+.emergency-btn:hover{ transform: translateY(-2px); box-shadow: 0 20px 48px rgba(232,92,65,0.12); }
 
-/* header text styling (kept) */
-.contact-header h1{font-size:2.2rem;margin:0 0 6px;color:var(--accent-warm);}
-.contact-header p{font-size:1rem;margin:0;color:var(--muted);}
+/* header text */
+.contact-header h1{ font-size: 2.2rem; margin: 0 0 6px; color: var(--accent-warm); }
+.contact-header p{ font-size: 1rem; margin: 0; color: var(--muted); }
 
-/* ========== RESPONSIVE ========== */
-@media (max-width:992px){
-  .contact-grid{grid-template-columns:1fr;gap:2rem;}
-  .form-row{flex-direction:column;}
-  #conversationBox{max-height:300px;}
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .form-row { flex-direction: column; }
+  #conversationBox { max-height: 300px; }
 }
-@media (max-width:768px){
-  .contact-header{min-height:180px;padding:2rem 1rem;background-position:center top;}
-  .contact-header h1{font-size:1.8rem;}
-  .contact-header p{font-size:1rem;}
-  .contact-method{flex-direction:column;align-items:center;text-align:center; background:linear-gradient(90deg, #00000000, #ffffff1f); border:0}
-  .method-details{text-align:center;}
-  .checkbox-group{flex-direction:column;align-items:flex-start;}
-  #replyForm{flex-direction:column;}
-  #replyForm button{width:100%;}
-  #conversationBox{max-height:200px;}
+@media (max-width: 768px) {
+  .contact-header { min-height: 180px; padding: 2rem 1rem; background-position: center top; }
+  .contact-header h1 { font-size: 1.8rem; }
+  .contact-header p { font-size: 1rem; }
+  .checkbox-group { flex-direction: column; align-items: flex-start; }
+  #replyForm { flex-direction: column; }
+  #replyForm button { width: 100%; }
+  #conversationBox { max-height: 200px; }
 }
-@media (max-width:480px){
-  h1,h2,h3{font-size:1.2rem;}
-  .info-card,.quick-help,.form-card{padding:1rem;}
-  .submit-btn,.help-btn,.emergency-btn{width:100%;text-align:center;padding:14px 20px;}
-  .emergency-card{padding:1rem;}
-  .contact-content,.emergency-contact{padding:40px 0;}
+@media (max-width: 480px) {
+  h1, h2, h3 { font-size: 1.2rem; }
+  .info-card, .quick-help, .form-card { padding: 1rem; }
+  .submit-btn, .help-btn, .emergency-btn { width: 100%; text-align: center; padding: 14px 20px; }
+  .emergency-card { padding: 1rem; }
+  .contact-content, .emergency-contact { padding: 40px 0; }
 }
 
-/* Accessibility focus (kept global focus behavior) */
-:focus{outline:3px solid rgba(255,184,77,0.08);outline-offset:2px;}
+/* Accessibility focus (kept global focus behaviour) */
+:focus { outline: 3px solid rgba(255,184,77,0.08); outline-offset: 2px; }
+
+/* small helper to force card/border/shadow consistency when other pages override */
+.info-card, .form-card, .emergency-card {
+  border-color: var(--border-1) !important;
+  box-shadow: var(--shadow-soft) !important;
+}

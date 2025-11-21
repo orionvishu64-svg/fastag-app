@@ -30,7 +30,7 @@ require_once 'config/common_start.php';
         </div>
 
         <select id="perpage" title="Items per page" style="background:transparent;color:var(--muted);border-radius:10px;padding:8px;border:1px solid rgba(255, 255, 255, 0.28);">
-          <option value="4">4 / page</option>
+          <option value="3">3 / page</option>
           <option value="6">6 / page</option>
           <option value="9">9 / page</option>
         </select>
@@ -134,7 +134,7 @@ const FAQS = [
 /* --- App state --- */
 let state = {
   page: 1,
-  perPage: 4,
+  perPage: 3,
   filtered: FAQS.slice(),
   expanded: new Set(), // expanded IDs
 };
