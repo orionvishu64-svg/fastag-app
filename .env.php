@@ -5,7 +5,7 @@ return [
   'SMTP_SECURE'    => PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS,
 
   'SMTP_USERNAME'  => 'vishwasbarnwal20@gmail.com',
-  'SMTP_PASSWORD'  => 'yufk niky cbgc gohi',
+  'SMTP_PASSWORD'  => 'ngdq xekd lpit msyh',
 
   'FROM_EMAIL'     => 'vishwasbarnwal20@gmail.com',
   'FROM_NAME'      => 'Apna Payments - FASTag',

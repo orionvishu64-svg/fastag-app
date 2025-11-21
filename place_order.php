@@ -92,16 +92,21 @@ if (in_array($payment_method, ['agent-id','agent_id','agent'])) {
 try {
     $pdo->beginTransaction();
 
-    $stmt = $pdo->prepare("INSERT INTO orders (user_id, address_id, amount, shipping_amount, payment_method, payment_status, transaction_id, created_at, updated_at) VALUES (:uid, :aid, :amt, :ship, :pm, :ps, :tx, NOW(), NOW())");
-    $stmt->execute([
-        ':uid' => $user_id,
-        ':aid' => $address_id,
-        ':amt' => $total,
-        ':ship' => $shipping_amount,
-        ':pm' => $payment_method,
-        ':ps' => $payment_status,
-        ':tx' => $transaction_id
-    ]);
+    $stmt = $pdo->prepare(
+  "INSERT INTO orders (user_id, address_id, amount, shipping_amount, payment_method, payment_status, transaction_id, status, created_at, updated_at)
+   VALUES (:uid, :aid, :amt, :ship, :pm, :ps, :tx, :st, NOW(), NOW())"
+);
+$stmt->execute([
+    ':uid' => $user_id,
+    ':aid' => $address_id,
+    ':amt' => $total,
+    ':ship' => $shipping_amount,
+    ':pm' => $payment_method,
+    ':ps' => $payment_status,
+    ':tx' => $transaction_id,
+    ':st' => 'created'
+]);
+
     $order_id = (int)$pdo->lastInsertId();
 
     $insItem = $pdo->prepare("INSERT INTO order_items (order_id, product_name, bank, quantity, price) VALUES (:oid, :pname, :bank, :qty, :price)");
