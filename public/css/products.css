@@ -28,17 +28,17 @@
 
 /* ---------- Reset / base ---------- */
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:var(--text);background:linear-gradient(180deg,var(--bg-dark), #070707);}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:var(--text);background:linear-gradient(180deg,var(--bg-start), var(--bg-end));}
 a{color:inherit;text-decoration:none;}
 img{max-width:100%;display:block;}
 
 /* ---------- Layout container ---------- */
-.container{width:100%;max-width:var(--max-width);margin:0 auto;padding:0 16px;}
+.container{width:100%;max-width:1200px;margin:0 auto;padding:0 16px;}
 
 /* ---------- Hero / header (dark warm) ---------- */
 .products-header{
   position:relative;width:100%;min-height:260px;padding:3rem 1rem;
-  background: linear-gradient(180deg, rgba(11,11,12,0.4), rgba(5,5,6,0.6)), url("https://acko-cms.ackoassets.com/replace_fastag_complete_process_cfd124699f.jpg") no-repeat center center;
+  background: linear-gradient(180deg, var(--panel-1), var(--panel-2)), url("https://acko-cms.ackoassets.com/replace_fastag_complete_process_cfd124699f.jpg") no-repeat center center;
   background-size:cover;color:var(--text);text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;
 }
 .products-header::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(11,11,12,0.6), rgba(6,6,6,0.6));z-index:1;}

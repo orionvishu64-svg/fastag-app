@@ -1,8 +1,4 @@
-/* bank-pages.css
-   Updated: make bank pages theme-aware and consistent with styles.css
-   - Uses global variables from styles.css
-   - Bank accents are set via per-theme CSS variables so both dark & light modes work
-*/
+/* bank-pages.css */
 
 /* ---------- BASE / LAYOUT ---------- */
 :root {
@@ -99,11 +95,6 @@ html, body {
   color: var(--bank-accent);
 }
 
-/* ---------- BANK THEME VARIABLES (scoped) ----------
-   Each bank theme sets a small set of variables; the bank-header and page
-   use those variables. In light mode a later override adjusts the variables.
-*/
-
 /* Kotak */
 .kotak-theme {
   --bank-panel-1: #2a0404;
@@ -144,10 +135,6 @@ html, body {
   --category-text: #0f172a;
 }
 
-/* ---------- LIGHT THEME OVERRIDES FOR BANKS ----------
-   When .theme-light or [data-theme="light"] is present, we switch the
-   bank-panel to light surfaces but keep the bank accent colors.
-*/
 .theme-light .kotak-theme,
 [data-theme="light"] .kotak-theme {
   --bank-panel-1: #ffffff;
