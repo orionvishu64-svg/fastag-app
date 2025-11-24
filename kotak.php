@@ -11,7 +11,6 @@
 </head>
 <body class="kotak-theme" data-bank="Kotak">
 <?php include __DIR__ . '/includes/header.php'; ?>
-    <!-- Bank Header -->
     <section class="bank-header kotak-theme">
         <div class="container">
             <div class="bank-header-content">

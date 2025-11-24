@@ -1,12 +1,8 @@
 <?php
 // track_orders.php
-// Drop-in replacement — uses your existing includes and DB schema.
-// BACKUP your original file before replacing.
 
 require_once __DIR__ . '/config/common_start.php';
-require 'config/db.php'; // expects $pdo (PDO instance)
-
-// Ensure user logged-in (your system uses $_SESSION['user']['id'])
+require 'config/db.php';
 if (empty($_SESSION['user']['id'])) {
     header("Location: /index.html");
     exit;
