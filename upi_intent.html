@@ -5,48 +5,55 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>UPI Payment</title>
   <style>
-    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; padding: 18px; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; padding: 18px; color: #222; }
     .info { margin: 12px 0; color: #333; }
     .status { margin-top: 16px; font-weight: 600; }
     .small { font-size: 0.9rem; color: #666; }
     button { background:#6a00ff;color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer; }
-    a.fallback { display:inline-block;margin-top:8px; }
+    a.fallback { display:inline-block;margin-top:8px; color:#0645ad; word-break:break-all; }
+    .hidden { display:none; }
+    .qr { margin-top:12px; }
   </style>
 </head>
 <body>
   <h2>Redirecting to UPI</h2>
+
   <div class="info">
-    <div>Amount: <span id="amountText">—</span></div>
-    <div>Order ID: <span id="orderText">—</span></div>
-    <div>Txn Ref: <span id="txnText">—</span></div>
-    <div class="small">If the UPI app does not open automatically, use the manual link below.</div>
+    <div>Amount: <strong id="amountText">—</strong></div>
+    <div>Order ID: <strong id="orderText">—</strong></div>
+    <div>Txn Ref: <strong id="txnText">—</strong></div>
+    <div class="small">If the UPI app doesn't open, use the manual link or scan the QR code below.</div>
   </div>
 
-  <a id="upiManual" class="fallback" href="#" target="_blank">Open UPI (manual)</a>
-
-  <div style="margin-top:18px;">
-    <div id="status" class="status">Starting payment...</div>
+  <div style="margin-top:12px;">
+    <button id="openBtn" type="button">Open UPI App</button>
+    <button id="copyBtn" type="button" style="margin-left:8px;">Copy UPI String</button>
   </div>
 
-  <!-- Dev/demo helper: mark paid manually (INSECURE: for local testing only) -->
   <div style="margin-top:14px;">
-    <button id="demoPaidBtn" type="button">(Demo) I paid — mark order paid</button>
+    <div id="status" class="status">Initializing...</div>
+  </div>
+
+  <a id="upiManual" class="fallback hidden" href="#" target="_blank">Open UPI (manual)</a>
+
+  <div id="qrWrap" class="qr hidden">
+    <p class="small">Scan with another phone:</p>
+    <img id="qrImg" alt="UPI QR">
   </div>
 
 <script>
-(async function(){
-  // --- CONFIG: replace this with your real merchant VPA for production ---
-  const MERCHANT_VPA = 'MERCHANT_VPA_HERE'; // e.g. 'merchant@hdfcbank' - REPLACE ME
-  const MERCHANT_NAME = 'Your Merchant Name'; // shown in payer's app
+(async function () {
+  // === CONFIGURE HERE ===
+  const MERCHANT_VPA = 'apnapaymentbbps@yesbank'; // your VPA
+  const MERCHANT_NAME = 'ApnaPayment';           // payee name
+  const NOTE_DEFAULT = 'Tag Payment';
+  // ======================
 
-  // --- read params from querystring ---
   const params = new URLSearchParams(location.search);
   const rawAmount = params.get('amount') || '';
   const addressId = params.get('address_id') || '';
-  // optional: if your place_order needs user id or token, include auth headers as needed
-  document.getElementById('amountText').textContent = rawAmount ? rawAmount : '—';
+  const orderIdFromQS = params.get('order_id') || '';
 
-  // --- validate amount ---
   const amountNum = Number(rawAmount);
   const amount = (!isNaN(amountNum) && amountNum > 0) ? amountNum.toFixed(2) : null;
   if (!amount) {
@@ -54,130 +61,169 @@
     return;
   }
 
-  // --- Step 1: create order on server (returns order_id and ideally txnRef) ---
+  document.getElementById('amountText').textContent = amount;
+
+  // create order on server (same as your original flow)
   document.getElementById('status').textContent = 'Creating order on server...';
-  let orderId = null;
+  let orderId = orderIdFromQS || null;
   let txnRef = null;
 
   try {
-    const body = new URLSearchParams();
-    body.append('amount', amount);
-    if (addressId) body.append('address_id', addressId);
-    body.append('payment_method', 'upi'); // optional, helps server know the flow
+    if (!orderId) {
+      const body = new URLSearchParams();
+      body.append('amount', amount);
+      if (addressId) body.append('address_id', addressId);
+      body.append('payment_method', 'upi');
 
-    const res = await fetch('place_order.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body.toString()
-    });
-    const data = await res.json();
-    if (!data || !data.success) {
-      throw new Error(data && data.error ? data.error : 'place_order failed');
+      const res = await fetch('place_order.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+      });
+      const data = await res.json();
+      if (!data || !data.success) throw new Error(data && data.error ? data.error : 'place_order failed');
+      orderId = data.order_id || data.id || null;
+      txnRef = data.txnRef || data.transaction_id || null;
+    } else {
+      // If order_id was provided in querystring, use it and request txnRef from server if needed
+      const res = await fetch('place_order.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ order_id: orderId, amount: amount, payment_method: 'upi' }).toString()
+      });
+      const data = await res.json();
+      if (data && data.success) {
+        txnRef = data.txnRef || data.transaction_id || null;
+      }
     }
-    orderId = data.order_id || data.id || null;
-    // server should ideally return txnRef; fallback to transaction_id if provided or generate a controlled fallback
-    txnRef = data.txnRef || data.transaction_id || null;
 
-    // fallback: generate a non-secure local txnRef only if server didn't give one
     if (!txnRef) {
-      // WARNING: fallback txnRef is only for demo/local testing; prefer server-generated txnRef.
+      // fallback to a generated transaction reference — server ideally should return this
       txnRef = 'TXN' + Date.now();
-      console.warn('Server did not return txnRef. Using local fallback (demo only):', txnRef);
+      console.warn('Server did not return txnRef. Using local fallback:', txnRef);
     }
 
-    document.getElementById('orderText').textContent = orderId || 'none';
+    document.getElementById('orderText').textContent = orderId || '—';
     document.getElementById('txnText').textContent = txnRef;
   } catch (err) {
     document.getElementById('status').textContent = 'Failed to create order: ' + (err.message || err);
     return;
   }
 
-  // --- Build UPI URI ---
-  if (!MERCHANT_VPA || MERCHANT_VPA === 'MERCHANT_VPA_HERE') {
-    document.getElementById('status').textContent = 'Warning: MERCHANT_VPA not set. Replace MERCHANT_VPA in this file with your real VPA.';
+  // Build upi strings (URL-encoded)
+  const tn = encodeURIComponent(NOTE_DEFAULT);
+  const encodedPa = encodeURIComponent(MERCHANT_VPA);
+  const encodedPn = encodeURIComponent(MERCHANT_NAME);
+  const encodedTr = encodeURIComponent(txnRef);
+  const encodedAm = encodeURIComponent(amount);
+
+  // Primary intent URL (Android). This attempts to open a UPI app.
+  const intentUrl = `intent://upi/pay?pa=${encodedPa}&pn=${encodedPn}&am=${encodedAm}&tn=${tn}&tr=${encodedTr}#Intent;scheme=upi;end`;
+
+  // Fallback upi:// link
+  const upiUrl = `upi://pay?pa=${encodedPa}&pn=${encodedPn}&am=${encodedAm}&tn=${tn}&tr=${encodedTr}&cu=INR`;
+
+  // Prepare manual link & QR (for desktop/iOS)
+  const manualEl = document.getElementById('upiManual');
+  manualEl.href = upiUrl;
+  manualEl.textContent = 'Open UPI (manual) — ' + upiUrl;
+
+  function showQr(text) {
+    const qrWrap = document.getElementById('qrWrap');
+    const qrImg = document.getElementById('qrImg');
+    qrImg.src = 'https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=' + encodeURIComponent(text);
+    qrWrap.classList.remove('hidden');
   }
 
-  const tn = `Order ${orderId}`.slice(0, 40);
-  const upiUri = `upi://pay`
-    + `?pa=${encodeURIComponent(MERCHANT_VPA)}`
-    + `&pn=${encodeURIComponent(MERCHANT_NAME)}`
-    + `&tr=${encodeURIComponent(txnRef)}`
-    + `&tn=${encodeURIComponent(tn)}`
-    + `&am=${encodeURIComponent(amount)}`
-    + `&cu=INR`;
-
-  // show manual link and log
-  const manual = document.getElementById('upiManual');
-  manual.href = upiUri;
-  manual.textContent = 'Open UPI (manual) — ' + upiUri;
-  console.log('UPI URI:', upiUri);
-
-  // --- Auto redirect to UPI app ---
-  document.getElementById('status').textContent = 'Opening UPI app...';
-  // Wait a bit to let user see the page on slow devices
-  setTimeout(() => {
-    try {
-      window.location.href = upiUri;
-    } catch(e) {
-      console.warn('Redirect to UPI failed', e);
-    }
-  }, 300);
-
-  // --- Poll server for payment status (/config/verify_payment.php reads DB) ---
-  async function pollVerify(attempt = 0) {
-    const maxAttempts = 30; // 30 * delay (2s) = 60s total
-    const delay = 2000;
-    if (!orderId) return;
-    try {
-      const r = await fetch('/config/verify_payment.php?order_id=' + encodeURIComponent(orderId), {cache: 'no-store'});
-      const d = await r.json();
-      // expected response shape: { success: boolean, status: 'pending'|'paid'|'failed', ... }
-      if (d && (d.status === 'paid' || d.payment_status === 'paid' || d.success === true)) {
-        document.getElementById('status').textContent = 'Payment confirmed. Redirecting to success page...';
-        try { localStorage.removeItem('cart'); } catch(_) {}
-        // redirect to order success page or show success
-        window.location.href = 'order_placed.php?order_id=' + encodeURIComponent(orderId);
-        return;
-      } else {
-        // still pending
-        document.getElementById('status').textContent = 'Payment pending — checking again... (attempt ' + (attempt+1) + ')';
-      }
-    } catch (e) {
-      console.warn('verify fetch error', e);
-      document.getElementById('status').textContent = 'Network error while verifying. Will retry...';
-    }
-    if (attempt < maxAttempts) {
-      setTimeout(() => pollVerify(attempt + 1), delay);
-    } else {
-      document.getElementById('status').textContent = 'Verification timed out. If you paid, contact support with Transaction Ref: ' + txnRef;
-    }
-  }
-
-  // start polling after redirect (give app time to process)
-  setTimeout(() => pollVerify(0), 3000);
-
-  // --- Demo: insecure manual mark-paid for local testing only ---
-  document.getElementById('demoPaidBtn').addEventListener('click', async function(){
-    if (!confirm('This will mark the order as PAID on the server (demo only). Do you want to continue?')) return;
-    try {
-      // demo_mark_paid.php must be created by you and used only in dev environment
-      const r = await fetch('demo_mark_paid.php', {
-        method: 'POST',
-        headers: {'Content-Type':'application/x-www-form-urlencoded'},
-        body: 'order_id=' + encodeURIComponent(orderId) + '&transaction_id=' + encodeURIComponent('DEMO-' + Date.now())
-      });
-      const d = await r.json();
-      if (d && d.success) {
-        document.getElementById('status').textContent = 'Order marked paid (demo).';
-        setTimeout(()=>{ window.location.href = 'order_placed.php?order_id=' + encodeURIComponent(orderId); }, 600);
-      } else {
-        document.getElementById('status').textContent = 'Demo mark paid failed: ' + (d.error || 'unknown');
-      }
-    } catch (err) {
-      document.getElementById('status').textContent = 'Demo request failed: ' + err.message;
-    }
+  // Copy UPI string to clipboard
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    navigator.clipboard.writeText(upiUrl).then(function () {
+      document.getElementById('status').textContent = 'UPI string copied to clipboard — paste into your UPI app.';
+      manualEl.classList.remove('hidden');
+      showQr(upiUrl);
+    }, function () {
+      document.getElementById('status').textContent = 'Copy failed — please long-press and copy the link manually.';
+      manualEl.classList.remove('hidden');
+      showQr(upiUrl);
+    });
   });
 
+  // Open button: try intent then fallback
+  document.getElementById('openBtn').addEventListener('click', openUpiFlow);
+
+  // Automatically start opening after a short delay (so user sees info)
+  setTimeout(openUpiFlow, 500);
+
+  function openUpiFlow() {
+    document.getElementById('status').textContent = 'Attempting to open UPI app...';
+
+    const ua = navigator.userAgent || '';
+    if (/Android/i.test(ua)) {
+      // Try intent first (works on many Android browsers)
+      try {
+        window.location.href = intentUrl;
+      } catch (e) {
+        // fallback to upi://
+        window.location.href = upiUrl;
+      }
+      // after a short delay, open upi:// as fallback in case intent didn't work
+      setTimeout(function () {
+        try { window.location.href = upiUrl; } catch (e) { /* ignore */ }
+      }, 900);
+    } else {
+      // Non-Android: open upi:// (some apps may accept) and show QR/manual link
+      try { window.location.href = upiUrl; } catch (e) {}
+      manualEl.classList.remove('hidden');
+      showQr(upiUrl);
+    }
+
+    // start polling verification
+    startPollingVerification(orderId, txnRef);
+  }
+
+  // Poll server-side verification via POST (safer than GET)
+  let polls = 0;
+  const maxPolls = 30;
+  async function startPollingVerification(orderId, txnRef) {
+    polls = 0;
+    document.getElementById('status').textContent = 'Waiting for server verification...';
+    while (polls < maxPolls) {
+      polls++;
+      try {
+        const res = await fetch('config/verify_payment.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Cache-Control': 'no-cache' },
+          body: new URLSearchParams({ order_id: orderId, transaction_id: txnRef }).toString()
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          // Consider server authoritative: look for success/payment status
+          if (json && (json.success === true || json.status === 'paid' || json.payment_status === 'paid')) {
+            document.getElementById('status').textContent = 'Payment verified. Redirecting...';
+            try { localStorage.removeItem('cart'); } catch (_) {}
+            // redirect to your order success page
+            window.location.href = 'orderplaced.php?order_id=' + encodeURIComponent(orderId);
+            return;
+          } else {
+            document.getElementById('status').textContent = 'Payment pending — checking again... (attempt ' + polls + ')';
+          }
+        } else {
+          document.getElementById('status').textContent = 'Server error while verifying (status ' + res.status + ')';
+        }
+      } catch (err) {
+        console.warn('verify error', err);
+        document.getElementById('status').textContent = 'Network error while verifying; retrying...';
+      }
+      // delay between polls
+      await new Promise(r => setTimeout(r, 2000));
+    }
+
+    // timed out
+    document.getElementById('status').textContent = 'Verification timed out. If you paid, contact support with Transaction Ref: ' + txnRef;
+    manualEl.classList.remove('hidden');
+    showQr(upiUrl);
+  }
 })();
 </script>
 </body>

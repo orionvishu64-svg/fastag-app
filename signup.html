@@ -25,7 +25,7 @@
           <div class="row" style="align-items:center;">
             <label>Email</label>
             <input name="email" id="emailInput" type="email" required placeholder="you@example.com" />
-            <span id="emailTick" class="ok" aria-hidden="true">✓ Verified</span>
+            <span id="emailTick" class="ok" aria-hidden="true" style="display:none;">✓ Verified</span>
           </div>
 
           <div class="row">
@@ -43,7 +43,7 @@
           <div class="row" style="align-items:center;">
             <label>Phone</label>
             <input name="phone" id="phoneInput" type="tel" inputmode="numeric" maxlength="10" pattern="\d{10}" required placeholder="10-digit number" />
-            <span id="phoneTick" class="ok" aria-hidden="true">✓ Verified</span>
+            <span id="phoneTick" class="ok" aria-hidden="true" style="display:none;">✓ Verified</span>
           </div>
 
           <div class="row">
@@ -90,26 +90,21 @@
     </div>
   </div>
 
-  <!-- Google lib -->
   <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogle()"></script>
   <script src="/public/js/google-auth.js"></script>
   <script>
-    // helper selectors
     const $ = s => document.querySelector(s);
     const $$ = s => Array.from(document.querySelectorAll(s));
-    const say = t => $('#msg').textContent = t || '';
+    const say = t => { $('#msg').textContent = t || ''; };
 
-    // normalize phone to 10-digit digits-only (India)
     function normalizePhone(raw) {
       const d = (raw || '').replace(/\D+/g, '');
       return d.length === 10 ? d : '';
     }
 
-    // hide ticks when user edits email/phone
     $('#emailInput').addEventListener('input', () => { $('#emailTick').style.display = 'none'; });
     $('#phoneInput').addEventListener('input', () => { $('#phoneTick').style.display = 'none'; });
 
-    // Toggle show/hide for mPINs
     document.addEventListener('click', (e) => {
       if (!e.target.classList.contains('toggle-btn')) return;
       const targetId = e.target.dataset.target;
@@ -122,6 +117,15 @@
       }
     });
 
+    async function safeJson(response) {
+      const text = await response.text();
+      try {
+        return { ok: response.ok, json: JSON.parse(text) };
+      } catch (e) {
+        return { ok: response.ok, json: null, text };
+      }
+    }
+
     // ---- Email OTP send/verify ----
     $('#sendEmailOtp').onclick = async () => {
       say('');
@@ -132,10 +136,15 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ email })
+          body: JSON.stringify({ action: 'send', email })
         });
-        const d = await res.json();
-        if (!d.success) return say(d.error || d.message || 'Failed to send email OTP');
+        const parsed = await safeJson(res);
+        if (!parsed.ok) {
+          return say(parsed.json?.error || parsed.text || 'Failed to send email OTP');
+        }
+        const d = parsed.json;
+        if (!d) return say('Server returned invalid response');
+        if (!d.success) return say(d.error || 'Failed to send email OTP');
         $('#emailOtpRow').style.display = 'flex';
         $('#emailOtp').focus();
       } catch (err) {
@@ -148,16 +157,21 @@
       say('');
       const email = $('#emailInput').value.trim();
       const code  = $('#emailOtp').value.trim();
-      if (!/^\d{4,6}$/.test(code) && !/^\d{6}$/.test(code)) { /* accept 4-6 or 6 digits depending provider */ }
+      if (!/^\d{6}$/.test(code)) return say('Enter a valid 6-digit OTP');
       try {
         const res = await fetch('/config/email_otp.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ email, code })
+          body: JSON.stringify({ action: 'verify', email, code })
         });
-        const d = await res.json();
-        if (!d.success) return say(d.error || d.message || 'Email OTP invalid');
+        const parsed = await safeJson(res);
+        if (!parsed.ok) {
+          return say(parsed.json?.error || parsed.text || 'Failed to verify email OTP');
+        }
+        const d = parsed.json;
+        if (!d) return say('Server returned invalid response');
+        if (!d.success) return say(d.error || 'Email OTP invalid');
         $('#emailTick').style.display = 'inline';
         $('#emailOtpRow').style.display = 'none';
         say('');
@@ -180,8 +194,11 @@
           credentials: 'include',
           body: JSON.stringify({ action: 'send_otp', mobile: phone })
         });
-        const d = await res.json();
-        if (!d.success) return say(d.error || d.message || 'Failed to send phone OTP');
+        const parsed = await safeJson(res);
+        if (!parsed.ok) return say(parsed.json?.error || parsed.text || 'Failed to send phone OTP');
+        const d = parsed.json;
+        if (!d) return say('Server returned invalid response');
+        if (!d.success) return say(d.error || 'Failed to send phone OTP');
         $('#phoneOtpRow').style.display = 'flex';
         $('#phoneOtp').focus();
       } catch (err) {
@@ -203,8 +220,11 @@
           credentials: 'include',
           body: JSON.stringify({ action: 'verify_otp', mobile: phone, otp })
         });
-        const d = await res.json();
-        if (!d.success) return say(d.error || d.message || 'Phone OTP invalid');
+        const parsed = await safeJson(res);
+        if (!parsed.ok) return say(parsed.json?.error || parsed.text || 'Phone OTP verify failed');
+        const d = parsed.json;
+        if (!d) return say('Server returned invalid response');
+        if (!d.success) return say(d.error || 'Phone OTP invalid');
         $('#phoneTick').style.display = 'inline';
         $('#phoneOtpRow').style.display = 'none';
         say('');
@@ -243,9 +263,11 @@
           credentials: 'include',
           body: JSON.stringify({ name, email, phone, mpin })
         });
-        const d = await res.json();
-        if (!d.success) return say(d.error || d.message || 'Signup failed');
-        // success -> redirect to login (or auto-login if backend sets cookie)
+        const parsed = await safeJson(res);
+        if (!parsed.ok) return say(parsed.json?.error || parsed.text || 'Signup failed');
+        const d = parsed.json;
+        if (!d) return say('Server returned invalid response');
+        if (!d.success) return say(d.error || 'Signup failed');
         location.href = 'index.html';
       } catch (err) {
         console.error(err);
