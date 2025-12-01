@@ -40,7 +40,6 @@ if (!isset($pdo) || !($pdo instanceof PDO)) {
 
 // verify admin_api_post function exists (used later)
 if (!function_exists('admin_api_post')) {
-    // if the lib uses a different function name, attempt to find it
     json_exit_err('server_error', 500, 'admin_api_post function not available in lib/admin_ship_api.php');
 }
 
@@ -72,20 +71,32 @@ if (!$user_id || !$address_id || empty($items)) {
     json_exit_err('missing required fields', 400, 'user_id=' . intval($user_id) . ' address_id=' . intval($address_id) . ' items_count=' . count($items));
 }
 
-// compute total server-side
-$total = 0.0;
+// compute real total server-side (based on provided items)
+$calculated_total = 0.0;
 foreach ($items as $it) {
     $qty = max(1, (int)($it['quantity'] ?? 1));
     $price = (float)($it['price'] ?? 0.0);
-    $total += $qty * $price;
+    // defensive: ensure non-negative price
+    if ($price < 0) $price = 0.0;
+    $calculated_total += $qty * $price;
 }
 $shipping_amount = 0.0;
 
+$is_agent_payment = in_array(strtolower($payment_method), ['agent-id','agent_id','agent'], true);
+$amount_to_store_in_orders = $is_agent_payment ? 0.0 : $calculated_total;
+
 // payment status
-$payment_status = 'pending';
+$payment_status = $is_agent_payment ? 'paid' : 'pending';
 $transaction_id = $input['transaction_id'] ?? null;
-if (in_array($payment_method, ['agent-id','agent_id','agent'])) {
-    $payment_status = 'paid';
+
+// Optional: further server-side validation to ensure client isn't sending wrong totals
+// (we calculate $calculated_total server-side; if you also accept client totals, compare and log mismatches)
+if (isset($input['client_total'])) {
+    $client_total = (float)$input['client_total'];
+    if (abs($client_total - $calculated_total) > 0.01) {
+        // mismatch — log for review but do not fail the order
+        log_err("Client total mismatch for user {$user_id}: client={$client_total} calc={$calculated_total}");
+    }
 }
 
 // Insert order + items in a transaction
@@ -95,34 +106,43 @@ try {
     $stmt = $pdo->prepare(
   "INSERT INTO orders (user_id, address_id, amount, shipping_amount, payment_method, payment_status, transaction_id, status, created_at, updated_at)
    VALUES (:uid, :aid, :amt, :ship, :pm, :ps, :tx, :st, NOW(), NOW())"
-);
-$stmt->execute([
-    ':uid' => $user_id,
-    ':aid' => $address_id,
-    ':amt' => $total,
-    ':ship' => $shipping_amount,
-    ':pm' => $payment_method,
-    ':ps' => $payment_status,
-    ':tx' => $transaction_id,
-    ':st' => 'created'
-]);
+    );
+    $stmt->execute([
+        ':uid' => $user_id,
+        ':aid' => $address_id,
+        ':amt' => $amount_to_store_in_orders,
+        ':ship' => $shipping_amount,
+        ':pm' => $payment_method,
+        ':ps' => $payment_status,
+        ':tx' => $transaction_id,
+        ':st' => 'created'
+    ]);
 
     $order_id = (int)$pdo->lastInsertId();
 
-    $insItem = $pdo->prepare("INSERT INTO order_items (order_id, product_name, bank, quantity, price) VALUES (:oid, :pname, :bank, :qty, :price)");
+    $insItem = $pdo->prepare("INSERT INTO order_items (order_id, product_name, bank, quantity, price, product_id) VALUES (:oid, :pname, :bank, :qty, :price, :pid)");
     foreach ($items as $it) {
+        $product_name = trim($it['product_name'] ?? ($it['name'] ?? ''));
+        $bank_value = $it['bank'] ?? '';
+        $qty = max(1, (int)($it['quantity'] ?? 1));
+        $price = (float)($it['price'] ?? 0.0);
+        // defensive sanity
+        if ($price < 0) $price = 0.0;
+        $product_id = isset($it['product_id']) ? (int)$it['product_id'] : null;
+
         $insItem->execute([
             ':oid' => $order_id,
-            ':pname' => $it['product_name'] ?? ($it['name'] ?? ''),
-            ':bank' => $it['bank'] ?? '',
-            ':qty' => max(1, (int)($it['quantity'] ?? 1)),
-            ':price' => (float)($it['price'] ?? 0.0)
+            ':pname' => $product_name,
+            ':bank' => $bank_value,
+            ':qty' => $qty,
+            ':price' => $price,
+            ':pid' => $product_id
         ]);
     }
 
     $pdo->commit();
 } catch (Exception $e) {
-    $pdo->rollBack();
+    try { $pdo->rollBack(); } catch (Exception $_) {}
     json_exit_err('db_error', 500, 'DB exception: ' . $e->getMessage() . ' trace: ' . $e->getTraceAsString());
 }
 
@@ -173,6 +193,8 @@ echo json_encode([
     'success' => true,
     'status' => 'success',
     'order_id' => $order_id,
-    'admin_create' => $admin_create_resp
+    'admin_create' => $admin_create_resp,
+    'calculated_total' => $calculated_total,
+    'stored_order_amount' => $amount_to_store_in_orders
 ]);
 exit;
