@@ -1,6 +1,4 @@
 // public/js/site.js
-// Client helpers for pincode check, tracking timeline, and returns.
-// Expects global ORDER_ID on order details page when used there.
 
 /* ---------- small UI helpers ---------- */
 function showToast(message, type = 'info', ttl = 3500) {
