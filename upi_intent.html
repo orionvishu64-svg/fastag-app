@@ -1,37 +1,37 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>UPI Payment</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>UPI Payment — Complete Payment</title>
   <style>
     body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; padding: 18px; color: #222; }
     .info { margin: 12px 0; color: #333; }
-    .status { margin-top: 16px; font-weight: 600; }
+    .status { margin-top: 16px; font-weight: 700; }
     .small { font-size: 0.9rem; color: #666; }
     button { background:#6a00ff;color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer; }
     a.fallback { display:inline-block;margin-top:8px; color:#0645ad; word-break:break-all; }
     .hidden { display:none; }
     .qr { margin-top:12px; }
+    .badge { display:inline-block;padding:6px 10px;border-radius:12px;background:#ffdd57;color:#111;font-weight:600 }
   </style>
 </head>
 <body>
-  <h2>Redirecting to UPI</h2>
+  <h2>Complete Payment</h2>
 
   <div class="info">
     <div>Amount: <strong id="amountText">—</strong></div>
     <div>Order ID: <strong id="orderText">—</strong></div>
     <div>Txn Ref: <strong id="txnText">—</strong></div>
-    <div class="small">If the UPI app doesn't open, use the manual link or scan the QR code below.</div>
+    <div style="margin-top:8px;">
+      Status: <span id="status" class="status"><span class="badge">Preparing...</span></span>
+    </div>
+    <div class="small" style="margin-top:8px">Your order remains in <strong>Pending / Not verified</strong> until payment is confirmed by server/webhook or admin.</div>
   </div>
 
   <div style="margin-top:12px;">
     <button id="openBtn" type="button">Open UPI App</button>
     <button id="copyBtn" type="button" style="margin-left:8px;">Copy UPI String</button>
-  </div>
-
-  <div style="margin-top:14px;">
-    <div id="status" class="status">Initializing...</div>
   </div>
 
   <a id="upiManual" class="fallback hidden" href="#" target="_blank">Open UPI (manual)</a>
@@ -43,11 +43,11 @@
 
 <script>
 (async function () {
-  // === CONFIGURE HERE ===
-  const MERCHANT_VPA = 'apnapaymentbbps@yesbank'; // your VPA
-  const MERCHANT_NAME = 'ApnaPayment';           // payee name
+  // === CONFIG ===
+  const MERCHANT_VPA = 'apnapaymentbbps@yesbank';
+  const MERCHANT_NAME = 'ApnaPayment';
   const NOTE_DEFAULT = 'Tag Payment';
-  // ======================
+  // ==============
 
   const params = new URLSearchParams(location.search);
   const rawAmount = params.get('amount') || '';
@@ -57,14 +57,13 @@
   const amountNum = Number(rawAmount);
   const amount = (!isNaN(amountNum) && amountNum > 0) ? amountNum.toFixed(2) : null;
   if (!amount) {
-    document.getElementById('status').textContent = 'Invalid amount — cannot continue.';
+    document.getElementById('status').innerHTML = '<span class="badge" style="background:#e74c3c;color:#fff">Invalid amount</span>';
     return;
   }
 
   document.getElementById('amountText').textContent = amount;
 
-  // create order on server (same as your original flow)
-  document.getElementById('status').textContent = 'Creating order on server...';
+  document.getElementById('status').innerHTML = '<span class="badge">Creating order...</span>';
   let orderId = orderIdFromQS || null;
   let txnRef = null;
 
@@ -85,45 +84,39 @@
       orderId = data.order_id || data.id || null;
       txnRef = data.txnRef || data.transaction_id || null;
     } else {
-      // If order_id was provided in querystring, use it and request txnRef from server if needed
       const res = await fetch('place_order.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ order_id: orderId, amount: amount, payment_method: 'upi' }).toString()
       });
       const data = await res.json();
-      if (data && data.success) {
-        txnRef = data.txnRef || data.transaction_id || null;
-      }
+      if (data && data.success) txnRef = data.txnRef || data.transaction_id || null;
     }
 
     if (!txnRef) {
-      // fallback to a generated transaction reference — server ideally should return this
       txnRef = 'TXN' + Date.now();
-      console.warn('Server did not return txnRef. Using local fallback:', txnRef);
+      console.warn('No txnRef from server; using fallback:', txnRef);
     }
 
     document.getElementById('orderText').textContent = orderId || '—';
     document.getElementById('txnText').textContent = txnRef;
+    document.getElementById('status').innerHTML = '<span class="badge" style="background:#ffdd57;color:#111">Pending / Not verified</span>';
   } catch (err) {
-    document.getElementById('status').textContent = 'Failed to create order: ' + (err.message || err);
+    document.getElementById('status').innerHTML = '<span class="badge" style="background:#e74c3c;color:#fff">Create order failed</span>';
+    console.error(err);
     return;
   }
 
-  // Build upi strings (URL-encoded)
+  // build UPI strings
   const tn = encodeURIComponent(NOTE_DEFAULT);
   const encodedPa = encodeURIComponent(MERCHANT_VPA);
   const encodedPn = encodeURIComponent(MERCHANT_NAME);
   const encodedTr = encodeURIComponent(txnRef);
   const encodedAm = encodeURIComponent(amount);
 
-  // Primary intent URL (Android). This attempts to open a UPI app.
   const intentUrl = `intent://upi/pay?pa=${encodedPa}&pn=${encodedPn}&am=${encodedAm}&tn=${tn}&tr=${encodedTr}#Intent;scheme=upi;end`;
-
-  // Fallback upi:// link
   const upiUrl = `upi://pay?pa=${encodedPa}&pn=${encodedPn}&am=${encodedAm}&tn=${tn}&tr=${encodedTr}&cu=INR`;
 
-  // Prepare manual link & QR (for desktop/iOS)
   const manualEl = document.getElementById('upiManual');
   manualEl.href = upiUrl;
   manualEl.textContent = 'Open UPI (manual) — ' + upiUrl;
@@ -135,95 +128,37 @@
     qrWrap.classList.remove('hidden');
   }
 
-  // Copy UPI string to clipboard
   document.getElementById('copyBtn').addEventListener('click', function () {
     navigator.clipboard.writeText(upiUrl).then(function () {
-      document.getElementById('status').textContent = 'UPI string copied to clipboard — paste into your UPI app.';
+      document.getElementById('status').innerHTML = '<span class="badge" style="background:#ffdd57;color:#111">Pending / Not verified</span>';
       manualEl.classList.remove('hidden');
       showQr(upiUrl);
     }, function () {
-      document.getElementById('status').textContent = 'Copy failed — please long-press and copy the link manually.';
       manualEl.classList.remove('hidden');
       showQr(upiUrl);
+      window.prompt('Copy the UPI string below (Ctrl+C / long-press):', upiUrl);
+      document.getElementById('status').innerHTML = '<span class="badge" style="background:#ffdd57;color:#111">Pending / Not verified</span>';
     });
   });
 
-  // Open button: try intent then fallback
-  document.getElementById('openBtn').addEventListener('click', openUpiFlow);
-
-  // Automatically start opening after a short delay (so user sees info)
-  setTimeout(openUpiFlow, 500);
-
-  function openUpiFlow() {
-    document.getElementById('status').textContent = 'Attempting to open UPI app...';
-
+  // open UPI app
+  function openUpi() {
+    document.getElementById('status').innerHTML = '<span class="badge" style="background:#ffdd57;color:#111">Pending / Not verified</span>';
     const ua = navigator.userAgent || '';
     if (/Android/i.test(ua)) {
-      // Try intent first (works on many Android browsers)
-      try {
-        window.location.href = intentUrl;
-      } catch (e) {
-        // fallback to upi://
-        window.location.href = upiUrl;
-      }
-      // after a short delay, open upi:// as fallback in case intent didn't work
-      setTimeout(function () {
-        try { window.location.href = upiUrl; } catch (e) { /* ignore */ }
-      }, 900);
+      try { window.location.href = intentUrl; } catch (e) {}
+      setTimeout(function () { try { window.location.href = upiUrl; } catch (e) {} }, 800);
     } else {
-      // Non-Android: open upi:// (some apps may accept) and show QR/manual link
       try { window.location.href = upiUrl; } catch (e) {}
       manualEl.classList.remove('hidden');
       showQr(upiUrl);
     }
-
-    // start polling verification
-    startPollingVerification(orderId, txnRef);
   }
 
-  // Poll server-side verification via POST (safer than GET)
-  let polls = 0;
-  const maxPolls = 30;
-  async function startPollingVerification(orderId, txnRef) {
-    polls = 0;
-    document.getElementById('status').textContent = 'Waiting for server verification...';
-    while (polls < maxPolls) {
-      polls++;
-      try {
-        const res = await fetch('config/verify_payment.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Cache-Control': 'no-cache' },
-          body: new URLSearchParams({ order_id: orderId, transaction_id: txnRef }).toString()
-        });
+  document.getElementById('openBtn').addEventListener('click', openUpi);
 
-        if (res.ok) {
-          const json = await res.json();
-          // Consider server authoritative: look for success/payment status
-          if (json && (json.success === true || json.status === 'paid' || json.payment_status === 'paid')) {
-            document.getElementById('status').textContent = 'Payment verified. Redirecting...';
-            try { localStorage.removeItem('cart'); } catch (_) {}
-            // redirect to your order success page
-            window.location.href = 'orderplaced.php?order_id=' + encodeURIComponent(orderId);
-            return;
-          } else {
-            document.getElementById('status').textContent = 'Payment pending — checking again... (attempt ' + polls + ')';
-          }
-        } else {
-          document.getElementById('status').textContent = 'Server error while verifying (status ' + res.status + ')';
-        }
-      } catch (err) {
-        console.warn('verify error', err);
-        document.getElementById('status').textContent = 'Network error while verifying; retrying...';
-      }
-      // delay between polls
-      await new Promise(r => setTimeout(r, 2000));
-    }
+  setTimeout(openUpi, 500);
 
-    // timed out
-    document.getElementById('status').textContent = 'Verification timed out. If you paid, contact support with Transaction Ref: ' + txnRef;
-    manualEl.classList.remove('hidden');
-    showQr(upiUrl);
-  }
 })();
 </script>
 </body>
