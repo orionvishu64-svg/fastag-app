@@ -121,10 +121,15 @@ body{
 
 /* ---------- HERO ---------- */
 .hero{
-  background: linear-gradient(135deg,var(--panel-1), var(--panel-2));
   color: var(--text);
-  padding: 60px 0 80px;  /* was 120px 0 80px */
-  margin-top: 0;         /* was 80px */
+  padding: 60px 0 80px;
+  margin-top: 0;
+  background: url('/uploads/images/gettyimages-1395726325-612x612.jpg')
+                center/cover no-repeat fixed;
+}
+.theme-light .hero {
+  background: url('/uploads/images/gettyimages-905438692-612x612.jpg')
+              center/cover no-repeat fixed;
 }
 
 .hero-content{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;}

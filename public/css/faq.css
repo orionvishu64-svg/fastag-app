@@ -7,6 +7,12 @@
   margin: 0 auto;
   padding: 0 16px;
   box-sizing: border-box;
+  background: url('/uploads/images/gettyimages-1365996071-612x612.jpg')
+              center/cover no-repeat fixed;
+}
+.theme-light .wrap {
+  background: url('/uploads/images/gettyimages-1369748264-612x612.jpg')
+              center/cover no-repeat fixed;
 }
 
 /* Header / title */
@@ -42,7 +48,7 @@ header.app-head {
 
 /* Main card container - uses global vars */
 main.card {
-  background: var(--card-bg);
+  background: transparent;
   border-radius: var(--card-radius, 12px);
   padding: 22px;
   box-shadow: var(--shadow-soft);
@@ -123,7 +129,7 @@ main.card {
 
 /* FAQ item card — use global card background + borders + shadows */
 .faq-item {
-  background: var(--card-bg);
+  background: transparent;
   border-radius: var(--card-radius, 12px);
   padding: 14px;
   border: 1px solid var(--border-1);
@@ -224,8 +230,6 @@ main.card {
 .q-title small, .q-meta small { color: var(--muted); font-weight: 600; }
 
 /* Light theme overrides — ensure card turns pure white and borders/shadows soft */
-.theme-light main.card,
-.theme-light .faq-item,
 .theme-light .search,
 .theme-light .ghost {
   background: var(--card-solid);
