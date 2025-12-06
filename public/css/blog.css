@@ -36,6 +36,25 @@
   margin: 30px 0 40px;
 }
 
+.post-card .post-link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.post-card .post-link:visited {
+  color: inherit;
+  text-decoration: none;
+}
+
+.post-card .post-link:hover,
+.post-card .post-link:focus {
+  color: inherit;
+  text-decoration: none;
+}
+
 /* Use card-bg / card-border / shadow variables */
 .post-card {
   background: var(--card-bg);
