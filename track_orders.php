@@ -53,10 +53,10 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
 
             // tracking timeline (order_tracking table)
             $tr = $pdo->prepare("
-                SELECT id, order_id, location, updated_at
+                SELECT id, order_id, location, event, note, event_status, awb, event_source, payload, latitude, longitude, occurred_at, updated_at
                 FROM order_tracking
                 WHERE order_id = :oid
-                ORDER BY updated_at DESC
+                ORDER BY COALESCE(occurred_at, updated_at, '1970-01-01') ASC
                 LIMIT 200
             ");
             $tr->execute([':oid' => $oid]);
@@ -118,7 +118,6 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
                     <a class="btn small" href="track_orders.php?order_id=<?= (int)$o['id'] ?>">View</a>
 
                     <?php if (!empty($o['awb'])): ?>
-                      <!-- preserve your courier AWB usage exactly -->
                       <button class="btn small ghost" onclick="window.open('https://www.delhivery.com/track?waybill=<?= e($o['awb']) ?>','_blank')">Track AWB</button>
                       <button class="btn small" onclick="navigator.clipboard && navigator.clipboard.writeText('<?= e($o['awb']) ?>').then(()=>alert('AWB copied'))">Copy AWB</button>
                     <?php endif; ?>
@@ -155,8 +154,10 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
 
             <div style="margin-top:12px">
               <h4>Tracking timeline</h4>
-              <div class="timeline">
-                <!-- Show latest delhivery_status as first timeline item if present -->
+
+              <!-- Client-side tracking area (JS will replace with live data if available) -->
+              <div id="tracking-area" class="timeline">
+                <!-- Server-rendered fallback timeline (kept for no-JS users and initial view) -->
                 <?php if (!empty($order_preview['delhivery_status'])): ?>
                   <div class="tl-item done"><strong>Delhivery status: <?= e($order_preview['delhivery_status']) ?></strong><small class="label"><?= e($order_preview['updated_at']) ?></small></div>
                 <?php endif; ?>
@@ -165,10 +166,16 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
                   <div class="label">No tracking updates yet.</div>
                 <?php else: ?>
                   <?php foreach ($order_tracking as $t): ?>
-                    <div class="tl-item"><strong><?= e($t['location']) ?></strong><small class="label"><?= e($t['updated_at']) ?></small></div>
+                    <?php
+                      $ts = $t['occurred_at'] ?? $t['updated_at'] ?? '';
+                      $loc = $t['location'] ?? ($t['event'] ?? '');
+                      $note = $t['note'] ?? '';
+                    ?>
+                    <div class="tl-item"><strong><?= e($loc) ?></strong><small class="label"><?= e($ts) ?></small><?php if($note): ?><div class="small-muted"><?= e($note) ?></div><?php endif; ?></div>
                   <?php endforeach; ?>
                 <?php endif; ?>
               </div>
+
             </div>
 
             <div style="margin-top:12px" class="actions">
@@ -176,7 +183,7 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
                 <a class="btn" href="https://www.delhivery.com/track?waybill=<?= e($order_preview['awb']) ?>" target="_blank">Open Delhivery</a>
               <?php endif; ?>
               <a class="btn ghost" href="order_details.php?order_id=<?= (int)$order_preview['id'] ?>">Full details</a>
-              <a href="returns.php?order_id=<?= $oid ?>" class="btn danger">Request return</a>
+              <a href="returns.php?order_id=<?= (int)$order_preview['id'] ?>" class="btn danger">Request return</a>
             </div>
           </div>
         <?php endif; ?>
@@ -199,6 +206,26 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
       </aside>
     </div>
   </main>
+
+  <!-- site helpers first (provides loadTracking, showToast, etc.) -->
+  <script src="/public/js/site.js"></script>
+  <script>
+    <?php if ($order_preview): ?>
+      // expose ORDER_ID for site.js helper usage
+      const ORDER_ID = <?= (int)$order_preview['id'] ?>;
+      // call client-side loader to fetch live timeline (attempts admin/delhivery)
+      (function(){
+        if (typeof loadTracking === 'function') {
+          try { loadTracking(ORDER_ID, { refresh: true }); }
+          catch (e) { console.warn('loadTracking failed', e); }
+        } else {
+          // loadTracking not available yet; wait a moment
+          window.addEventListener('load', function(){ if (typeof loadTracking === 'function') loadTracking(ORDER_ID, { refresh: true }); });
+        }
+      })();
+    <?php endif; ?>
+  </script>
+
   <script src="/public/js/script.js"></script>
 </body>
 </html>

@@ -1,7 +1,9 @@
 <?php
-// returns.php - corrected drop-in for your project
+// returns.php
 require_once __DIR__ . '/config/common_start.php';
 require_once __DIR__ . '/config/db.php';
+
+if (session_status() === PHP_SESSION_NONE) session_start();
 
 if (empty($_SESSION['user']['id'])) {
     header("Location: /index.html");
@@ -10,7 +12,7 @@ if (empty($_SESSION['user']['id'])) {
 $user_id = (int) $_SESSION['user']['id'];
 
 function e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
-// here my order fetch and populated here
+
 if (empty($_GET['order_id']) || !is_numeric($_GET['order_id'])) {
     http_response_code(400);
     echo "Invalid order id.";
@@ -18,125 +20,96 @@ if (empty($_GET['order_id']) || !is_numeric($_GET['order_id'])) {
 }
 $order_id = (int) $_GET['order_id'];
 
-// Ensure $pdo exists
 if (!isset($pdo) || !($pdo instanceof PDO)) {
-    error_log('returns.php: $pdo not found from config/db.php');
+    error_log('returns.php: $pdo missing');
     http_response_code(500);
     echo "Database connection error.";
     exit;
 }
 
-// 1) Load order (must belong to this user)
+// load order and confirm ownership
 try {
-    $stmt = $pdo->prepare("
-        SELECT *
-        FROM orders
-        WHERE id = :oid AND user_id = :uid
-        LIMIT 1
-    ");
-    $stmt->execute([':oid' => $order_id, ':uid' => $user_id]);
+    $stmt = $pdo->prepare("SELECT * FROM orders WHERE id = :oid LIMIT 1");
+    $stmt->execute([':oid' => $order_id]);
     $order = $stmt->fetch(PDO::FETCH_ASSOC);
-} catch (Exception $ex) {
-    error_log('returns.php: order load error '.$ex->getMessage());
-    $order = false;
-}
-
-if (!$order) {
-    http_response_code(404);
-    echo "Order not found.";
+    if (!$order || (int)$order['user_id'] !== $user_id) {
+        http_response_code(404);
+        echo "Order not found or access denied.";
+        exit;
+    }
+} catch (Throwable $e) {
+    error_log("returns.php: order lookup failed: " . $e->getMessage());
+    http_response_code(500);
+    echo "Server error.";
     exit;
 }
 
-// 2) Load address (fallback to most recent)
+// load a recent address to display (not critical)
 $address = [];
 try {
-    $ab = $pdo->prepare("
-        SELECT house_no, landmark, city, pincode
-        FROM addresses
-        WHERE user_id = :uid
-        ORDER BY id DESC
-        LIMIT 1
-    ");
-    $ab->execute([':uid' => $user_id]);
-    $address = $ab->fetch(PDO::FETCH_ASSOC) ?: [];
-} catch (Exception $e) {
-    error_log('returns.php: address load error '.$e->getMessage());
+    $a = $pdo->prepare("SELECT house_no, landmark, city, pincode FROM addresses WHERE user_id = :uid ORDER BY id DESC LIMIT 1");
+    $a->execute([':uid' => $user_id]);
+    $address = $a->fetch(PDO::FETCH_ASSOC) ?: [];
+} catch (Throwable $e) {
     $address = [];
 }
 
-// 3) Load order items
+// items
+$items = [];
 try {
-    $itstm = $pdo->prepare("
-        SELECT id, order_id, bank, product_name, quantity, price, product_id
-        FROM order_items
-        WHERE order_id = :oid
-    ");
-    $itstm->execute([':oid' => $order_id]);
-    $items = $itstm->fetchAll(PDO::FETCH_ASSOC);
-} catch (Exception $e) {
-    error_log('returns.php: items load error '.$e->getMessage());
+    $it = $pdo->prepare("SELECT id, order_id, bank, product_name, quantity, price, product_id FROM order_items WHERE order_id = :oid");
+    $it->execute([':oid' => $order_id]);
+    $items = $it->fetchAll(PDO::FETCH_ASSOC);
+} catch (Throwable $e) {
     $items = [];
 }
 
-// 4) Load tracking
+// tracking preview
+$tracking = [];
 try {
-    $tstm = $pdo->prepare("
-        SELECT id, order_id, location, updated_at
-        FROM order_tracking
-        WHERE order_id = :oid
-        ORDER BY updated_at ASC
-    ");
-    $tstm->execute([':oid' => $order_id]);
-    $tracking = $tstm->fetchAll(PDO::FETCH_ASSOC);
-} catch (Exception $e) {
-    error_log('returns.php: tracking load error '.$e->getMessage());
+    $tr = $pdo->prepare("SELECT id, order_id, location, event_status, note, updated_at, occurred_at FROM order_tracking WHERE order_id = :oid ORDER BY COALESCE(occurred_at, updated_at) ASC");
+    $tr->execute([':oid' => $order_id]);
+    $tracking = $tr->fetchAll(PDO::FETCH_ASSOC);
+} catch (Throwable $e) {
     $tracking = [];
 }
 
-// 5) Check existing return
+// existing return check
 $return_exists = false;
 $existing_return = null;
 try {
-    $rstm = $pdo->prepare("
-        SELECT id, status, created_at, reason
-        FROM returns
-        WHERE order_id = :oid AND user_id = :uid
-        LIMIT 1
-    ");
-    $rstm->execute([':oid' => $order_id, ':uid' => $user_id]);
-    $existing_return = $rstm->fetch(PDO::FETCH_ASSOC);
+    $r = $pdo->prepare("SELECT id, status, created_at, reason, external_awb FROM returns WHERE order_id = :oid AND user_id = :uid LIMIT 1");
+    $r->execute([':oid' => $order_id, ':uid' => $user_id]);
+    $existing_return = $r->fetch(PDO::FETCH_ASSOC) ?: null;
     $return_exists = (bool)$existing_return;
-} catch (Exception $e) {
-    error_log('returns.php: returns check error '.$e->getMessage());
+} catch (Throwable $e) {
     $return_exists = false;
     $existing_return = null;
 }
 
-// CSRF token (simple)
+// CSRF token for return form
 if (empty($_SESSION['return_csrf_token'])) {
     $_SESSION['return_csrf_token'] = bin2hex(random_bytes(16));
 }
 $csrf_token = $_SESSION['return_csrf_token'];
 
-function money($val) {
-    return '₹ ' . number_format((float)$val, 2);
-}
+function money($val) { return '₹ ' . number_format((float)$val, 2); }
+
 ?><!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Request Return — Order #<?= e($order['id']) ?></title>
-  <link rel="stylesheet" href="public/css/styles.css" />
-  <link rel="stylesheet" href="public/css/order_details.css" />
-  <link rel="stylesheet" href="public/css/returns.css" />
+  <link rel="stylesheet" href="/public/css/styles.css" />
+  <link rel="stylesheet" href="/public/css/order_details.css" />
+  <link rel="stylesheet" href="/public/css/returns.css" />
 </head>
 <body>
   <?php include __DIR__ . '/includes/header.php'; ?>
   <main class="container">
     <header class="topbar">
       <div class="brand">
-        <div class="logo">APS</div>
         <div>
           <h1>Request Return</h1>
           <p class="lead">Order #<?= e($order['id']) ?> — <?= e($order['status'] ?? '') ?></p>
@@ -212,7 +185,7 @@ function money($val) {
 
           <div style="margin-top:16px">
             <h3>Tracking timeline</h3>
-            <div class="timeline">
+            <div id="tracking-area" class="timeline">
               <?php if (!empty($order['delhivery_status'])): ?>
                 <div class="tl-item done">
                   <strong>Delhivery status: <?= e($order['delhivery_status']) ?></strong>
@@ -224,8 +197,8 @@ function money($val) {
                 <div class="label">No tracking updates found.</div>
               <?php else: foreach ($tracking as $t): ?>
                 <div class="tl-item">
-                  <strong><?= e($t['location']) ?></strong>
-                  <small class="label"><?= e($t['updated_at']) ?></small>
+                  <strong><?= e($t['location'] ?? ($t['event'] ?? '')) ?></strong>
+                  <small class="label"><?= e($t['occurred_at'] ?? $t['updated_at'] ?? '') ?></small>
                 </div>
               <?php endforeach; endif; ?>
             </div>
@@ -241,6 +214,9 @@ function money($val) {
                   <?php if (!empty($existing_return['reason'])): ?>
                     <div class="small">Reason: <?= e($existing_return['reason']) ?></div>
                   <?php endif; ?>
+                  <?php if (!empty($existing_return['external_awb'])): ?>
+                    <div class="small">External AWB: <?= e($existing_return['external_awb']) ?></div>
+                  <?php endif; ?>
                 <?php endif; ?>
               </div>
 
@@ -248,6 +224,7 @@ function money($val) {
                 <a class="btn" href="track_orders.php">Back to orders</a>
                 <a class="btn secondary" href="order_details.php?order_id=<?= (int)$order['id'] ?>">Go to order</a>
               </div>
+
             <?php else: ?>
               <form id="returnForm">
                 <input type="hidden" name="order_id" value="<?= (int)$order['id'] ?>">
@@ -255,7 +232,7 @@ function money($val) {
 
                 <div class="field">
                   <label for="reason">Reason for return <span class="small muted">(required)</span></label>
-                  <textarea id="reason" name="reason" required placeholder="Describe why you want to return this order"></textarea>
+                  <textarea id="reason" name="reason" required maxlength="1000" placeholder="Describe why you want to return this order"></textarea>
                 </div>
 
                 <div class="field">
@@ -289,6 +266,8 @@ function money($val) {
       </aside>
     </div>
   </main>
+
+<script src="/public/js/site.js"></script>
 <script src="/public/js/script.js"></script>
 <script>
 (function(){
@@ -297,8 +276,6 @@ function money($val) {
 
   const submitBtn = document.getElementById('submitBtn');
   const resultDiv = document.getElementById('result');
-
-  // safely pass order id to JS via JSON encoding to avoid syntax issues
   const ORDER_ID = <?= json_encode((int)$order['id']) ?>;
 
   function escapeHtml(s) {
@@ -329,15 +306,24 @@ function money($val) {
       const data = await resp.json();
       if (data.success) {
         resultDiv.innerHTML = '<div class="msg success">Return requested successfully. Return ID: ' + escapeHtml(data.return_id || '') + '</div>';
+
+        if (typeof loadTracking === 'function') {
+          try {
+            await loadTracking(ORDER_ID, { refresh: true });
+          } catch (e) {
+            console.warn('loadTracking failed after return', e);
+          }
+        }
+
         setTimeout(() => {
-          // redirect back to order details
           window.location.href = 'order_details.php?order_id=' + encodeURIComponent(ORDER_ID);
-        }, 1200);
+        }, 900);
       } else {
-        resultDiv.innerHTML = '<div class="msg error">' + escapeHtml(data.message || 'Failed to create return') + '</div>';
+        resultDiv.innerHTML = '<div class="msg error">' + escapeHtml(data.message || data.error || 'Failed to create return') + '</div>';
       }
     } catch (err) {
       resultDiv.innerHTML = '<div class="msg error">Error: ' + escapeHtml(err.message) + '</div>';
+      console.error('create_return submit error', err);
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Submit return request';

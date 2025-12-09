@@ -85,20 +85,24 @@ try {
 
         $serviceable = null;
         foreach (['is_serviceable','serviceable','available','is_available'] as $k)
-            if (array_key_exists($k,$row)) { $serviceable = (bool)$row[$k]; break; }
+            if (array_key_exists($k,$row)) { $serviceable = (bool)$row[$k]; break;
+        }
         if ($serviceable === null) $serviceable = true;
 
         $shipping_cost = null;
         foreach (['shipping_cost','cost','shipping','delivery_cost'] as $k)
-            if (array_key_exists($k,$row) && is_numeric($row[$k])) { $shipping_cost = (float)$row[$k]; break; }
+            if (array_key_exists($k,$row) && is_numeric($row[$k])) { $shipping_cost = (float)$row[$k]; break;
+        }
 
         $min_tat = null;
         foreach (['min_tat_days','min_tat','min_days'] as $k)
-            if (array_key_exists($k,$row) && is_numeric($row[$k])) { $min_tat = (int)$row[$k]; break; }
+            if (array_key_exists($k,$row) && is_numeric($row[$k])) { $min_tat = (int)$row[$k]; break;
+        }
 
         $max_tat = null;
         foreach (['max_tat_days','max_tat','max_days'] as $k)
-            if (array_key_exists($k,$row) && is_numeric($row[$k])) { $max_tat = (int)$row[$k]; break; }
+            if (array_key_exists($k,$row) && is_numeric($row[$k])) { $max_tat = (int)$row[$k]; break;
+        }
 
         $message = $serviceable ? 'serviceable' : 'not_serviceable';
         $http = $serviceable ? 200 : 404;
@@ -120,57 +124,74 @@ $adminApiFile = __DIR__ . '/../lib/admin_ship_api.php';
 if (file_exists($adminApiFile)) {
     try {
         require_once $adminApiFile;
-        if (function_exists('admin_api_get')) {
-            $resp = admin_api_get('/api/pincode_serviceability.php',['pin'=>$pincode]);
+        if (function_exists('admin_api_post')) {
+            $payload = ['action'=>'pincode_check','pincode'=>$pincode];
+            $resp = admin_api_post('admin_api_proxy.php', $payload, 8);
             if (!empty($resp['json']) && is_array($resp['json'])) {
-                $j = $resp['json'];
-                $serviceable = (bool)($j['serviceable'] ?? $j['is_serviceable'] ?? $j['available'] ?? false);
-                $shipping_cost = isset($j['shipping_cost']) ? (float)$j['shipping_cost'] : null;
-                $min_tat = isset($j['min_tat_days']) ? (int)$j['min_tat_days'] : null;
-                $max_tat = isset($j['max_tat_days']) ? (int)$j['max_tat_days'] : null;
-                $message = $j['message'] ?? ($serviceable ? 'serviceable' : 'not_serviceable');
-                $http = $serviceable ? 200 : 404;
-
-                out_resp([
-                    'success'=>true,
-                    'serviceable'=>$serviceable,
-                    'shipping_cost'=>$shipping_cost,
-                    'min_tat_days'=>$min_tat,
-                    'max_tat_days'=>$max_tat,
-                    'message'=>$message,
-                    'source'=>'admin'
-                ], $http);
+                $r = $resp['json'];
+                if (($r['success'] ?? false) && isset($r['data'])) {
+                    $data = $r['data'];
+                    $serviceable = (bool)($data['serviceable'] ?? $data['is_serviceable'] ?? $data['available'] ?? false);
+                    $shipping_cost = isset($data['shipping_cost']) ? (float)$data['shipping_cost'] : null;
+                    $min_tat = isset($data['min_tat_days']) ? (int)$data['min_tat_days'] : null;
+                    $max_tat = isset($data['max_tat_days']) ? (int)$data['max_tat_days'] : null;
+                    $message = $data['message'] ?? ($serviceable ? 'serviceable' : 'not_serviceable');
+                    $http = $serviceable ? 200 : 404;
+                    out_resp([
+                        'success'=>true,
+                        'serviceable'=>$serviceable,
+                        'shipping_cost'=>$shipping_cost,
+                        'min_tat_days'=>$min_tat,
+                        'max_tat_days'=>$max_tat,
+                        'message'=>$message,
+                        'source'=>'admin'
+                    ], $http);
+                } elseif (($r['success'] ?? false) && isset($r['raw'])) {
+                    $j = $r['raw'];
+                    if (!empty($j['raw'])) $j = $j['raw'];
+                    $serviceable = (bool)($j['serviceable'] ?? $j['is_serviceable'] ?? $j['available'] ?? false);
+                    $shipping_cost = isset($j['shipping_cost']) ? (float)$j['shipping_cost'] : null;
+                    $min_tat = isset($j['min_tat_days']) ? (int)$j['min_tat_days'] : null;
+                    $max_tat = isset($j['max_tat_days']) ? (int)$j['max_tat_days'] : null;
+                    $message = $j['message'] ?? ($serviceable ? 'serviceable' : 'not_serviceable');
+                    $http = $serviceable ? 200 : 404;
+                    out_resp([
+                        'success'=>true,
+                        'serviceable'=>$serviceable,
+                        'shipping_cost'=>$shipping_cost,
+                        'min_tat_days'=>$min_tat,
+                        'max_tat_days'=>$max_tat,
+                        'message'=>$message,
+                        'source'=>'admin'
+                    ], $http);
+                }
+            }
+        } elseif (function_exists('admin_api_get')) {
+            $resp = admin_api_get('admin_api_proxy.php', ['action'=>'pincode_check','pincode'=>$pincode], 8);
+            if (!empty($resp['json']) && is_array($resp['json'])) {
+                $r = $resp['json'];
+                if (($r['success'] ?? false) && isset($r['data'])) {
+                    $data = $r['data'];
+                    $serviceable = (bool)($data['serviceable'] ?? $data['is_serviceable'] ?? $data['available'] ?? false);
+                    $shipping_cost = isset($data['shipping_cost']) ? (float)$data['shipping_cost'] : null;
+                    $min_tat = isset($data['min_tat_days']) ? (int)$data['min_tat_days'] : null;
+                    $max_tat = isset($data['max_tat_days']) ? (int)$data['max_tat_days'] : null;
+                    $message = $data['message'] ?? ($serviceable ? 'serviceable' : 'not_serviceable');
+                    $http = $serviceable ? 200 : 404;
+                    out_resp([
+                        'success'=>true,
+                        'serviceable'=>$serviceable,
+                        'shipping_cost'=>$shipping_cost,
+                        'min_tat_days'=>$min_tat,
+                        'max_tat_days'=>$max_tat,
+                        'message'=>$message,
+                        'source'=>'admin'
+                    ], $http);
+                }
             }
         }
     } catch (Throwable $e) {
-        error_log('pincode_check admin_api_get exception: '.$e->getMessage());
-    }
-}
-
-$delhiveryKey = getenv('DELHIVERY_API_KEY');
-if ($delhiveryKey) {
-    try {
-        $url = "https://track.delhivery.com/c/api/pin-codes/json/?token=82882be3c32322a1fc1b9a65e2b3f0c9552c9a69&filter_codes=$pincode";
-        $opts = ['http'=>[
-            'method'=>'GET',
-            'header'=>"Authorization: Token $delhiveryKey\r\n",
-            'timeout'=>4
-        ]];
-        $r = @file_get_contents($url, false, stream_context_create($opts));
-        $j = json_decode($r,true);
-        if (!empty($j['delivery_codes'][0]['postal_code']['is_deliverable'])) {
-            out_resp([
-                'success'=>true,
-                'serviceable'=>true,
-                'shipping_cost'=>null,
-                'min_tat_days'=>null,
-                'max_tat_days'=>null,
-                'message'=>'serviceable',
-                'source'=>'delhivery_live'
-            ]);
-        }
-    } catch (Throwable $e) {
-        error_log('pincode_check delhivery_live exception: '.$e->getMessage());
+        error_log('pincode_check admin_api_post exception: '.$e->getMessage());
     }
 }
 out_resp($resultShape,404);

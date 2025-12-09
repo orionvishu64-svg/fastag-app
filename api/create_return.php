@@ -5,10 +5,10 @@ header('Content-Type: application/json; charset=utf-8');
 
 $commonPath = __DIR__ . '/../config/common_start.php';
 $dbPath     = __DIR__ . '/../config/db.php';
+
 if (file_exists($commonPath)) require_once $commonPath;
 if (file_exists($dbPath)) require_once $dbPath;
 
-// helper: safe get_json_input (common_start may provide it)
 if (!function_exists('get_json_input')) {
     function get_json_input(): array {
         $raw = file_get_contents('php://input');
@@ -18,17 +18,13 @@ if (!function_exists('get_json_input')) {
     }
 }
 
-// Acquire PDO safely
 if (!isset($pdo) || !($pdo instanceof PDO)) {
     if (function_exists('safe_pdo')) {
         try { $pdo = safe_pdo(); } catch (Throwable $e) { error_log('create_return: safe_pdo failed: ' . $e->getMessage()); }
     }
 }
 if (!isset($pdo) || !($pdo instanceof PDO)) {
-    // try globals that may have been set in db.php
-    if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
-        $pdo = $GLOBALS['pdo'];
-    }
+    if (isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) $pdo = $GLOBALS['pdo'];
 }
 if (!isset($pdo) || !($pdo instanceof PDO)) {
     http_response_code(500);
@@ -36,10 +32,8 @@ if (!isset($pdo) || !($pdo instanceof PDO)) {
     exit;
 }
 
-// Ensure session started
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-// Identify current user (respect common_start helpers if present)
 $currentUserId = null;
 if (function_exists('get_current_user_id')) {
     try { $currentUserId = get_current_user_id(); } catch (Throwable $e) { $currentUserId = null; }
@@ -47,12 +41,11 @@ if (function_exists('get_current_user_id')) {
 if ($currentUserId === null && !empty($_SESSION['user']['id'])) $currentUserId = (int)$_SESSION['user']['id'];
 if ($currentUserId === null && !empty($_SESSION['user_id'])) $currentUserId = (int)$_SESSION['user_id'];
 
-// testing fallback (disable in production by setting ALLOW_REQUEST_USER_FALLBACK = false)
 $allow_request_fallback = defined('ALLOW_REQUEST_USER_FALLBACK') ? (bool) ALLOW_REQUEST_USER_FALLBACK : true;
+$rawJson = get_json_input();
 if ($currentUserId === null && $allow_request_fallback) {
     if (!empty($_REQUEST['user_id'])) $currentUserId = (int)$_REQUEST['user_id'];
-    $jsonProbe = get_json_input();
-    if ($currentUserId === null && !empty($jsonProbe['user_id'])) $currentUserId = (int)$jsonProbe['user_id'];
+    if ($currentUserId === null && !empty($rawJson['user_id'])) $currentUserId = (int)$rawJson['user_id'];
 }
 
 if (empty($currentUserId)) {
@@ -61,23 +54,50 @@ if (empty($currentUserId)) {
     exit;
 }
 
-// Read input
-$input = get_json_input();
-if (!$input) $input = $_POST ?? [];
+$input = $rawJson;
+if (empty($input)) {
+    $input = $_POST ?? [];
+}
 
+$csrfProvided = $input['csrf_token'] ?? ($_POST['csrf_token'] ?? null);
+if (empty($csrfProvided) || empty($_SESSION['return_csrf_token']) || !hash_equals($_SESSION['return_csrf_token'], (string)$csrfProvided)) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'error' => 'invalid_csrf']);
+    exit;
+}
+
+// Read fields
 $order_id = isset($input['order_id']) ? (int)$input['order_id'] : 0;
 $reason = isset($input['reason']) ? trim((string)$input['reason']) : '';
 $items = isset($input['items']) && is_array($input['items']) ? $input['items'] : [];
+$external_awb = isset($input['external_awb']) ? trim((string)$input['external_awb']) : null;
 $notify_admin = isset($input['notify_admin']) ? (bool)$input['notify_admin'] : true;
 
-if (!$order_id || $reason === '') {
+if ($order_id <= 0 || $reason === '') {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'missing_parameters', 'message' => 'order_id and reason are required']);
     exit;
 }
+if (mb_strlen($reason) > 2000) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'reason_too_long']);
+    exit;
+}
 
 try {
-    // Verify order exists and belongs to user
+    $rl = $pdo->prepare("SELECT COUNT(*) FROM returns WHERE user_id = :uid AND created_at > (NOW() - INTERVAL 1 HOUR)");
+    $rl->execute([':uid' => $currentUserId]);
+    $countLastHour = (int)$rl->fetchColumn();
+    if ($countLastHour >= 3) {
+        http_response_code(429);
+        echo json_encode(['success' => false, 'error' => 'rate_limited', 'message'=>'Too many return requests. Try later.']);
+        exit;
+    }
+} catch (Throwable $e) {
+    error_log('create_return rate-limit check failed: ' . $e->getMessage());
+}
+
+try {
     $ost = $pdo->prepare("SELECT id, user_id, awb, address_id FROM orders WHERE id = :id LIMIT 1");
     $ost->execute([':id' => $order_id]);
     $order = $ost->fetch(PDO::FETCH_ASSOC);
@@ -86,159 +106,160 @@ try {
         echo json_encode(['success' => false, 'error' => 'order_not_found']);
         exit;
     }
+    
     if ((int)$order['user_id'] !== (int)$currentUserId) {
         http_response_code(403);
         echo json_encode(['success' => false, 'error' => 'not_owner']);
         exit;
     }
+} catch (Throwable $e) {
+    http_response_code(500);
+    error_log('create_return order lookup error: ' . $e->getMessage());
+    echo json_encode(['success' => false, 'error' => 'db_error']);
+    exit;
+}
 
-    // Begin transaction
+$cleanItems = [];
+foreach ($items as $it) {
+    if (!is_array($it)) continue;
+    $cleanItems[] = [
+        'product_name' => isset($it['product_name']) ? (string)$it['product_name'] : (isset($it['name']) ? (string)$it['name'] : ''),
+        'quantity' => isset($it['quantity']) ? (int)$it['quantity'] : 1,
+        'price' => isset($it['price']) ? (float)$it['price'] : 0.0,
+        'product_id' => isset($it['product_id']) ? (int)$it['product_id'] : null,
+        'bank' => isset($it['bank']) ? (string)$it['bank'] : ''
+    ];
+}
+
+$return_id = null;
+try {
     $pdo->beginTransaction();
 
-    // Insert into returns table (matches your existing schema)
-    $ins = $pdo->prepare("INSERT INTO returns (order_id, user_id, reason, status, created_at, updated_at) VALUES (:order_id, :user_id, :reason, :status, NOW(), NOW())");
-    $ins->execute([
-        ':order_id' => $order_id,
-        ':user_id' => $currentUserId,
-        ':reason' => $reason,
-        ':status' => 'requested'
-    ]);
+    $inserted = false;
+    try {
+        $ins = $pdo->prepare("INSERT INTO returns (order_id, user_id, reason, external_awb, status, created_at, updated_at) VALUES (:order_id, :user_id, :reason, :awb, :status, NOW(), NOW())");
+        $ins->execute([
+            ':order_id' => $order_id,
+            ':user_id' => $currentUserId,
+            ':reason' => $reason,
+            ':awb' => $external_awb,
+            ':status' => 'requested'
+        ]);
+        $inserted = true;
+    } catch (PDOException $e) {
+        if (stripos($e->getMessage(), 'unknown column') !== false || stripos($e->getMessage(), 'column') !== false) {
+            $ins2 = $pdo->prepare("INSERT INTO returns (order_id, user_id, reason, status, created_at, updated_at) VALUES (:order_id, :user_id, :reason, :status, NOW(), NOW())");
+            $ins2->execute([
+                ':order_id' => $order_id,
+                ':user_id' => $currentUserId,
+                ':reason' => $reason,
+                ':status' => 'requested'
+            ]);
+            $inserted = true;
+        } else {
+            throw $e;
+        }
+    }
+
+    if (!$inserted) throw new RuntimeException('insert_failed');
+
     $return_id = (int)$pdo->lastInsertId();
 
-    // Build tracking system event (event_source = 'system')
-    $event_status = 'Return Requested';
-    $event = 'RETURN_REQUESTED';
-    $note = 'Customer requested return: ' . $reason;
-    $event_source = 'system';
-
-    // Optional: buyer location hint (city + pincode) — safe fallback; NULL if not available
+    $note = 'Customer requested return' . ($external_awb ? (': external_awb=' . $external_awb) : '') . ' - ' . mb_substr($reason, 0, 1000);
+    $tstmt = $pdo->prepare("INSERT INTO order_tracking (order_id, location, event_status, event, note, event_source, occurred_at, updated_at) VALUES (:oid, :loc, :status, :event, :note, :source, NOW(), NOW())");
     $locHint = null;
     try {
         if (!empty($order['address_id'])) {
-            $addrStmt = $pdo->prepare("SELECT city, pincode FROM addresses WHERE id = :aid LIMIT 1");
-            $addrStmt->execute([':aid' => (int)$order['address_id']]);
-            $addrRow = $addrStmt->fetch(PDO::FETCH_ASSOC);
-            if ($addrRow) {
-                $city = trim((string)($addrRow['city'] ?? ''));
-                $pin = trim((string)($addrRow['pincode'] ?? ''));
-                $locHint = trim(($city ? $city : '') . ($pin ? ' ' . $pin : ''));
+            $as = $pdo->prepare("SELECT city, pincode FROM addresses WHERE id = :aid LIMIT 1");
+            $as->execute([':aid' => (int)$order['address_id']]);
+            $ar = $as->fetch(PDO::FETCH_ASSOC);
+            if ($ar) {
+                $locHint = trim((string)($ar['city'] ?? '') . ' ' . (string)($ar['pincode'] ?? ''));
                 if ($locHint === '') $locHint = null;
             }
         }
     } catch (Throwable $e) {
-        // ignore location hint errors
         $locHint = null;
     }
 
-    // Insert order_tracking row
-    $tstmt = $pdo->prepare(
-        "INSERT INTO order_tracking
-           (order_id, location, event_status, event, note, event_source, occurred_at, updated_at)
-         VALUES
-           (:oid, :loc, :status, :event, :note, :source, NOW(), NOW())"
-    );
     $tstmt->execute([
         ':oid' => $order_id,
-        ':loc'  => $locHint, // null when not available
-        ':status' => $event_status,
-        ':event' => $event,
+        ':loc' => $locHint,
+        ':status' => 'Return Requested',
+        ':event' => 'RETURN_REQUESTED',
         ':note' => $note,
-        ':source' => $event_source
+        ':source' => 'system'
     ]);
 
     $pdo->commit();
-
-} catch (PDOException $e) {
+} catch (Throwable $e) {
     if ($pdo->inTransaction()) $pdo->rollBack();
     error_log('create_return DB error: ' . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'db_error']);
-    exit;
-} catch (Throwable $e) {
-    if ($pdo->inTransaction()) $pdo->rollBack();
-    error_log('create_return unexpected error: ' . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'server_error']);
+    echo json_encode(['success' => false, 'error' => 'db_error', 'message' => $e->getMessage()]);
     exit;
 }
 
-// Build payload to forward to admin if configured
+$adminResponse = null;
 $payload = [
     'return_id' => $return_id,
     'order_id' => $order_id,
     'user_id' => $currentUserId,
     'reason' => $reason,
-    'items' => $items,
+    'items' => $cleanItems,
     'awb' => $order['awb'] ?? null,
+    'external_awb' => $external_awb,
     'status' => 'requested',
     'source' => 'customer_site'
 ];
 
-$adminResponse = null;
 if ($notify_admin) {
-    if (function_exists('admin_api_post')) {
-        try {
-            // admin_api_post expected to return array with keys 'http_code' and 'json' or throw
+    try {
+        if (function_exists('admin_api_post')) {
             $adminResponse = admin_api_post('/api/returns.php', $payload);
-        } catch (Throwable $e) {
-            error_log('create_return: admin_api_post failed: ' . $e->getMessage());
-            $adminResponse = null;
-        }
-    } else {
-        // fallback to ADMIN_SITE_URL + ADMIN_API_KEY
-        $adminBase = defined('ADMIN_SITE_URL') ? ADMIN_SITE_URL : (getenv('ADMIN_SITE_URL') ?: null);
-        if ($adminBase) {
-            $url = rtrim($adminBase, '/') . '/api/returns.php';
-            try {
+        } else {
+            $adminBase = defined('ADMIN_SITE_URL') ? ADMIN_SITE_URL : (getenv('ADMIN_SITE_URL') ?: null);
+            if ($adminBase) {
+                $url = rtrim($adminBase, '/') . '/api/returns.php';
                 $headers = ['Content-Type: application/json'];
-                if (defined('ADMIN_API_KEY') && ADMIN_API_KEY) {
-                    $headers[] = 'Authorization: Bearer ' . ADMIN_API_KEY;
-                }
+                if (defined('ADMIN_API_KEY') && ADMIN_API_KEY) $headers[] = 'Authorization: Bearer ' . ADMIN_API_KEY;
                 $ch = curl_init($url);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload, JSON_UNESCAPED_SLASHES));
                 curl_setopt($ch, CURLOPT_TIMEOUT, defined('ADMIN_API_TIMEOUT') ? ADMIN_API_TIMEOUT : 8);
                 curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, defined('ADMIN_API_CONNECT_TIMEOUT') ? ADMIN_API_CONNECT_TIMEOUT : 4);
                 $raw = curl_exec($ch);
                 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 if ($raw === false) {
-                    error_log('create_return: curl error while forwarding to admin: ' . curl_error($ch));
+                    $adminResponse = ['http' => $httpCode, 'raw' => false, 'error' => curl_error($ch)];
                 } else {
                     $json = json_decode($raw, true);
-                    $adminResponse = ['http_code' => $httpCode, 'json' => $json, 'raw' => $raw];
+                    $adminResponse = ['http' => $httpCode, 'json' => $json, 'raw' => $raw];
                 }
                 curl_close($ch);
-            } catch (Throwable $e) {
-                error_log('create_return: admin curl exception: ' . $e->getMessage());
-            }
-        } else {
-            // Not configured — admin will pick up returns from DB
-            if (function_exists('app_log')) {
-                app_log('create_return: admin forwarding not configured (ADMIN_SITE_URL or admin_api_post missing)');
-            } else {
-                error_log('create_return: admin forwarding not configured');
             }
         }
+    } catch (Throwable $e) {
+        error_log('create_return: admin forwarding failed: ' . $e->getMessage());
+        $adminResponse = ['success' => false, 'error' => $e->getMessage()];
     }
 }
 
-// If admin returned an external AWB, update returns row (best-effort)
 if (is_array($adminResponse) && !empty($adminResponse['json']) && is_array($adminResponse['json'])) {
     $j = $adminResponse['json'];
-    $externalAwb = $j['rvp_awb'] ?? ($j['external_awb'] ?? null);
-    if (!empty($externalAwb)) {
+    $externalAwbFromAdmin = $j['rvp_awb'] ?? ($j['external_awb'] ?? null) ?? null;
+    if (!empty($externalAwbFromAdmin)) {
         try {
             $u = $pdo->prepare("UPDATE returns SET external_awb = :awb, status = :status, updated_at = NOW() WHERE id = :id");
-            $u->execute([':awb' => $externalAwb, ':status' => 'processing', ':id' => $return_id]);
-        } catch (PDOException $e) {
-            error_log('create_return: failed to update returns.external_awb: ' . $e->getMessage());
+            $u->execute([':awb' => $externalAwbFromAdmin, ':status' => 'processing', ':id' => $return_id]);
+        } catch (Throwable $e) {
+            error_log('create_return: failed to save external_awb from admin: ' . $e->getMessage());
         }
     }
 }
 
-// Success response
-$response = ['success' => true, 'return_id' => $return_id, 'message' => 'Return requested successfully'];
-if ($adminResponse !== null) $response['admin_response'] = $adminResponse;
-echo json_encode($response, JSON_UNESCAPED_SLASHES);
+$out = ['success' => true, 'return_id' => $return_id, 'message' => 'Return requested successfully'];
+if ($adminResponse !== null) $out['admin_response'] = $adminResponse;
+echo json_encode($out, JSON_UNESCAPED_SLASHES);
 exit;

@@ -4,13 +4,11 @@
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 
-// include project bootstrap and DB config (relative to api/)
 $commonPath = __DIR__ . '/../config/common_start.php';
 $dbPath     = __DIR__ . '/../config/db.php';
 if (file_exists($commonPath)) require_once $commonPath;
 if (file_exists($dbPath))     require_once $dbPath;
 
-// fallback JSON body helper if common_start does not provide it
 if (!function_exists('get_json_input')) {
     function get_json_input(): array {
         $raw = file_get_contents('php://input');
@@ -20,7 +18,6 @@ if (!function_exists('get_json_input')) {
     }
 }
 
-// Ensure PDO is available (db.php usually sets $pdo). Try safe_pdo() fallback.
 if (!isset($pdo) || !($pdo instanceof PDO)) {
     if (function_exists('safe_pdo')) {
         try { $pdo = safe_pdo(); } catch (Throwable $e) { error_log('get_order_tracking: safe_pdo failed: '.$e->getMessage()); }
@@ -32,10 +29,8 @@ if (!isset($pdo) || !($pdo instanceof PDO)) {
     exit;
 }
 
-// Ensure session
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-// Determine current user id (respect common_start helpers and request-fallback policy)
 $currentUserId = null;
 if (function_exists('get_current_user_id')) {
     try { $currentUserId = get_current_user_id(); } catch (Throwable $e) { $currentUserId = null; }
@@ -58,7 +53,6 @@ if (empty($currentUserId)) {
     exit;
 }
 
-// Accept order_id via GET, POST or JSON
 $order_id = 0;
 if (!empty($_GET['order_id'])) $order_id = (int)$_GET['order_id'];
 if (!$order_id && !empty($_POST['order_id'])) $order_id = (int)$_POST['order_id'];
@@ -74,7 +68,6 @@ if ($order_id <= 0) {
 }
 
 try {
-    // Fetch order and ensure ownership
     $orderStmt = $pdo->prepare("
         SELECT id, user_id, awb, label_url,
                COALESCE(delhivery_status, status) AS latest_status,
@@ -95,7 +88,6 @@ try {
         exit;
     }
 
-    // Fetch tracking rows, include event_source, awb, courier_name, payload, lat/lon if present
     $trackStmt = $pdo->prepare("
         SELECT id,
                location,
@@ -124,10 +116,8 @@ try {
     exit;
 }
 
-// Build timeline: start with an order-level entry
 $timeline = [];
 
-// order-level entry (Order created / placed)
 $timeline[] = [
     'id' => null,
     'event' => 'ORDER_CREATED',
@@ -144,13 +134,10 @@ $timeline[] = [
     'occurred_at' => $order['created_at'] ?? null
 ];
 
-// append tracking rows
 foreach ($tracks as $t) {
     $ts = $t['occurred_at'] ?? $t['updated_at'] ?? null;
-    // try to decode payload if present
     $payload = null;
     if (!empty($t['payload'])) {
-        // payload may be JSON or string; attempt decode safely
         if (is_string($t['payload'])) {
             $dec = json_decode($t['payload'], true);
             $payload = (json_last_error() === JSON_ERROR_NONE) ? $dec : $t['payload'];
@@ -176,7 +163,87 @@ foreach ($tracks as $t) {
     ];
 }
 
-// Build output order object
+$need_live = false;
+if (empty($tracks)) $need_live = true;
+$reqParams = get_json_input();
+if (!empty($_GET['refresh']) || !empty($_REQUEST['refresh']) || !empty($reqParams['refresh'])) $need_live = true;
+
+$awb = $order['awb'] ?? null;
+if ($need_live && $awb) {
+    $adminApiFile = __DIR__ . '/../lib/admin_ship_api.php';
+    if (file_exists($adminApiFile)) {
+        try {
+            require_once $adminApiFile;
+            if (function_exists('admin_api_post')) {
+                $payload = ['action'=>'track','awb'=>$awb];
+                $res = admin_api_post('admin_api_proxy.php', $payload, 8);
+                if (!empty($res['json']) && is_array($res['json'])) {
+                    $j = $res['json'];
+                    $tracks_from_admin = null;
+                    if (!empty($j['success']) && !empty($j['data'])) {
+                        $tracks_from_admin = $j['data'];
+                    } elseif (!empty($j['raw'])) {
+                        $tracks_from_admin = $j['raw'];
+                    } elseif (!empty($j['result'])) {
+                        $tracks_from_admin = $j['result'];
+                    } else {
+                        $tracks_from_admin = $j;
+                    }
+
+                    $scans = [];
+                    if (is_array($tracks_from_admin)) {
+                        if (!empty($tracks_from_admin['ShipmentData']) && is_array($tracks_from_admin['ShipmentData'])) {
+                            foreach ($tracks_from_admin['ShipmentData'] as $sd) {
+                                if (!empty($sd['scans']) && is_array($sd['scans'])) {
+                                    foreach ($sd['scans'] as $s) $scans[] = $s;
+                                }
+                            }
+                        }
+                        if (empty($scans) && !empty($tracks_from_admin['scans']) && is_array($tracks_from_admin['scans'])) {
+                            $scans = $tracks_from_admin['scans'];
+                        }
+                        if (empty($scans)) {
+                            $plain = array_values($tracks_from_admin);
+                            if ($plain && is_array($plain[0]) && array_key_exists('scan_date', $plain[0])) {
+                                $scans = $plain;
+                            }
+                        }
+                    }
+
+                    foreach ($scans as $s) {
+                        $when = $s['scan_date'] ?? $s['time'] ?? $s['datetime'] ?? $s['date'] ?? $s['occurred_at'] ?? null;
+                        $desc = $s['status'] ?? $s['desc'] ?? $s['action'] ?? ($s['remark'] ?? null);
+                        $location = $s['location'] ?? ($s['scan_location'] ?? null);
+                        $timeline[] = [
+                            'id' => null,
+                            'event' => $desc,
+                            'status' => $desc,
+                            'event_status' => $desc,
+                            'note' => $s,
+                            'location' => $location,
+                            'event_source' => 'delhivery',
+                            'awb' => $awb,
+                            'courier_name' => null,
+                            'payload' => $s,
+                            'latitude' => $s['lat'] ?? null,
+                            'longitude' => $s['lon'] ?? $s['lng'] ?? null,
+                            'occurred_at' => $when
+                        ];
+                    }
+                }
+            }
+        } catch (Throwable $e) {
+            error_log('get_order_tracking admin_api_post exception: '.$e->getMessage());
+        }
+    }
+}
+
+usort($timeline, function($a,$b){
+    $ta = $a['occurred_at'] ? strtotime($a['occurred_at']) : PHP_INT_MAX;
+    $tb = $b['occurred_at'] ? strtotime($b['occurred_at']) : PHP_INT_MAX;
+    return $ta <=> $tb;
+});
+
 $outOrder = [
     'id' => (int)$order['id'],
     'awb' => $order['awb'] ?? null,
@@ -185,7 +252,6 @@ $outOrder = [
     'expected_delivery_date' => $order['expected_delivery_date'] ?? null,
     'created_at' => $order['created_at'] ?? null
 ];
-
 echo json_encode([
     'success' => true,
     'order' => $outOrder,
