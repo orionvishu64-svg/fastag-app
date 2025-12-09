@@ -2,9 +2,9 @@
 // lib/admin_ship_api.php
 declare(strict_types=1);
 
-if (!defined('ADMIN_API_DEFAULT_TIMEOUT')) define('ADMIN_API_DEFAULT_TIMEOUT', 20);
+require_once __DIR__ . '/../config/secrets.php';
 
-define('ADMIN_API_HOST', 'http://127.0.0.1/admin');
+if (!defined('ADMIN_API_DEFAULT_TIMEOUT')) define('ADMIN_API_DEFAULT_TIMEOUT', 20);
 
 function admin_base_host(): string {
     return rtrim(ADMIN_API_HOST, '/');
