@@ -1,11 +1,5 @@
 <?php
-// /var/www/html/api/get_order_tracking.php
-// Returns JSON:
-// {
-//   success: true,
-//   order: { id, awb, label_url, latest_status, expected_delivery_date, created_at },
-//   timeline: [ { id, event, event_status, status, note, location, event_source, awb, courier_name, payload, latitude, longitude, occurred_at }, ... ]
-// }
+// /api/get_order_tracking.php
 
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');

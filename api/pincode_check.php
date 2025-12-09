@@ -1,5 +1,5 @@
 <?php
-// /var/www/html/api/pincode_check.php
+// /api/pincode_check.php
 
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');

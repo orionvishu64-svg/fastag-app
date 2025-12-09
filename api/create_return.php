@@ -1,11 +1,8 @@
 <?php
-// /var/www/html/api/create_return.php
-// Creates a local return entry and forwards it to the admin site for RVP/QC handling.
-
+// /api/create_return.php
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 
-// include project bootstrap and DB config (relative to /var/www/html/api)
 $commonPath = __DIR__ . '/../config/common_start.php';
 $dbPath     = __DIR__ . '/../config/db.php';
 if (file_exists($commonPath)) require_once $commonPath;
