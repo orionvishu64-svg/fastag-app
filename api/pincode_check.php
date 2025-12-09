@@ -1,11 +1,9 @@
 <?php
 // /var/www/html/api/pincode_check.php
-// Unified API: { success, serviceable, shipping_cost, min_tat_days, max_tat_days, message, source }
 
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 
-// --- include common_start and db config ---
 $commonPath = __DIR__ . '/../config/common_start.php';
 $dbPath     = __DIR__ . '/../config/db.php';
 if (file_exists($commonPath)) require_once $commonPath;
@@ -16,7 +14,6 @@ if (!file_exists($dbPath)) {
 }
 require_once $dbPath;
 
-// ---------- helpers ----------
 if (!function_exists('get_json_input')) {
     function get_json_input(): array {
         $raw = file_get_contents('php://input');
@@ -31,7 +28,6 @@ function out_resp(array $payload, int $httpCode = 200): void {
     exit;
 }
 
-// ---------- ensure PDO ----------
 if (!isset($pdo) || !($pdo instanceof PDO)) {
     if (function_exists('safe_pdo')) {
         try { $pdo = safe_pdo(); } catch (Throwable $e) {
@@ -44,7 +40,6 @@ if (!isset($pdo) || !($pdo instanceof PDO)) {
     out_resp(['success'=>false,'error'=>'db_unavailable'],500);
 }
 
-// ---------- read input ----------
 $inputJson  = get_json_input();
 $pincodeRaw = $_GET['pincode'] ?? $_GET['pin'] ?? $_POST['pincode'] ?? $_POST['pin'] ?? $inputJson['pincode'] ?? $inputJson['pin'] ?? null;
 $pincode    = is_scalar($pincodeRaw) ? trim((string)$pincodeRaw) : '';
@@ -52,7 +47,6 @@ $pincode    = is_scalar($pincodeRaw) ? trim((string)$pincodeRaw) : '';
 if ($pincode === '') out_resp(['success'=>false,'error'=>'missing_pincode'],400);
 if (!preg_match('/^\d{6}$/',$pincode)) out_resp(['success'=>false,'error'=>'invalid_pincode'],400);
 
-// ---------- result base ----------
 $resultShape = [
     'success'       => true,
     'serviceable'   => false,
@@ -63,7 +57,6 @@ $resultShape = [
     'source'        => 'none'
 ];
 
-// ---------- local DB lookup ----------
 try {
     $cacheDir = __DIR__ . '/../cache';
     if (!is_dir($cacheDir)) @mkdir($cacheDir, 0775, true);
@@ -90,7 +83,6 @@ try {
 
         @file_put_contents($cacheFile, $tblSafe);
 
-        // map columns
         $serviceable = null;
         foreach (['is_serviceable','serviceable','available','is_available'] as $k)
             if (array_key_exists($k,$row)) { $serviceable = (bool)$row[$k]; break; }
@@ -124,7 +116,6 @@ try {
     error_log('pincode_check local lookup error: '.$e->getMessage());
 }
 
-// ---------- admin API fallback ----------
 $adminApiFile = __DIR__ . '/../lib/admin_ship_api.php';
 if (file_exists($adminApiFile)) {
     try {
@@ -156,12 +147,10 @@ if (file_exists($adminApiFile)) {
     }
 }
 
-/*
-// ---------- optional Delhivery live fallback ----------
 $delhiveryKey = getenv('DELHIVERY_API_KEY');
 if ($delhiveryKey) {
     try {
-        $url = "https://track.delhivery.com/api/pin-codes/json/?filter_codes=$pincode";
+        $url = "https://track.delhivery.com/c/api/pin-codes/json/?token=82882be3c32322a1fc1b9a65e2b3f0c9552c9a69&filter_codes=$pincode";
         $opts = ['http'=>[
             'method'=>'GET',
             'header'=>"Authorization: Token $delhiveryKey\r\n",
@@ -184,7 +173,4 @@ if ($delhiveryKey) {
         error_log('pincode_check delhivery_live exception: '.$e->getMessage());
     }
 }
-*/
-
-// ---------- default fallback ----------
 out_resp($resultShape,404);
