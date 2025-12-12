@@ -2,7 +2,7 @@
 // track_orders.php
 
 require_once __DIR__ . '/config/common_start.php';
-require 'config/db.php';
+require_once __DIR__ . '/config/db.php';
 if (empty($_SESSION['user']['id'])) {
     header("Location: /index.html");
     exit;
@@ -11,7 +11,7 @@ $user_id = (int) $_SESSION['user']['id'];
 
 function e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 
-// Fetch user's recent orders (use the exact columns from your schema)
+// Fetch user's recent orders
 $orders = [];
 try {
     $stmt = $pdo->prepare("
@@ -73,12 +73,12 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Track Orders</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/public/css/styles.css">
-    <link rel="stylesheet" href="/public/css/track_orders.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>My Orders — Track</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/public/css/styles.css">
+  <link rel="stylesheet" href="/public/css/track_orders.css">
 </head>
 <body>
   <?php include __DIR__ . '/includes/header.php'; ?>
@@ -97,44 +97,48 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
         <div class="card">
           <h2>Recent Orders</h2>
 
-           <?php if (empty($orders)): ?>
-          <div class="no-orders">No orders found for your account.</div>
-           <?php else: ?>
+          <?php if (empty($orders)): ?>
+            <div class="no-orders">No orders found for your account.</div>
+          <?php else: ?>
             <div class="orders-list">
               <?php foreach ($orders as $o): ?>
                 <article class="order-card">
                   <div class="order-meta">
                     <div class="order-id">#<?= e($o['id']) ?> <?= isset($o['transaction_id']) ? '• TXN:' . e($o['transaction_id']) : '' ?></div>
-                    <div class="order-date"><?= e(date('d M, Y H:i', strtotime($o['created_at']))) ?></div>
+                    <div class="order-date"><?= e(date('d M, Y H:i', strtotime($o['created_at'] ?? 'now'))) ?></div>
                   </div>
 
                   <div class="order-info">
-                    <div class="order-amount"><?= '₹ ' . number_format($o['amount'], 2) ?></div>
-                    <div class="order-status"><?= e(ucwords(str_replace('_',' ', $o['status'] ?? '')) ) ?></div>
-                    <div class="small label">Delhivery: <?= e($o['delhivery_status'] ?? 'N/A') ?></div>
+                    <div class="order-amount"><?= '₹ ' . number_format($o['amount'] ?? 0, 2) ?></div>
+                    <div class="order-status"><?= e(ucwords(str_replace('_',' ', $o['status'] ?? ''))) ?></div>
+                    <div class="small label">Status: <?= e($o['delhivery_status'] ?? 'N/A') ?></div>
                   </div>
 
                   <div class="order-actions">
                     <a class="btn small" href="track_orders.php?order_id=<?= (int)$o['id'] ?>">View</a>
 
                     <?php if (!empty($o['awb'])): ?>
-                      <button class="btn small ghost" onclick="window.open('https://www.delhivery.com/track?waybill=<?= e($o['awb']) ?>','_blank')">Track AWB</button>
-                      <button class="btn small" onclick="navigator.clipboard && navigator.clipboard.writeText('<?= e($o['awb']) ?>').then(()=>alert('AWB copied'))">Copy AWB</button>
+                      <button class="btn small ghost" onclick="alert('External tracking links have been removed. Use the tracking timeline or contact support for updates.')">Track AWB</button>
+                      <button class="btn small" onclick="copyToClipboard('awb-<?= (int)$o['id'] ?>')">Copy AWB</button>
                     <?php endif; ?>
                   </div>
+                  <?php if (!empty($o['awb'])): ?>
+                    <div style="display:none" id="awb-<?= (int)$o['id'] ?>"><?= e($o['awb']) ?></div>
+                  <?php endif; ?>
                 </article>
               <?php endforeach; ?>
             </div>
-           <?php endif; ?>
+          <?php endif; ?>
 
-         </div>
+        </div>
 
         <?php if ($order_preview): ?>
           <div class="card" style="margin-top:16px">
             <h3>Order #<?= e($order_preview['id']) ?> details</h3>
-            <div class="label">Status: <strong><?= e($order_preview['status']) ?></strong></div>
-            <div class="label">Delhivery status: <strong><?= e($order_preview['delhivery_status'] ?? 'N/A') ?></strong></div>
+            <div class="label">Status: <strong><?= e($order_preview['status'] ?? '') ?></strong></div>
+            <div class="label">status: <strong><?= e($order_preview['delhivery_status'] ?? 'N/A') ?></strong></div>
             <div class="label">AWB: <strong><?= e($order_preview['awb'] ?? '—') ?></strong></div>
+
             <div style="margin-top:12px">
               <h4>Items</h4>
               <?php if (empty($order_items)): ?>
@@ -142,10 +146,10 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
               <?php else: ?>
                 <?php foreach ($order_items as $it): ?>
                   <div class="item">
-                    <div class="thumb"><?= e(substr($it['product_name'],0,2)) ?></div>
+                    <div class="thumb"><?= e(substr($it['product_name'] ?? '',0,2)) ?></div>
                     <div class="meta">
-                      <div class="title"><?= e($it['product_name']) ?></div>
-                      <small class="label">Qty: <?= (int)$it['quantity'] ?> • <?= '₹ ' . number_format($it['price'],2) ?></small>
+                      <div class="title"><?= e($it['product_name'] ?? '') ?></div>
+                      <small class="label">Qty: <?= (int)($it['quantity'] ?? 0) ?> • <?= '₹ ' . number_format($it['price'] ?? 0,2) ?></small>
                     </div>
                   </div>
                 <?php endforeach; ?>
@@ -154,14 +158,7 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
 
             <div style="margin-top:12px">
               <h4>Tracking timeline</h4>
-
-              <!-- Client-side tracking area (JS will replace with live data if available) -->
               <div id="tracking-area" class="timeline">
-                <!-- Server-rendered fallback timeline (kept for no-JS users and initial view) -->
-                <?php if (!empty($order_preview['delhivery_status'])): ?>
-                  <div class="tl-item done"><strong>Delhivery status: <?= e($order_preview['delhivery_status']) ?></strong><small class="label"><?= e($order_preview['updated_at']) ?></small></div>
-                <?php endif; ?>
-
                 <?php if (empty($order_tracking)): ?>
                   <div class="label">No tracking updates yet.</div>
                 <?php else: ?>
@@ -171,16 +168,19 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
                       $loc = $t['location'] ?? ($t['event'] ?? '');
                       $note = $t['note'] ?? '';
                     ?>
-                    <div class="tl-item"><strong><?= e($loc) ?></strong><small class="label"><?= e($ts) ?></small><?php if($note): ?><div class="small-muted"><?= e($note) ?></div><?php endif; ?></div>
+                    <div class="tl-item">
+                      <strong><?= e($loc) ?></strong>
+                      <small class="label"><?= e($ts) ?></small>
+                      <?php if ($note): ?><div class="small-muted"><?= e($note) ?></div><?php endif; ?>
+                    </div>
                   <?php endforeach; ?>
                 <?php endif; ?>
               </div>
-
             </div>
 
             <div style="margin-top:12px" class="actions">
               <?php if (!empty($order_preview['awb'])): ?>
-                <a class="btn" href="https://www.delhivery.com/track?waybill=<?= e($order_preview['awb']) ?>" target="_blank">Open Delhivery</a>
+                <button class="btn" onclick="alert('Shipment details: AWB shown above. External tracking links are removed.')">Shipment info</button>
               <?php endif; ?>
               <a class="btn ghost" href="order_details.php?order_id=<?= (int)$order_preview['id'] ?>">Full details</a>
               <a href="returns.php?order_id=<?= (int)$order_preview['id'] ?>" class="btn danger">Request return</a>
@@ -201,29 +201,32 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
 
         <div class="card" style="margin-top:12px">
           <h4>Shipping info</h4>
-          <div class="label">Courier: Delhivery (AWB & status preserved)</div>
+          <div class="label">Courier</div>
         </div>
       </aside>
     </div>
   </main>
 
-  <!-- site helpers first (provides loadTracking, showToast, etc.) -->
-  <script src="/public/js/site.js"></script>
   <script>
-    <?php if ($order_preview): ?>
-      // expose ORDER_ID for site.js helper usage
-      const ORDER_ID = <?= (int)$order_preview['id'] ?>;
-      // call client-side loader to fetch live timeline (attempts admin/delhivery)
-      (function(){
-        if (typeof loadTracking === 'function') {
-          try { loadTracking(ORDER_ID, { refresh: true }); }
-          catch (e) { console.warn('loadTracking failed', e); }
-        } else {
-          // loadTracking not available yet; wait a moment
-          window.addEventListener('load', function(){ if (typeof loadTracking === 'function') loadTracking(ORDER_ID, { refresh: true }); });
-        }
-      })();
-    <?php endif; ?>
+  function copyToClipboard(id){
+    var el = document.getElementById(id);
+    if (!el) return alert('Nothing to copy');
+    var txt = el.innerText || el.textContent || '';
+    if (!txt) return alert('Nothing to copy');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(function(){ alert('Copied'); }).catch(function(){ fallbackCopy(txt); });
+    } else {
+      fallbackCopy(txt);
+    }
+  }
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); alert('Copied'); } catch(e) { alert('Copy failed'); }
+    document.body.removeChild(ta);
+  }
   </script>
 
   <script src="/public/js/script.js"></script>

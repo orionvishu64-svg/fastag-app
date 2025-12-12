@@ -13,19 +13,111 @@ $user_id = (int) $_SESSION['user']['id'];
 
 function e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 
+if (!isset($pdo) || !($pdo instanceof PDO)) {
+    error_log('returns.php: $pdo missing');
+    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+        json_exit(['success' => false, 'message' => 'db_connection_error'], 500);
+    }
+    http_response_code(500);
+    echo "Database connection error.";
+    exit;
+}
+
+// Handle POST submissions to create a return (this file now acts as the API)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Accept both form-encoded and AJAX JSON multipart submissions (we'll use $_POST primarily)
+    $order_id = (int) ($_POST['order_id'] ?? $_REQUEST['order_id'] ?? 0);
+    $reason = trim((string) ($_POST['reason'] ?? $_REQUEST['reason'] ?? ''));
+    $external_awb = trim((string) ($_POST['external_awb'] ?? $_REQUEST['external_awb'] ?? ''));
+    $csrf = $_POST['csrf_token'] ?? $_REQUEST['csrf_token'] ?? '';
+
+    // Basic validation
+    if ($order_id <= 0) {
+        json_exit(['success' => false, 'message' => 'invalid_order_id'], 400);
+    }
+    if ($reason === '') {
+        json_exit(['success' => false, 'message' => 'reason_required'], 400);
+    }
+    // Validate CSRF
+    if (empty($_SESSION['return_csrf_token']) || !hash_equals($_SESSION['return_csrf_token'], (string)$csrf)) {
+        json_exit(['success' => false, 'message' => 'invalid_csrf'], 403);
+    }
+
+    // Confirm order existence and ownership
+    try {
+        $os = $pdo->prepare("SELECT id, user_id, status FROM orders WHERE id = :oid LIMIT 1");
+        $os->execute([':oid' => $order_id]);
+        $ord = $os->fetch(PDO::FETCH_ASSOC);
+        if (!$ord || (int)$ord['user_id'] !== $user_id) {
+            json_exit(['success' => false, 'message' => 'order_not_found_or_access_denied'], 404);
+        }
+    } catch (Throwable $e) {
+        error_log('returns.php: order lookup failed on POST: ' . $e->getMessage());
+        json_exit(['success' => false, 'message' => 'server_error'], 500);
+    }
+
+    // Check for an existing return for this order and user
+    try {
+        $check = $pdo->prepare("SELECT id, status FROM returns WHERE order_id = :oid AND user_id = :uid LIMIT 1");
+        $check->execute([':oid' => $order_id, ':uid' => $user_id]);
+        $existing = $check->fetch(PDO::FETCH_ASSOC);
+        if ($existing) {
+            json_exit(['success' => false, 'message' => 'return_already_exists', 'return_id' => $existing['id'], 'status' => $existing['status'] ?? 'requested'], 409);
+        }
+    } catch (Throwable $e) {
+        error_log('returns.php: existing return check failed: ' . $e->getMessage());
+        json_exit(['success' => false, 'message' => 'server_error'], 500);
+    }
+
+    // Insert the return request
+    try {
+        $ins = $pdo->prepare("INSERT INTO returns (order_id, user_id, reason, external_awb, status, created_at, updated_at) VALUES (:oid, :uid, :reason, :awb, :status, NOW(), NOW())");
+        $ins->execute([
+            ':oid' => $order_id,
+            ':uid' => $user_id,
+            ':reason' => $reason,
+            ':awb' => $external_awb !== '' ? $external_awb : null,
+            ':status' => 'requested'
+        ]);
+        $return_id = (int)$pdo->lastInsertId();
+
+        // Optionally log the event to order_tracking (local timeline) for visibility
+        try {
+            $tins = $pdo->prepare("INSERT INTO order_tracking (order_id, location, event, note, event_status, event_source, occurred_at, updated_at) VALUES (:oid, :loc, :evt, :note, :st, :src, NOW(), NOW())");
+            $tins->execute([
+                ':oid' => $order_id,
+                ':loc' => 'Return requested',
+                ':evt' => 'Return Requested',
+                ':note' => substr("Return ID {$return_id}: " . $reason, 0, 1000),
+                ':st' => 'return_requested',
+                ':src' => 'system_returns'
+            ]);
+        } catch (Throwable $_e) {
+            // don't fail the return on tracking insert errors; just log
+            error_log('returns.php: failed to insert tracking note for return ' . $_e->getMessage());
+        }
+
+        // Successful response
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            json_exit(['success' => true, 'message' => 'return_created', 'return_id' => $return_id], 201);
+        } else {
+            // Non-AJAX: redirect to the same page (GET) to show the success UI
+            header('Location: returns.php?order_id=' . urlencode($order_id) . '&created_return=' . urlencode($return_id));
+            exit;
+        }
+    } catch (Throwable $e) {
+        error_log('returns.php: failed inserting return: ' . $e->getMessage());
+        json_exit(['success' => false, 'message' => 'db_insert_failed'], 500);
+    }
+}
+
+// Validate order_id on GET
 if (empty($_GET['order_id']) || !is_numeric($_GET['order_id'])) {
     http_response_code(400);
     echo "Invalid order id.";
     exit;
 }
 $order_id = (int) $_GET['order_id'];
-
-if (!isset($pdo) || !($pdo instanceof PDO)) {
-    error_log('returns.php: $pdo missing');
-    http_response_code(500);
-    echo "Database connection error.";
-    exit;
-}
 
 // load order and confirm ownership
 try {
@@ -169,12 +261,12 @@ function money($val) { return '₹ ' . number_format((float)$val, 2); }
               </div>
 
               <div style="margin-top:12px">
-                <h4>Courier & AWB</h4>
+                <h4>Shipping reference</h4>
                 <div class="label">AWB: <strong id="awb"><?= e($order['awb'] ?? '—') ?></strong></div>
-                <div class="label">Delhivery status: <strong><?= e($order['delhivery_status'] ?? '—') ?></strong></div>
+                <div class="label">Shipment status: <strong><?= e($order['shipment_status'] ?? $order['delhivery_status'] ?? '—') ?></strong></div>
                 <div class="actions" style="margin-top:10px">
                   <?php if (!empty($order['awb'])): ?>
-                    <button class="btn" onclick="window.open('https://www.delhivery.com/track?waybill=<?= e($order['awb']) ?>','_blank')">Open Delhivery</button>
+                    <button class="btn" onclick="alert('External tracking links have been removed. Use the tracking timeline or contact support for updates.')">Shipment info</button>
                     <button class="btn" onclick="navigator.clipboard && navigator.clipboard.writeText('<?= e($order['awb']) ?>').then(()=>alert('AWB copied'))">Copy AWB</button>
                   <?php endif; ?>
                   <a class="btn secondary" href="invoice.php?order_id=<?= (int)$order['id'] ?>">Download invoice</a>
@@ -186,13 +278,6 @@ function money($val) { return '₹ ' . number_format((float)$val, 2); }
           <div style="margin-top:16px">
             <h3>Tracking timeline</h3>
             <div id="tracking-area" class="timeline">
-              <?php if (!empty($order['delhivery_status'])): ?>
-                <div class="tl-item done">
-                  <strong>Delhivery status: <?= e($order['delhivery_status']) ?></strong>
-                  <small class="label"><?= e($order['updated_at'] ?? '') ?></small>
-                </div>
-              <?php endif; ?>
-
               <?php if (empty($tracking)): ?>
                 <div class="label">No tracking updates found.</div>
               <?php else: foreach ($tracking as $t): ?>
@@ -267,7 +352,6 @@ function money($val) { return '₹ ' . number_format((float)$val, 2); }
     </div>
   </main>
 
-<script src="/public/js/site.js"></script>
 <script src="/public/js/script.js"></script>
 <script>
 (function(){
@@ -292,29 +376,20 @@ function money($val) { return '₹ ' . number_format((float)$val, 2); }
     const fd = new FormData(form);
 
     try {
-      const resp = await fetch('/api/create_return.php', {
+      const resp = await fetch('returns.php', {
         method: 'POST',
         credentials: 'same-origin',
-        body: fd
+        body: fd,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
       });
 
       if (!resp.ok) {
         let txt = await resp.text().catch(()=> '');
         throw new Error('HTTP ' + resp.status + (txt ? ': ' + txt : ''));
       }
-
       const data = await resp.json();
       if (data.success) {
         resultDiv.innerHTML = '<div class="msg success">Return requested successfully. Return ID: ' + escapeHtml(data.return_id || '') + '</div>';
-
-        if (typeof loadTracking === 'function') {
-          try {
-            await loadTracking(ORDER_ID, { refresh: true });
-          } catch (e) {
-            console.warn('loadTracking failed after return', e);
-          }
-        }
-
         setTimeout(() => {
           window.location.href = 'order_details.php?order_id=' + encodeURIComponent(ORDER_ID);
         }, 900);

@@ -1,197 +1,119 @@
 <?php
-// /api/pincode_check.php
-
-declare(strict_types=1);
+// api/pincode_check.php
 header('Content-Type: application/json; charset=utf-8');
 
-$commonPath = __DIR__ . '/../config/common_start.php';
-$dbPath     = __DIR__ . '/../config/db.php';
-if (file_exists($commonPath)) require_once $commonPath;
-if (!file_exists($dbPath)) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'database missing check pdo connections']);
-    exit;
-}
-require_once $dbPath;
+$logDir = __DIR__ . '/../logs';
+@mkdir($logDir, 0750, true);
+$logFile = $logDir . '/pincode_check.log';
 
-if (!function_exists('get_json_input')) {
-    function get_json_input(): array {
-        $raw = file_get_contents('php://input');
-        if (!$raw) return [];
-        $dec = json_decode($raw, true);
-        return (json_last_error() === JSON_ERROR_NONE && is_array($dec)) ? $dec : [];
-    }
-}
-function out_resp(array $payload, int $httpCode = 200): void {
-    if (!headers_sent()) http_response_code($httpCode);
-    echo json_encode($payload, JSON_UNESCAPED_SLASHES);
+function log_msg($s) { global $logFile; @file_put_contents($logFile, date('c') . ' ' . $s . PHP_EOL, FILE_APPEND | LOCK_EX); }
+
+$pincode = trim($_GET['pincode'] ?? '');
+
+if ($pincode === '' || !preg_match('/^[1-9][0-9]{5}$/', $pincode)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'invalid_pincode', 'message' => 'Provide a valid 6-digit pincode (e.g. 110001).']);
     exit;
 }
 
-if (!isset($pdo) || !($pdo instanceof PDO)) {
-    if (function_exists('safe_pdo')) {
-        try { $pdo = safe_pdo(); } catch (Throwable $e) {
-            error_log('pincode_check: safe_pdo failed: ' . $e->getMessage());
-        }
-    }
+$secrets = '/opt/bitnami/fastag_secrets/secrets.php';
+if (file_exists($secrets)) require_once $secrets;
+else log_msg("secrets file missing: $secrets");
+
+$dbconf = __DIR__ . '/../config/db.php';
+if (file_exists($dbconf)) {
+    require_once $dbconf;
+} else {
+    log_msg("db.php missing at {$dbconf}");
 }
-if (!isset($pdo) || !($pdo instanceof PDO)) {
-    error_log('pincode_check: no valid PDO connection');
-    out_resp(['success'=>false,'error'=>'db_unavailable'],500);
-}
-
-$inputJson  = get_json_input();
-$pincodeRaw = $_GET['pincode'] ?? $_GET['pin'] ?? $_POST['pincode'] ?? $_POST['pin'] ?? $inputJson['pincode'] ?? $inputJson['pin'] ?? null;
-$pincode    = is_scalar($pincodeRaw) ? trim((string)$pincodeRaw) : '';
-
-if ($pincode === '') out_resp(['success'=>false,'error'=>'missing_pincode'],400);
-if (!preg_match('/^\d{6}$/',$pincode)) out_resp(['success'=>false,'error'=>'invalid_pincode'],400);
-
-$resultShape = [
-    'success'       => true,
-    'serviceable'   => false,
-    'shipping_cost' => null,
-    'min_tat_days'  => null,
-    'max_tat_days'  => null,
-    'message'       => 'not_serviceable',
-    'source'        => 'none'
-];
 
 try {
-    $cacheDir = __DIR__ . '/../cache';
-    if (!is_dir($cacheDir)) @mkdir($cacheDir, 0775, true);
-    $cacheFile = "$cacheDir/pincode_table.cache";
-
-    $candidateTables = ['pincode_serviceability','pincodes','pincodes_service','pin_serviceability','pincode_service'];
-
-    if (file_exists($cacheFile)) {
-        $cachedTable = trim(file_get_contents($cacheFile));
-        if ($cachedTable) $candidateTables = [$cachedTable];
-    }
-
-    foreach ($candidateTables as $tbl) {
-        $tblSafe = str_replace('`','', $tbl);
-        $existsStmt = $pdo->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :tbl");
-        $existsStmt->execute([':tbl' => $tblSafe]);
-        $exists = (int)$existsStmt->fetchColumn() > 0;
-        if (!$exists) continue;
-
-        $stmt = $pdo->prepare("SELECT * FROM `$tblSafe` WHERE pincode = :pin LIMIT 1");
-        $stmt->execute([':pin'=>$pincode]);
+    if (isset($pdo) && ($pdo instanceof PDO)) {
+        $stmt = $pdo->prepare("SELECT deliverable, tat FROM pincode_serviceability WHERE pincode = :p LIMIT 1");
+        $stmt->execute([':p' => $pincode]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$row) continue;
-
-        @file_put_contents($cacheFile, $tblSafe);
-
-        $serviceable = null;
-        foreach (['is_serviceable','serviceable','available','is_available'] as $k)
-            if (array_key_exists($k,$row)) { $serviceable = (bool)$row[$k]; break;
+        if ($row) {
+            echo json_encode([
+                'success' => true,
+                'deliverable' => (bool)$row['deliverable'],
+                'tat' => isset($row['tat']) ? $row['tat'] : null,
+                'source' => 'local_db',
+            ]);
+            exit;
         }
-        if ($serviceable === null) $serviceable = true;
-
-        $shipping_cost = null;
-        foreach (['shipping_cost','cost','shipping','delivery_cost'] as $k)
-            if (array_key_exists($k,$row) && is_numeric($row[$k])) { $shipping_cost = (float)$row[$k]; break;
-        }
-
-        $min_tat = null;
-        foreach (['min_tat_days','min_tat','min_days'] as $k)
-            if (array_key_exists($k,$row) && is_numeric($row[$k])) { $min_tat = (int)$row[$k]; break;
-        }
-
-        $max_tat = null;
-        foreach (['max_tat_days','max_tat','max_days'] as $k)
-            if (array_key_exists($k,$row) && is_numeric($row[$k])) { $max_tat = (int)$row[$k]; break;
-        }
-
-        $message = $serviceable ? 'serviceable' : 'not_serviceable';
-        $http = $serviceable ? 200 : 404;
-
-        out_resp(array_merge($resultShape, [
-            'serviceable'   => $serviceable,
-            'shipping_cost' => $shipping_cost,
-            'min_tat_days'  => $min_tat,
-            'max_tat_days'  => $max_tat,
-            'message'       => $message,
-            'source'        => 'local'
-        ]), $http);
     }
 } catch (Throwable $e) {
-    error_log('pincode_check local lookup error: '.$e->getMessage());
+    log_msg("local pincode lookup error: " . $e->getMessage());
 }
 
-$adminApiFile = __DIR__ . '/../lib/admin_ship_api.php';
-if (file_exists($adminApiFile)) {
-    try {
-        require_once $adminApiFile;
-        if (function_exists('admin_api_post')) {
-            $payload = ['action'=>'pincode_check','pincode'=>$pincode];
-            $resp = admin_api_post('admin_api_proxy.php', $payload, 8);
-            if (!empty($resp['json']) && is_array($resp['json'])) {
-                $r = $resp['json'];
-                if (($r['success'] ?? false) && isset($r['data'])) {
-                    $data = $r['data'];
-                    $serviceable = (bool)($data['serviceable'] ?? $data['is_serviceable'] ?? $data['available'] ?? false);
-                    $shipping_cost = isset($data['shipping_cost']) ? (float)$data['shipping_cost'] : null;
-                    $min_tat = isset($data['min_tat_days']) ? (int)$data['min_tat_days'] : null;
-                    $max_tat = isset($data['max_tat_days']) ? (int)$data['max_tat_days'] : null;
-                    $message = $data['message'] ?? ($serviceable ? 'serviceable' : 'not_serviceable');
-                    $http = $serviceable ? 200 : 404;
-                    out_resp([
-                        'success'=>true,
-                        'serviceable'=>$serviceable,
-                        'shipping_cost'=>$shipping_cost,
-                        'min_tat_days'=>$min_tat,
-                        'max_tat_days'=>$max_tat,
-                        'message'=>$message,
-                        'source'=>'admin'
-                    ], $http);
-                } elseif (($r['success'] ?? false) && isset($r['raw'])) {
-                    $j = $r['raw'];
-                    if (!empty($j['raw'])) $j = $j['raw'];
-                    $serviceable = (bool)($j['serviceable'] ?? $j['is_serviceable'] ?? $j['available'] ?? false);
-                    $shipping_cost = isset($j['shipping_cost']) ? (float)$j['shipping_cost'] : null;
-                    $min_tat = isset($j['min_tat_days']) ? (int)$j['min_tat_days'] : null;
-                    $max_tat = isset($j['max_tat_days']) ? (int)$j['max_tat_days'] : null;
-                    $message = $j['message'] ?? ($serviceable ? 'serviceable' : 'not_serviceable');
-                    $http = $serviceable ? 200 : 404;
-                    out_resp([
-                        'success'=>true,
-                        'serviceable'=>$serviceable,
-                        'shipping_cost'=>$shipping_cost,
-                        'min_tat_days'=>$min_tat,
-                        'max_tat_days'=>$max_tat,
-                        'message'=>$message,
-                        'source'=>'admin'
-                    ], $http);
-                }
-            }
-        } elseif (function_exists('admin_api_get')) {
-            $resp = admin_api_get('admin_api_proxy.php', ['action'=>'pincode_check','pincode'=>$pincode], 8);
-            if (!empty($resp['json']) && is_array($resp['json'])) {
-                $r = $resp['json'];
-                if (($r['success'] ?? false) && isset($r['data'])) {
-                    $data = $r['data'];
-                    $serviceable = (bool)($data['serviceable'] ?? $data['is_serviceable'] ?? $data['available'] ?? false);
-                    $shipping_cost = isset($data['shipping_cost']) ? (float)$data['shipping_cost'] : null;
-                    $min_tat = isset($data['min_tat_days']) ? (int)$data['min_tat_days'] : null;
-                    $max_tat = isset($data['max_tat_days']) ? (int)$data['max_tat_days'] : null;
-                    $message = $data['message'] ?? ($serviceable ? 'serviceable' : 'not_serviceable');
-                    $http = $serviceable ? 200 : 404;
-                    out_resp([
-                        'success'=>true,
-                        'serviceable'=>$serviceable,
-                        'shipping_cost'=>$shipping_cost,
-                        'min_tat_days'=>$min_tat,
-                        'max_tat_days'=>$max_tat,
-                        'message'=>$message,
-                        'source'=>'admin'
-                    ], $http);
-                }
-            }
+$base = defined('DELHIVERY_BASE_URL') ? rtrim(DELHIVERY_BASE_URL, '/') : 'https://track.delhivery.com';
+$endpoint = $base . '/c/api/pin-codes/json/';
+$query = http_build_query(['filter_codes' => $pincode]);
+
+$use_query_token = defined('DELHIVERY_TOKEN_IN_QUERY') && DELHIVERY_TOKEN_IN_QUERY;
+$api_key = defined('DELHIVERY_API_KEY') ? DELHIVERY_API_KEY : '';
+$headers = [
+    'Accept: application/json',
+];
+
+if ($use_query_token && $api_key) {
+    $query .= '&' . http_build_query(['token' => $api_key]);
+} elseif ($api_key && defined('DELHIVERY_API_KEY_HEADER')) {
+    $headers[] = trim(DELHIVERY_API_KEY_HEADER) . ' ' . $api_key;
+}
+
+$ch = curl_init($endpoint . '?' . $query);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_TIMEOUT, defined('DELHIVERY_API_TIMEOUT') ? DELHIVERY_API_TIMEOUT : 20);
+curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+curl_setopt($ch, CURLOPT_FAILONERROR, false);
+$resp = curl_exec($ch);
+$curlErr = curl_error($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+if ($resp === false || $curlErr) {
+    log_msg("delhivery pincode fetch error: {$curlErr}");
+    http_response_code(502);
+    echo json_encode(['success' => false, 'error' => 'remote_error', 'message' => 'Unable to check pincode right now.']);
+    exit;
+}
+
+$json = json_decode($resp, true);
+if (json_last_error() !== JSON_ERROR_NONE) {
+    log_msg("delhivery pincode json parse failed: " . json_last_error_msg() . " raw: " . substr($resp,0,400));
+    echo json_encode(['success' => false, 'error' => 'invalid_remote_response', 'raw' => $resp]);
+    exit;
+}
+
+$deliverable = false;
+$tat = null;
+
+if (is_array($json)) {
+    if (isset($json['status']) && strtolower($json['status']) === 'success' && !empty($json['data'])) {
+        $deliverable = true;
+        if (!empty($json['data'][0]['tat'])) $tat = $json['data'][0]['tat'];
+    } elseif (!empty($json) && array_values($json) !== $json && isset($json['0']) === false) {
+        if (!empty($json['records']) || !empty($json['data'])) {
+            $arr = $json['records'] ?? $json['data'] ?? [];
+            if (!empty($arr)) $deliverable = true;
+        } else {
+            $deliverable = true;
         }
-    } catch (Throwable $e) {
-        error_log('pincode_check admin_api_post exception: '.$e->getMessage());
+    } elseif (!empty($json)) {
+        $deliverable = count($json) > 0;
     }
 }
-out_resp($resultShape,404);
+
+if (!$deliverable && $httpCode === 200 && !empty($json)) {
+    $deliverable = true;
+}
+
+echo json_encode([
+    'success' => true,
+    'deliverable' => (bool)$deliverable,
+    'tat' => $tat,
+    'http_code' => $httpCode,
+    'raw' => $json,
+]);
+exit;

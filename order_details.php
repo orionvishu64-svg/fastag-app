@@ -1,7 +1,5 @@
 <?php
-// order_details.php
-// Final drop-in: fetch address from addresses table (orders.address_id or fallback to user's most recent)
-
+// order_details.php (Delhivery-free rewrite)
 require_once __DIR__ . '/config/common_start.php';
 require_once __DIR__ . '/config/db.php';
 
@@ -176,15 +174,26 @@ try {
               </div>
 
               <div style="margin-top:12px">
-                <h4>Courier & AWB</h4>
-                <div class="label">AWB: <strong id="awb"><?= e($order['awb'] ?? '—') ?></strong></div>
-                <div class="label">Delhivery status: <strong><?= e($order['delhivery_status'] ?? '—') ?></strong></div>
+                <h4>Shipping reference</h4>
+                <div class="label">
+                  <strong>AWB / Tracking number:</strong>
+                  <span id="awb"><?= e($order['awb'] ?? '—') ?></span>
+                  <?php if (!empty($order['awb'])): ?>
+                    &nbsp; <button class="btn" onclick="copyText('awb')">Copy</button>
+                  <?php endif; ?>
+                </div>
+
+                <div class="label" style="margin-top:6px">
+                  <strong>Shipment status:</strong>
+                  <span id="ship_status"><?= e($order['shipment_status'] ?? 'Not available') ?></span>
+                </div>
+
                 <div class="actions" style="margin-top:10px">
                   <?php if (!empty($order['awb'])): ?>
-                    <button class="btn" onclick="window.open('https://www.delhivery.com/track?waybill=<?= e($order['awb']) ?>','_blank')">Open Delhivery</button>
-                    <button class="btn" onclick="navigator.clipboard && navigator.clipboard.writeText('<?= e($order['awb']) ?>').then(()=>alert('AWB copied'))">Copy AWB</button>
+                    <button class="btn" onclick="alert('Shipping provider link removed. For shipment updates contact support.')">Shipment info</button>
                   <?php endif; ?>
                   <a class="btn danger" type="submit" href="invoice.php?order_id=<?= (int)$order['id'] ?>">Download invoice</a>
+                  <a class="btn" href="contact.php?order_id=<?= (int)$order['id'] ?>">Contact support</a>
                 </div>
               </div>
             </div>
@@ -193,15 +202,8 @@ try {
           <div style="margin-top:16px">
             <h3>Tracking timeline</h3>
             <div class="timeline">
-              <?php if (!empty($order['delhivery_status'])): ?>
-                <div class="tl-item done">
-                  <strong>Delhivery status: <?= e($order['delhivery_status']) ?></strong>
-                  <small class="label"><?= e($order['updated_at'] ?? '') ?></small>
-                </div>
-              <?php endif; ?>
-
               <?php if (empty($tracking)): ?>
-                <div class="label">No tracking updates found.</div>
+                <div class="label">No tracking updates recorded for this order.</div>
               <?php else: foreach ($tracking as $t): ?>
                 <div class="tl-item">
                   <strong><?= e($t['location']) ?></strong>
@@ -213,20 +215,7 @@ try {
 
           <div style="margin-top:16px" class="actions">
   <?php
-    $oid = (int) ($order['id'] ?? $row['id'] ?? $o['id'] ?? 0);
-    $return_exists = false;
-    if ($oid > 0 && isset($pdo) && $pdo instanceof PDO) {
-        try {
-            $rstmt = $pdo->prepare("SELECT id, status FROM returns WHERE order_id = :oid AND user_id = :uid LIMIT 1");
-            $rstmt->execute([':oid' => $oid, ':uid' => (int)$_SESSION['user']['id']]);
-            $r = $rstmt->fetch(PDO::FETCH_ASSOC);
-            if ($r) $return_exists = true;
-        } catch (Exception $ex) {
-            // don't break UI on DB error
-            error_log('track_orders.php: return check error '.$ex->getMessage());
-            $return_exists = false;
-        }
-    }
+    $oid = (int) ($order['id'] ?? 0);
   ?>
 
   <?php if ($oid > 0 && !$return_exists): ?>
@@ -256,6 +245,29 @@ try {
       </aside>
     </div>
   </main>
+
+  <script>
+  function copyText(id){
+    var el = document.getElementById(id);
+    if (!el) return;
+    var txt = el.innerText || el.textContent;
+    if (!txt) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(function(){ alert('Copied'); }).catch(function(){ fallbackCopy(txt); });
+    } else {
+      fallbackCopy(txt);
+    }
+  }
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); alert('Copied'); } catch(e) { alert('Copy failed'); }
+    document.body.removeChild(ta);
+  }
+  </script>
+
   <script src="/public/js/script.js"></script>
 </body>
 </html>

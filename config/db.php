@@ -1,12 +1,19 @@
 <?php
-// db.php (Correct configuration for Bitnami MariaDB)
+// /db.php
 
-$host = "localhost";
-$dbname = "fastag_app";
-$user = "admin";
-$password = "Apna1234";
+$credFile = "/opt/bitnami/fastag_secrets/db_credentials.php";
 
-// IMPORTANT: Bitnami MariaDB uses a custom socket path
+if (!file_exists($credFile)) {
+    die("DB config file missing.");
+}
+
+require_once $credFile; 
+
+$host     = FASTAG_DB_HOST;
+$dbname   = FASTAG_DB_NAME;
+$user     = FASTAG_DB_USER;
+$password = FASTAG_DB_PASS;
+
 $dsn = "mysql:host=$host;dbname=$dbname;charset=utf8mb4;unix_socket=/opt/bitnami/mariadb/tmp/mysql.sock";
 
 try {
