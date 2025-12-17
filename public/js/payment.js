@@ -71,6 +71,38 @@ function setText(id, value) {
   if (el) el.innerText = value;
 }
 
+function startCountdown(duration = 300) {
+  const text = document.getElementById('timer-text');
+  const circle = document.getElementById('timer-progress');
+  if (!text || !circle) return;
+
+  const radius = 70;
+  const circumference = 2 * Math.PI * radius;
+  circle.style.strokeDasharray = circumference;
+  circle.style.strokeDashoffset = 0;
+
+  let remaining = duration;
+
+  const timer = setInterval(() => {
+    remaining--;
+
+    const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+    const s = String(remaining % 60).padStart(2, '0');
+    text.textContent = `${m}:${s}`;
+
+    circle.style.strokeDashoffset =
+      circumference * (1 - remaining / duration);
+
+    if (remaining <= 0) {
+      clearInterval(timer);
+      text.textContent = "00:00";
+    }
+  }, 1000);
+}
+
+function startUpiPolling(token) {
+}
+
   if (paymentSection && !paymentSection.classList.contains('hidden')) {
     paymentSection.classList.add('hidden');
   }
@@ -522,8 +554,10 @@ function openUpiSheet(items, amount) {
   document.body.classList.add('upi-open');   // 🔥 ADD
   document.body.style.overflow = 'hidden';
 
-  backdrop.classList.remove('hidden');
-  sheet.classList.remove('hidden');
+if (!backdrop || !sheet) return;
+
+backdrop.classList.remove('hidden');
+sheet.classList.remove('hidden');
 
   requestAnimationFrame(() => {
     backdrop.classList.add('show');
@@ -571,6 +605,9 @@ if (upiPayBtn) {
       if (!res.success || !res.token || !res.order_code) {
         throw new Error(res.message || "Unable to start payment");
       }
+
+      document.getElementById('upi-confirm-view')?.classList.add('hidden');
+      document.getElementById('upi-timer-view')?.classList.remove('hidden');
 
       startUpiPolling(res.token);
       startCountdown();

@@ -9,18 +9,18 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-function json_exit($arr, $code = 200) {
+function json_exit(array $data, int $code = 200): void {
     http_response_code($code);
-    echo json_encode($arr, JSON_UNESCAPED_SLASHES);
+    echo json_encode($data, JSON_UNESCAPED_SLASHES);
     exit;
 }
 
-function generate_order_code() {
-    return 'AFT' . date('ymd_Hi') . chr(rand(65, 90));
+function generate_order_code(): string {
+    return 'AFT' . date('ymd_His') . strtoupper(bin2hex(random_bytes(2)));
 }
 
-function generate_token() {
-    return bin2hex(random_bytes(16)); 
+function generate_token(): string {
+    return bin2hex(random_bytes(16));
 }
 
 $userId = (int)($_SESSION['user']['id'] ?? 0);
@@ -31,7 +31,25 @@ if ($userId <= 0) {
     ], 401);
 }
 
-$cart = $_SESSION['cart'] ?? [];
+$input = json_decode(file_get_contents('php://input'), true);
+
+if (!is_array($input)) {
+    json_exit([
+        'success' => false,
+        'message' => 'Invalid request payload'
+    ], 400);
+}
+
+$cart = $input['items'] ?? [];
+$addressId = (int)($input['address_id'] ?? 0);
+
+if ($addressId <= 0) {
+    json_exit([
+        'success' => false,
+        'message' => 'Invalid address'
+    ], 400);
+}
+
 if (empty($cart) || !is_array($cart)) {
     json_exit([
         'success' => false,
@@ -39,9 +57,10 @@ if (empty($cart) || !is_array($cart)) {
     ], 400);
 }
 
-$totalAmount = 0;
+$totalAmount = 0.0;
+
 foreach ($cart as $item) {
-    $qty = max(1, (int)($item['quantity'] ?? 1));
+    $qty   = max(1, (int)($item['quantity'] ?? 1));
     $price = (float)($item['price'] ?? 0);
     $totalAmount += ($qty * $price);
 }
@@ -61,12 +80,13 @@ try {
 
     $stmt = $pdo->prepare("
         INSERT INTO orders
-        (user_id, amount, payment_method, payment_status, status, created_at)
+        (user_id, address_id, amount, payment_method, payment_status, status, created_at)
         VALUES
-        (:uid, :amt, 'upi', 'pending', 'created', NOW())
+        (:uid, :aid, :amt, 'upi', 'pending', 'created', NOW())
     ");
     $stmt->execute([
         ':uid' => $userId,
+        ':aid' => $addressId,
         ':amt' => $totalAmount
     ]);
 
@@ -75,23 +95,22 @@ try {
     // 2️⃣ Insert order items
     $itemStmt = $pdo->prepare("
         INSERT INTO order_items
-        (order_id, product_name, bank, quantity, price, product_id)
+        (order_id, product_name, bank, quantity, price)
         VALUES
-        (:oid, :name, :bank, :qty, :price, :pid)
+        (:oid, :name, :bank, :qty, :price)
     ");
 
     foreach ($cart as $item) {
         $itemStmt->execute([
             ':oid'   => $orderId,
-            ':name'  => $item['product_name'] ?? '',
+            ':name'  => (string)($item['name'] ?? ''),
             ':bank'  => $item['bank'] ?? null,
-            ':qty'   => (int)($item['quantity'] ?? 1),
-            ':price' => (float)($item['price'] ?? 0),
-            ':pid'   => $item['product_id'] ?? null
+            ':qty'   => max(1, (int)($item['quantity'] ?? 1)),
+            ':price' => (float)($item['price'] ?? 0)
         ]);
     }
 
-    // 3️⃣ Create payment token (5 min expiry)
+    // 3️⃣ Create payment token
     $token = generate_token();
 
     $payStmt = $pdo->prepare("
@@ -106,7 +125,7 @@ try {
         ':amt'   => $totalAmount
     ]);
 
-    // 4️⃣ Store order_code safely
+    // 4️⃣ Save transaction reference
     $pdo->prepare("
         UPDATE orders SET transaction_id = :code WHERE id = :id
     ")->execute([
@@ -120,6 +139,7 @@ try {
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
+    error_log('UPI CREATE ERROR: ' . $e->getMessage());
 
     json_exit([
         'success' => false,

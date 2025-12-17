@@ -4,17 +4,19 @@ require_once __DIR__ . '/../config/db.php';
 
 header('Content-Type: application/json');
 
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
 $YESBANK_URL = getenv('YESBANK_UPI_URL') ?: 'https://uatskyway.yesbank.in/app/uat';
 $CLIENT_ID = getenv('YESBANK_UPI_CLIENT_ID');
 $CLIENT_SECRET = getenv('YESBANK_UPI_CLIENT_SECRET');
 $MERCHANT_ID = getenv('YESBANK_UPI_MERCHANT_ID');
 $MERCHANT_SECRET = getenv('YESBANK_UPI_MERCHANT_SECRET');
 
-$MAX_WAIT_SECONDS = 300;
-
-function json_exit(array $data, int $code = 200) {
+function json_exit(array $data, int $code = 200): void {
     http_response_code($code);
-    echo json_encode($data);
+    echo json_encode($data, JSON_UNESCAPED_SLASHES);
     exit;
 }
 
@@ -28,44 +30,69 @@ function aes128EncryptHex(string $plainText, string $key): string {
     return strtoupper(bin2hex($encrypted));
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
-$token = $input['token'] ?? null;
+$userId = (int)($_SESSION['user']['id'] ?? 0);
+if ($userId <= 0) {
+    json_exit(['status' => 'INVALID'], 401);
+}
 
-if (!$token) {
-    json_exit(['status' => 'INVALID']);
+$input = json_decode(file_get_contents('php://input'), true);
+$token = trim($input['token'] ?? '');
+
+if ($token === '') {
+    json_exit(['status' => 'INVALID'], 400);
 }
 
 $stmt = $pdo->prepare("
-    SELECT p.*, o.id AS order_id, o.transaction_id
+    SELECT 
+        p.id AS payment_id,
+        p.token,
+        p.status,
+        p.created_at,
+        p.expires_at,
+        o.id AS order_id,
+        o.transaction_id
     FROM payments p
     JOIN orders o ON o.id = p.order_id
     WHERE p.token = :token
+      AND o.user_id = :uid
     LIMIT 1
 ");
-$stmt->execute([':token' => $token]);
+
+$stmt->execute([
+    ':token' => $token,
+    ':uid'   => $userId
+]);
+
 $payment = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$payment) {
     json_exit(['status' => 'INVALID']);
 }
 
-if (!empty($input['action']) && $input['action'] === 'cancel') {
-    $pdo->prepare("UPDATE payments SET status='FAILED' WHERE token=?")->execute([$token]);
-    $pdo->prepare("UPDATE orders SET payment_status='failed' WHERE id=?")->execute([$payment['order_id']]);
+if (($input['action'] ?? '') === 'cancel') {
+    $pdo->prepare("UPDATE payments SET status='FAILED' WHERE id=?")
+        ->execute([$payment['payment_id']]);
+
+    $pdo->prepare("UPDATE orders SET payment_status='failed' WHERE id=?")
+        ->execute([$payment['order_id']]);
+
     json_exit(['status' => 'FAILED']);
 }
 
 if (in_array($payment['status'], ['SUCCESS', 'FAILED', 'EXPIRED'], true)) {
     json_exit([
-        'status' => $payment['status'],
+        'status'     => $payment['status'],
         'order_code' => $payment['transaction_id']
     ]);
 }
 
-$age = time() - strtotime($payment['created_at']);
-if ($age > $MAX_WAIT_SECONDS) {
-    $pdo->prepare("UPDATE payments SET status='EXPIRED' WHERE token=?")->execute([$token]);
-    $pdo->prepare("UPDATE orders SET payment_status='failed' WHERE id=?")->execute([$payment['order_id']]);
+if (strtotime($payment['expires_at']) < time()) {
+    $pdo->prepare("UPDATE payments SET status='EXPIRED' WHERE id=?")
+        ->execute([$payment['payment_id']]);
+
+    $pdo->prepare("UPDATE orders SET payment_status='failed' WHERE id=?")
+        ->execute([$payment['order_id']]);
+
     json_exit(['status' => 'EXPIRED']);
 }
 
@@ -77,16 +104,16 @@ $message =
 $encryptedMsg = aes128EncryptHex($message, $MERCHANT_SECRET);
 
 $requestBody = json_encode([
-    'requestMsg' => $encryptedMsg,
-    'pgMerchantId' => $MERCHANT_ID
+    'requestMsg'    => $encryptedMsg,
+    'pgMerchantId'  => $MERCHANT_ID
 ]);
 
 $ch = curl_init($YESBANK_URL . '/upi/meTransStatusQuery');
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_POST => true,
-    CURLOPT_POSTFIELDS => $requestBody,
-    CURLOPT_HTTPHEADER => [
+    CURLOPT_POST           => true,
+    CURLOPT_POSTFIELDS     => $requestBody,
+    CURLOPT_HTTPHEADER     => [
         'X-IBM-Client-Id: ' . $CLIENT_ID,
         'X-IBM-Client-Secret: ' . $CLIENT_SECRET,
         'Accept: application/json',
@@ -99,27 +126,42 @@ $response = curl_exec($ch);
 curl_close($ch);
 
 if (!$response) {
+    error_log("YESBANK EMPTY RESPONSE | token={$token}");
     json_exit(['status' => 'PENDING']);
 }
 
-$values = explode('|', trim($response));
-$status = strtoupper($values[4] ?? 'PENDING');
+$parts = explode('|', trim($response));
+$statusRaw = strtoupper(trim($parts[4] ?? 'PENDING'));
 
-if ($status === 'SUCCESS' || $status === 'S') {
+if (in_array($statusRaw, ['S', 'SUCCESS'], true)) {
+    $finalStatus = 'SUCCESS';
+} elseif (in_array($statusRaw, ['F', 'FAILED'], true)) {
+    $finalStatus = 'FAILED';
+} else {
+    $finalStatus = 'PENDING';
+}
 
-    $pdo->prepare("UPDATE payments SET status='SUCCESS' WHERE token=?")->execute([$token]);
-    $pdo->prepare("UPDATE orders SET payment_status='paid' WHERE id=?")->execute([$payment['order_id']]);
+error_log("YESBANK RESPONSE | token={$token} | status={$finalStatus} | raw={$response}");
+
+if ($finalStatus === 'SUCCESS') {
+    $pdo->prepare("UPDATE payments SET status='SUCCESS' WHERE id=?")
+        ->execute([$payment['payment_id']]);
+
+    $pdo->prepare("UPDATE orders SET payment_status='paid' WHERE id=?")
+        ->execute([$payment['order_id']]);
 
     json_exit([
-        'status' => 'SUCCESS',
+        'status'     => 'SUCCESS',
         'order_code' => $payment['transaction_id']
     ]);
 }
 
-if ($status === 'FAILED') {
+if ($finalStatus === 'FAILED') {
+    $pdo->prepare("UPDATE payments SET status='FAILED' WHERE id=?")
+        ->execute([$payment['payment_id']]);
 
-    $pdo->prepare("UPDATE payments SET status='FAILED' WHERE token=?")->execute([$token]);
-    $pdo->prepare("UPDATE orders SET payment_status='failed' WHERE id=?")->execute([$payment['order_id']]);
+    $pdo->prepare("UPDATE orders SET payment_status='failed' WHERE id=?")
+        ->execute([$payment['order_id']]);
 
     json_exit(['status' => 'FAILED']);
 }
