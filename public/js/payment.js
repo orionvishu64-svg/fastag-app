@@ -1,4 +1,4 @@
-// payment.js — upgraded for 2-step checkout, accessibility, CSRF, and improved UX
+// payment.js
 document.addEventListener("DOMContentLoaded", () => {
 
   (function () {
@@ -14,16 +14,16 @@ document.addEventListener("DOMContentLoaded", () => {
             return response;
           })
           .catch(err => {
-            try { console.error("Network error:", err); } catch (e) {}
-            try { if (typeof alert !== 'undefined') alert("Network error. Please try again."); } catch (e) {}
+            console.error("Network error:", err);
+            alert("Network error. Please try again.");
             throw err;
           });
       };
     }
   })();
 
-  const isValidPhone = (s) => /^[6-9][0-9]{9}$/.test(String(s || "").trim());
-  const isAlphaNum = (s) => /^[A-Za-z0-9]+$/.test(String(s || "").trim());
+  const isValidPhone = s => /^[6-9][0-9]{9}$/.test(String(s || "").trim());
+  const isAlphaNum = s => /^[A-Za-z0-9]+$/.test(String(s || "").trim());
   const fmtMoney = n => Number(n || 0).toFixed(2);
 
   const csrfToken = (() => {
@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const addressesContainer = document.getElementById("saved-addresses");
   const addAddressBtn = document.getElementById("add-address-btn");
+  const cancelAddressBtn = document.getElementById("cancel-address");
   const newAddressForm = document.getElementById("new-address-form");
   const saveAddressBtn = document.getElementById("save-address");
   const proceedBtn = document.getElementById("proceed-btn");
@@ -47,17 +48,28 @@ document.addEventListener("DOMContentLoaded", () => {
   const agentBox = document.getElementById("agent-id-box");
   const agentInput = document.getElementById("agentid");
 
+  const addressSection = document.getElementById("step1-card");
+  const paymentSection = document.getElementById("step2-card");
+
   let hasPhone = false;
   let selectedAddressId = null;
   let selectedAddressPincode = null;
   let selectedPaymentMethod = null;
+
   let agentApplied = false;
   let agentIdValue = "";
-  const cart = (() => { try { return JSON.parse(localStorage.getItem("cart") || "[]"); } catch (e) { return []; } })();
+
+  const cart = (() => {
+    try { return JSON.parse(localStorage.getItem("cart") || "[]"); }
+    catch { return []; }
+  })();
+
   let total = 0;
 
-  const addressSection = document.getElementById("step1-card");
-  const paymentSection = document.getElementById("step2-card");
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.innerText = value;
+}
 
   if (paymentSection && !paymentSection.classList.contains('hidden')) {
     paymentSection.classList.add('hidden');
@@ -80,7 +92,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ---------------- Phone visibility & saving ---------------- */
   (function decidePhoneVisibility() {
     const localUser = (() => { try { return JSON.parse(localStorage.getItem("user") || "null"); } catch(e){ return null; } })();
     const localPhone = localUser && localUser.phone;
@@ -150,7 +161,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ---------------- Render cart & totals ---------------- */
   function renderCart() {
     if (!orderItemsEl) return;
     orderItemsEl.innerHTML = "";
@@ -174,7 +184,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   renderCart();
 
-  /* ---------------- Addresses load & attach (user must select) ---------------- */
   async function loadAddressesAndAttach() {
     try {
       const res = await safeFetch("/config/get_addresses.php", { credentials: "same-origin" });
@@ -233,7 +242,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   loadAddressesAndAttach();
 
-  /* ---------------- Add / Save address handlers ---------------- */
   if (addAddressBtn) {
     addAddressBtn.addEventListener("click", () => {
       if (!newAddressForm) return;
@@ -288,62 +296,51 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ---------------- payment method handling + agent-id validate ---------------- */
-  document.querySelectorAll('input[name="payment_method"]').forEach((input) => {
+  document.querySelectorAll("input[name='payment_method']").forEach(input => {
     input.addEventListener("change", () => {
       selectedPaymentMethod = input.value;
       agentApplied = false;
       agentIdValue = "";
-      if (selectedPaymentMethod === "agent-id") {
-        if (agentBox) agentBox.style.display = "block";
-        if (agentBox && !agentBox.querySelector(".apply-btn")) {
-          const applyBtn = document.createElement("button");
+
+      if (input.value === "agent-id") {
+        agentBox.style.display = "block";
+
+        let applyBtn = agentBox.querySelector(".apply-btn");
+        if (!applyBtn) {
+          applyBtn = document.createElement("button");
           applyBtn.type = "button";
-          applyBtn.className = "apply-btn btn";
+          applyBtn.className = "btn apply-btn";
           applyBtn.textContent = "Apply ID";
           applyBtn.style.marginLeft = "8px";
           agentBox.appendChild(applyBtn);
-
-          applyBtn.addEventListener("click", () => {
-            const val = (agentInput.value || "").trim();
-            if (!val) return alert("Please enter your Agent ID");
-            if (!isAlphaNum(val)) return alert("Agent ID must contain only letters and numbers.");
-
-            applyBtn.disabled = true;
-            applyBtn.textContent = "Validating...";
-
-            safeFetch("config/validate_agent.php", {
-              method: "POST",
-              credentials: "same-origin",
-              headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
-              body: JSON.stringify({ agent_id: val })
-            })
-              .then(r => r.json())
-              .then((resp) => {
-                if (resp && resp.success) {
-                  agentApplied = true;
-                  agentIdValue = val;
-                  if (orderTotalEl) orderTotalEl.textContent = fmtMoney(0);
-                  alert("Agent ID validated.");
-                } else {
-                  agentApplied = false;
-                  alert(resp && resp.message ? resp.message : "Agent ID validation failed.");
-                }
-              })
-              .catch(() => {
-                alert("Agent validation failed. Please try again.");
-              })
-              .finally(() => {
-                applyBtn.disabled = false;
-                applyBtn.textContent = "Apply ID";
-                updateProceedState();
-              });
-          });
         }
+
+        applyBtn.onclick = () => {
+          const val = agentInput.value.trim();
+
+          if (!val || !isAlphaNum(val)) {
+            alert("Please enter a valid Agent ID");
+            return;
+          }
+
+          agentApplied = true;
+          agentIdValue = val;
+
+          total = 0;
+          orderTotalEl.textContent = fmtMoney(0);
+          document.getElementById("right-total").textContent = fmtMoney(0);
+
+          alert("Agent ID applied. Order amount is ₹0");
+          updateProceedState();
+        };
+
       } else {
-        if (agentBox) agentBox.style.display = "none";
-        if (orderTotalEl) orderTotalEl.textContent = fmtMoney(total);
+        agentBox.style.display = "none";
+        agentApplied = false;
+        agentIdValue = "";
+        renderCart();
       }
+
       updateProceedState();
     });
   });
@@ -363,7 +360,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ---------------- pincode check (calls server) ---------------- */
   function checkPincode(pincode) {
     const pincodeStatus = document.getElementById('pincode-status');
     const expectedTat = document.getElementById('expected-tat');
@@ -406,17 +402,16 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  /* ---------------- proceed / two-step navigation ---------------- */
   function updateProceedState() {
-    const addressSelected = !!selectedAddressId;
-    const phoneOk = hasPhone || !phoneContainer;
+    const addressOk = !!selectedAddressId;
+    const phoneOk = hasPhone || phoneContainer.style.display === "none";
     let agentOk = true;
-    const chosenNow = document.querySelector("input[name='payment_method']:checked");
-    if (chosenNow && chosenNow.value === 'agent-id') {
-      agentOk = !!agentApplied;
+
+    if (selectedPaymentMethod === "agent-id") {
+      agentOk = agentApplied;
     }
-    const ok = addressSelected && phoneOk && agentOk;
-    if (proceedBtn) proceedBtn.disabled = !ok;
+
+    proceedBtn.disabled = !(addressOk && phoneOk && agentOk);
   }
 
   document.addEventListener('change', updateProceedState);
@@ -459,61 +454,141 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  async function placeOrder(triggerBtn) {
-    if (!selectedAddressId) { alert("Select a delivery address"); return; }
-    const chosen = document.querySelector("input[name='payment_method']:checked");
-    if (!chosen) { alert("Please select a payment method."); return; }
-    const method = chosen.value;
-    if (method === "agent-id" && !agentApplied) { alert("Please apply Agent ID before placing the order"); return; }
+async function placeOrder(btn) {
+  const chosen = document.querySelector("input[name='payment_method']:checked");
+  if (!chosen) {
+    alert("Select payment method");
+    return;
+  }
 
-    const finalAmount = (method === "agent-id") ? 0 : total;
-    const payload = {
-      payment_method: method,
-      transaction_id: method === "agent-id" ? agentIdValue : null,
-      amount: finalAmount,
-      address_id: selectedAddressId,
-      items: cart.map(i => ({ bank: i.bank || "", product_name: i.name, quantity: Number(i.quantity || 1), price: Number(i.price || 0) }))
-    };
+  // 🟢 UPI → open bottom sheet
+  if (chosen.value === "upi") {
+    openUpiSheet(cart.length, total);
+    return;
+  }
 
-    if (triggerBtn) { triggerBtn.disabled = true; triggerBtn.textContent = 'Processing...'; }
-    if (proceedBtn) proceedBtn.disabled = true;
+  // 🟢 AGENT ID
+  if (chosen.value === "agent-id" && !agentApplied) {
+    alert("Please apply Agent ID");
+    return;
+  }
+
+  // Agent order payload
+  const payload = {
+    payment_method: "agent-id",
+    transaction_id: agentIdValue,
+    amount: 0,
+    address_id: selectedAddressId,
+    items: cart.map(i => ({
+      bank: i.bank || "",
+      product_name: i.name,
+      quantity: Number(i.quantity || 1),
+      price: Number(i.price || 0)
+    }))
+  };
+
+  btn.disabled = true;
+  btn.innerText = "Placing Order...";
+
+  try {
+    const r = await safeFetch("/place_order.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken
+      },
+      credentials: "same-origin",
+      body: JSON.stringify(payload)
+    });
+
+    const data = await r.json();
+    if (!data.success) throw new Error(data.message || "Order failed");
+
+    localStorage.removeItem("cart");
+    window.location.href = `orderplaced.php?order_id=${data.order_id}`;
+
+  } catch (e) {
+    alert("Order failed");
+    btn.disabled = false;
+    btn.innerText = "Place Order";
+  }
+}
+const backdrop = document.getElementById('upi-backdrop');
+const sheet = document.getElementById('upi-sheet');
+
+function openUpiSheet(items, amount) {
+  setText('upi-items', items);
+  setText('upi-amount', amount.toFixed(2));
+
+  backdrop.classList.remove('hidden');
+  sheet.classList.remove('hidden');
+
+  requestAnimationFrame(() => {
+    backdrop.classList.add('show');
+    sheet.classList.add('show');
+  });
+
+  document.body.style.overflow = 'hidden';
+}
+
+function closeUpiSheet() {
+  backdrop.classList.remove('show');
+  sheet.classList.remove('show');
+  document.body.style.overflow = '';
+
+  setTimeout(() => {
+    backdrop.classList.add('hidden');
+    sheet.classList.add('hidden');
+  }, 300);
+}
+
+if (backdrop) backdrop.onclick = closeUpiSheet;
+const cancelBtn = document.getElementById('upiCancel');
+if (cancelBtn) cancelBtn.onclick = closeUpiSheet;
+const upiPayBtn = document.getElementById('upiPayNow');
+
+if (upiPayBtn) {
+  upiPayBtn.onclick = async () => {
+    upiPayBtn.disabled = true;
+    upiPayBtn.innerText = "Initializing UPI…";
 
     try {
-      const r = await safeFetch('/place_order.php', {
+      const res = await safeFetch('/api/create_upi_payment.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
+        },
         credentials: 'same-origin',
-        body: JSON.stringify(payload)
-      });
-      const text = await r.text();
-      let data = {};
-      try { data = JSON.parse(text || '{}'); } catch (e) { throw new Error('Invalid JSON from server'); }
+        body: JSON.stringify({
+          address_id: selectedAddressId,
+          items: cart
+        })
+      }).then(r => r.json());
 
-      const ok = !!(data && (data.success === true || data.status === "success"));
-      if (!ok) {
-        throw new Error(data.message || JSON.stringify(data));
+      if (!res.success || !res.token || !res.order_code) {
+        throw new Error(res.message || "Unable to start payment");
       }
-      const orderId = data.order_id || data.data?.order_id || null;
 
-      try { localStorage.removeItem("cart"); } catch (_) {}
-      if (data.redirect) {
-        window.location.href = data.redirect;
-        return;
-      }
-      window.location.href = orderId ? ('orderplaced.php?order_id=' + encodeURIComponent(orderId)) : 'orderplaced.php';
-    } catch (err) {
-      console.error('Place order failed:', err);
-      alert('Order request failed: ' + (err.message || err));
-    } finally {
-      if (triggerBtn) { triggerBtn.disabled = false; triggerBtn.textContent = 'Place Order'; }
-      if (proceedBtn) { proceedBtn.disabled = false; proceedBtn.textContent = 'Proceed to Payment →'; }
+      startUpiPolling(res.token);
+      startCountdown();
+
+      const upiUrl =
+        "upi://pay" +
+        "?pa=apnapaymentbbps@yesbank" +
+        "&pn=" + encodeURIComponent("ApnaPayment") +
+        "&am=" + encodeURIComponent(res.amount) +
+        "&cu=INR" +
+        "&tn=" + encodeURIComponent("Tag Payment") +
+        "&tr=" + encodeURIComponent(res.order_code);
+
+      window.location.href = upiUrl;
+
+    } catch (e) {
+      alert(e.message || "Payment failed");
+      upiPayBtn.disabled = false;
+      upiPayBtn.innerText = "Pay Now";
     }
-  }
-
-  updateProceedState();
-
-  if (addressesContainer) {
-    addressesContainer.setAttribute('role', 'listbox');
-  }
-
+  };
+}
 });
