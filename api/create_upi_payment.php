@@ -1,5 +1,6 @@
 <?php
 // api/create_upi_payment.php
+
 require_once __DIR__ . '/../config/common_start.php';
 require_once __DIR__ . '/../config/db.php';
 
@@ -16,7 +17,7 @@ function json_exit(array $data, int $code = 200): void {
 }
 
 function generate_order_code(): string {
-    return 'AFT' . date('ymd_His') . strtoupper(bin2hex(random_bytes(2)));
+    return 'AFT' . date('ymd_Hi') . '_' . strtoupper(bin2hex(random_bytes(2)));
 }
 
 function generate_token(): string {
@@ -25,112 +26,149 @@ function generate_token(): string {
 
 $userId = (int)($_SESSION['user']['id'] ?? 0);
 if ($userId <= 0) {
-    json_exit([
-        'success' => false,
-        'message' => 'Not authenticated'
-    ], 401);
+    json_exit(['success' => false, 'message' => 'Not authenticated'], 401);
 }
 
 $input = json_decode(file_get_contents('php://input'), true);
-
 if (!is_array($input)) {
-    json_exit([
-        'success' => false,
-        'message' => 'Invalid request payload'
-    ], 400);
+    json_exit(['success' => false, 'message' => 'Invalid JSON'], 400);
 }
 
 $cart = $input['items'] ?? [];
 $addressId = (int)($input['address_id'] ?? 0);
 
 if ($addressId <= 0) {
-    json_exit([
-        'success' => false,
-        'message' => 'Invalid address'
-    ], 400);
+    json_exit(['success' => false, 'message' => 'Invalid address'], 400);
 }
 
 if (empty($cart) || !is_array($cart)) {
-    json_exit([
-        'success' => false,
-        'message' => 'Cart is empty'
-    ], 400);
+    json_exit(['success' => false, 'message' => 'Cart is empty'], 400);
 }
 
 $totalAmount = 0.0;
 
 foreach ($cart as $item) {
+    if (empty($item['name'])) {
+        json_exit(['success' => false, 'message' => 'Invalid product name'], 400);
+    }
+
     $qty   = max(1, (int)($item['quantity'] ?? 1));
     $price = (float)($item['price'] ?? 0);
-    $totalAmount += ($qty * $price);
+
+    if ($price <= 0) {
+        json_exit(['success' => false, 'message' => 'Invalid product price'], 400);
+    }
+
+    $totalAmount += $qty * $price;
 }
 
 if ($totalAmount <= 0) {
-    json_exit([
-        'success' => false,
-        'message' => 'Invalid order amount'
-    ], 400);
+    json_exit(['success' => false, 'message' => 'Invalid order amount'], 400);
 }
 
 try {
     $pdo->beginTransaction();
 
-    // 1️⃣ Create order
+    /* 1️⃣ Create order */
     $orderCode = generate_order_code();
 
     $stmt = $pdo->prepare("
         INSERT INTO orders
-        (user_id, address_id, amount, payment_method, payment_status, status, created_at)
+        (
+            user_id,
+            address_id,
+            payment_method,
+            transaction_id,
+            amount,
+            shipping_amount,
+            payment_status,
+            status,
+            created_at
+        )
         VALUES
-        (:uid, :aid, :amt, 'upi', 'pending', 'created', NOW())
+        (
+            :uid,
+            :aid,
+            'upi',
+            :trx,
+            :amt,
+            0,
+            'pending',
+            'created',
+            NOW()
+        )
     ");
     $stmt->execute([
         ':uid' => $userId,
         ':aid' => $addressId,
+        ':trx' => $orderCode,
         ':amt' => $totalAmount
     ]);
 
     $orderId = (int)$pdo->lastInsertId();
 
-    // 2️⃣ Insert order items
+    /* 2️⃣ Insert order items */
     $itemStmt = $pdo->prepare("
         INSERT INTO order_items
-        (order_id, product_name, bank, quantity, price)
+        (
+            order_id,
+            product_name,
+            bank,
+            quantity,
+            price,
+            product_id
+        )
         VALUES
-        (:oid, :name, :bank, :qty, :price)
+        (
+            :oid,
+            :name,
+            :bank,
+            :qty,
+            :price,
+            :pid
+        )
     ");
 
     foreach ($cart as $item) {
         $itemStmt->execute([
             ':oid'   => $orderId,
-            ':name'  => (string)($item['name'] ?? ''),
+            ':name'  => $item['name'],
             ':bank'  => $item['bank'] ?? null,
-            ':qty'   => max(1, (int)($item['quantity'] ?? 1)),
-            ':price' => (float)($item['price'] ?? 0)
+            ':qty'   => (int)($item['quantity'] ?? 1),
+            ':price' => (float)$item['price'],
+            ':pid'   => $item['product_id'] ?? null
         ]);
     }
 
-    // 3️⃣ Create payment token
+    /* 3️⃣ Create payment record */
     $token = generate_token();
 
     $payStmt = $pdo->prepare("
         INSERT INTO payments
-        (order_id, token, amount, status, created_at, expires_at)
+        (
+            order_id,
+            token,
+            payment_method,
+            amount,
+            status,
+            created_at,
+            expires_at
+        )
         VALUES
-        (:oid, :token, :amt, 'INITIATED', NOW(), DATE_ADD(NOW(), INTERVAL 5 MINUTE))
+        (
+            :oid,
+            :token,
+            'upi',
+            :amt,
+            'PENDING',
+            NOW(),
+            DATE_ADD(NOW(), INTERVAL 5 MINUTE)
+        )
     ");
     $payStmt->execute([
         ':oid'   => $orderId,
         ':token' => $token,
         ':amt'   => $totalAmount
-    ]);
-
-    // 4️⃣ Save transaction reference
-    $pdo->prepare("
-        UPDATE orders SET transaction_id = :code WHERE id = :id
-    ")->execute([
-        ':code' => $orderCode,
-        ':id'   => $orderId
     ]);
 
     $pdo->commit();
@@ -141,10 +179,7 @@ try {
     }
     error_log('UPI CREATE ERROR: ' . $e->getMessage());
 
-    json_exit([
-        'success' => false,
-        'message' => 'Unable to create payment'
-    ], 500);
+    json_exit(['success' => false, 'message' => 'Unable to create payment'], 500);
 }
 
 json_exit([

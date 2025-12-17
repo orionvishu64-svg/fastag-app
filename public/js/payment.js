@@ -58,6 +58,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let agentApplied = false;
   let agentIdValue = "";
+  let upiTimer = null;
+  let upiPoller = null;
+  let upiRemaining = 300;
 
   const cart = (() => {
     try { return JSON.parse(localStorage.getItem("cart") || "[]"); }
@@ -71,37 +74,85 @@ function setText(id, value) {
   if (el) el.innerText = value;
 }
 
-function startCountdown(duration = 300) {
-  const text = document.getElementById('timer-text');
+function startCountdown() {
   const circle = document.getElementById('timer-progress');
-  if (!text || !circle) return;
+  const text = document.getElementById('timer-text');
+  const total = 300;
+  const circumference = 440;
 
-  const radius = 70;
-  const circumference = 2 * Math.PI * radius;
-  circle.style.strokeDasharray = circumference;
-  circle.style.strokeDashoffset = 0;
+  clearInterval(upiTimer);
+  upiRemaining = total;
 
-  let remaining = duration;
+  document.getElementById('upi-confirm-view').classList.add('hidden');
+  document.getElementById('upi-timer-view').classList.remove('hidden');
 
-  const timer = setInterval(() => {
-    remaining--;
+  upiTimer = setInterval(() => {
+    upiRemaining--;
 
-    const m = String(Math.floor(remaining / 60)).padStart(2, '0');
-    const s = String(remaining % 60).padStart(2, '0');
-    text.textContent = `${m}:${s}`;
+    const minutes = String(Math.floor(upiRemaining / 60)).padStart(2, '0');
+    const seconds = String(upiRemaining % 60).padStart(2, '0');
+    text.textContent = `${minutes}:${seconds}`;
 
-    circle.style.strokeDashoffset =
-      circumference * (1 - remaining / duration);
+    const offset = circumference * (1 - upiRemaining / total);
+    circle.style.strokeDashoffset = offset;
 
-    if (remaining <= 0) {
-      clearInterval(timer);
-      text.textContent = "00:00";
+    if (upiRemaining <= 0) {
+      clearInterval(upiTimer);
+      clearInterval(upiPoller);
+      showTimeoutUI();
     }
   }, 1000);
 }
 
 function startUpiPolling(token) {
+  clearInterval(upiPoller);
+
+  upiPoller = setInterval(async () => {
+    try {
+      const res = await safeFetch('/api/upi_check.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ token })
+      }).then(r => r.json());
+
+      if (res.status === 'SUCCESS') {
+        handleSuccess(res.order_code);
+      }
+
+      if (res.status === 'FAILED' || res.status === 'EXPIRED') {
+        handleFailure(res.status);
+      }
+
+    } catch (e) {
+      console.warn('Polling error', e);
+    }
+  }, 5000);
 }
+
+function handleSuccess(orderCode) {
+  clearInterval(upiTimer);
+  clearInterval(upiPoller);
+
+  const text = document.getElementById('timer-text');
+  text.innerHTML = '✔';
+  text.style.fontSize = '48px';
+  text.style.color = '#28a745';
+
+  setTimeout(() => {
+    window.location.href = `orderplaced.php?order_id=${orderCode}`;
+  }, 1200);
+}
+
+function showTimeoutUI() {
+  const text = document.getElementById('timer-text');
+  text.innerHTML = 'Timed out';
+  text.style.fontSize = '18px';
+  text.style.color = '#dc3545';
+
+  alert('Payment timed out. Please try again.');
+}
+
 
   if (paymentSection && !paymentSection.classList.contains('hidden')) {
     paymentSection.classList.add('hidden');
