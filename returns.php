@@ -16,14 +16,63 @@ function e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 if (!isset($pdo) || !($pdo instanceof PDO)) {
     error_log('returns.php: $pdo missing');
     if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
-        json_exit(['success' => false, 'message' => 'db_connection_error'], 500);
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'db_connection_error']);
+        exit;
     }
     http_response_code(500);
     echo "Database connection error.";
     exit;
 }
 
-// Handle POST submissions to create a return (this file now acts as the API)
+function json_exit($payload, $status = 200) {
+    http_response_code($status);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($payload);
+    exit;
+}
+
+function forward_post_to_api($path, array $fields = []) {
+    // Build base URL using same host/scheme as request
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? '127.0.0.1';
+    $url = $scheme . '://' . $host . $path;
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    // Forward session cookie (PHPSESSID) so API can rely on same session
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        $sess = session_id();
+        if ($sess) curl_setopt($ch, CURLOPT_HTTPHEADER, ["Cookie: PHPSESSID={$sess}"]);
+    }
+    // forward X-Requested-With header (AJAX)
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge(
+        ["X-Requested-With: XMLHttpRequest"],
+        // additional headers will be added below if needed
+    ));
+    // Prepare fields - use urlencoded form data
+    $postFields = http_build_query($fields);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+    // Set content-type
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/x-www-form-urlencoded", "X-Requested-With: XMLHttpRequest"]);
+
+    $raw = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err = curl_error($ch);
+    curl_close($ch);
+
+    if ($raw === false || $err) {
+        error_log("forward_post_to_api: curl error to {$url} : {$err}");
+        return ['ok' => false, 'http_code' => 0, 'body' => '', 'error' => $err];
+    }
+    return ['ok' => true, 'http_code' => (int)$httpCode, 'body' => $raw];
+}
+
+/* ---------------- Handle POST submissions to create a return (this file now acts as the UI + fallback API proxy) ---------------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Accept both form-encoded and AJAX JSON multipart submissions (we'll use $_POST primarily)
     $order_id = (int) ($_POST['order_id'] ?? $_REQUEST['order_id'] ?? 0);
@@ -31,7 +80,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $external_awb = trim((string) ($_POST['external_awb'] ?? $_REQUEST['external_awb'] ?? ''));
     $csrf = $_POST['csrf_token'] ?? $_REQUEST['csrf_token'] ?? '';
 
-    // Basic validation
+    // If an API file exists, prefer forwarding the request there (non-invasive)
+    $api_path = __DIR__ . '/api/create_return.php';
+    if (is_file($api_path) && is_readable($api_path)) {
+        // Build fields to forward (same names expected)
+        $fields = [
+            'order_id' => $order_id,
+            'reason' => $reason,
+            'external_awb' => $external_awb,
+            'csrf_token' => $csrf
+        ];
+        $res = forward_post_to_api('/api/create_return.php', $fields);
+        if ($res['ok']) {
+            $body = $res['body'];
+            $code = $res['http_code'] ?: 200;
+            $firstBrace = strpos($body, '{');
+            if ($firstBrace !== false) {
+                $maybe = substr($body, $firstBrace);
+                $decoded = json_decode($maybe, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    http_response_code($code);
+                    header('Content-Type: application/json; charset=utf-8');
+                    echo json_encode($decoded);
+                    exit;
+                }
+            }
+            http_response_code($code);
+            header('Content-Type: text/plain; charset=utf-8');
+            echo $body;
+            exit;
+        }
+        error_log('returns.php: forwarding to api/create_return.php failed, falling back to local handler');
+    }
+
     if ($order_id <= 0) {
         json_exit(['success' => false, 'message' => 'invalid_order_id'], 400);
     }

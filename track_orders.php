@@ -8,7 +8,6 @@ if (empty($_SESSION['user']['id'])) {
     exit;
 }
 $user_id = (int) $_SESSION['user']['id'];
-
 function e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 
 // Fetch user's recent orders
@@ -26,48 +25,7 @@ try {
     $stmt->execute([':uid' => $user_id]);
     $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $ex) {
-    error_log("track_orders.php: failed fetching orders for user {$user_id}: " . $ex->getMessage());
-    $orders = [];
-}
-
-// If a specific order is requested, fetch preview data (items + tracking)
-$order_preview = null;
-$order_items = [];
-$order_tracking = [];
-if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
-    $oid = (int) $_GET['order_id'];
-    try {
-        $os = $pdo->prepare("SELECT * FROM orders WHERE id = :oid AND user_id = :uid LIMIT 1");
-        $os->execute([':oid' => $oid, ':uid' => $user_id]);
-        $order_preview = $os->fetch(PDO::FETCH_ASSOC);
-
-        if ($order_preview) {
-            // items (order_items table)
-            $it = $pdo->prepare("
-                SELECT id, order_id, bank, product_name, quantity, price, product_id
-                FROM order_items
-                WHERE order_id = :oid
-            ");
-            $it->execute([':oid' => $oid]);
-            $order_items = $it->fetchAll(PDO::FETCH_ASSOC);
-
-            // tracking timeline (order_tracking table)
-            $tr = $pdo->prepare("
-                SELECT id, order_id, location, event, note, event_status, awb, event_source, payload, latitude, longitude, occurred_at, updated_at
-                FROM order_tracking
-                WHERE order_id = :oid
-                ORDER BY COALESCE(occurred_at, updated_at, '1970-01-01') ASC
-                LIMIT 200
-            ");
-            $tr->execute([':oid' => $oid]);
-            $order_tracking = $tr->fetchAll(PDO::FETCH_ASSOC);
-        }
-    } catch (Exception $e) {
-        error_log("track_orders.php: error loading order {$oid}: " . $e->getMessage());
-        $order_preview = null;
-        $order_items = [];
-        $order_tracking = [];
-    }
+    error_log('track_orders.php: failed fetching orders for user '.$user_id.': '.$ex->getMessage());
 }
 ?>
 <!doctype html>
@@ -81,13 +39,13 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
   <link rel="stylesheet" href="/public/css/track_orders.css">
 </head>
 <body>
-  <?php include __DIR__ . '/includes/header.php'; ?>
-  <main class="container">
+<?php include __DIR__ . '/includes/header.php'; ?>
+<main class="container">
     <header class="topbar">
       <div class="brand">
         <div>
           <h1>My Orders</h1>
-          <p class="lead">All orders — shipping & tracking info</p>
+          <p class="lead">All orders - shipping & tracking info</p>
         </div>
       </div>
     </header>
@@ -98,32 +56,43 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
           <h2>Recent Orders</h2>
 
           <?php if (empty($orders)): ?>
-            <div class="no-orders">No orders found for your account.</div>
+            <div class="no-orders">No orders found.</div>
           <?php else: ?>
             <div class="orders-list">
               <?php foreach ($orders as $o): ?>
                 <article class="order-card">
                   <div class="order-meta">
-                    <div class="order-id">#<?= e($o['id']) ?> <?= isset($o['transaction_id']) ? '• TXN:' . e($o['transaction_id']) : '' ?></div>
-                    <div class="order-date"><?= e(date('d M, Y H:i', strtotime($o['created_at'] ?? 'now'))) ?></div>
+                    <div class="order-id">
+                      #<?= e($o['id']) ?>
+                      <?= isset($o['transaction_id']) ? ' • TXN:' . e($o['transaction_id']) : '' ?>
+                    </div>
+                    <div class="order-date">
+                        <?= e(date('d M, Y H:i', strtotime($o['created_at'] ?? 'now'))) ?>
+                    </div>
                   </div>
 
                   <div class="order-info">
-                    <div class="order-amount"><?= '₹ ' . number_format($o['amount'] ?? 0, 2) ?></div>
-                    <div class="order-status"><?= e(ucwords(str_replace('_',' ', $o['status'] ?? ''))) ?></div>
+                    <div class="order-amount">₹ <?= number_format($o['amount'] ?? 0, 2) ?></div>
+                    <div class="order-status"><?= e(ucwords(str_replace('_', ' ', $o['status'] ?? ''))) ?></div>
                     <div class="small label">Status: <?= e($o['delhivery_status'] ?? 'N/A') ?></div>
                   </div>
 
                   <div class="order-actions">
-                    <a class="btn small" href="track_orders.php?order_id=<?= (int)$o['id'] ?>">View</a>
+                    <a class="btn small" href="order_details.php?order_id=<?= (int)$o['id'] ?>">View</a>
 
                     <?php if (!empty($o['awb'])): ?>
-                      <button class="btn small ghost" onclick="alert('External tracking links have been removed. Use the tracking timeline or contact support for updates.')">Track AWB</button>
-                      <button class="btn small" onclick="copyToClipboard('awb-<?= (int)$o['id'] ?>')">Copy AWB</button>
+                      <button class="btn small ghost"
+                        onclick="alert('External tracking is disabled. View full details for more info.')">
+                        Track AWB
+                      </button>
+
+                      <button class="btn small" onclick="copyToClipboard('awb-<?= (int)$o['id'] ?>')">
+                        Copy AWB
+                      </button>
                     <?php endif; ?>
                   </div>
                   <?php if (!empty($o['awb'])): ?>
-                    <div style="display:none" id="awb-<?= (int)$o['id'] ?>"><?= e($o['awb']) ?></div>
+                    <div id="awb-<?= (int)$o['id'] ?>" style="display:none;"><?= e($o['awb']) ?></div>
                   <?php endif; ?>
                 </article>
               <?php endforeach; ?>
@@ -131,104 +100,45 @@ if (!empty($_GET['order_id']) && is_numeric($_GET['order_id'])) {
           <?php endif; ?>
 
         </div>
-
-        <?php if ($order_preview): ?>
-          <div class="card" style="margin-top:16px">
-            <h3>Order #<?= e($order_preview['id']) ?> details</h3>
-            <div class="label">Status: <strong><?= e($order_preview['status'] ?? '') ?></strong></div>
-            <div class="label">status: <strong><?= e($order_preview['delhivery_status'] ?? 'N/A') ?></strong></div>
-            <div class="label">AWB: <strong><?= e($order_preview['awb'] ?? '—') ?></strong></div>
-
-            <div style="margin-top:12px">
-              <h4>Items</h4>
-              <?php if (empty($order_items)): ?>
-                <div class="label">No items recorded.</div>
-              <?php else: ?>
-                <?php foreach ($order_items as $it): ?>
-                  <div class="item">
-                    <div class="thumb"><?= e(substr($it['product_name'] ?? '',0,2)) ?></div>
-                    <div class="meta">
-                      <div class="title"><?= e($it['product_name'] ?? '') ?></div>
-                      <small class="label">Qty: <?= (int)($it['quantity'] ?? 0) ?> • <?= '₹ ' . number_format($it['price'] ?? 0,2) ?></small>
-                    </div>
-                  </div>
-                <?php endforeach; ?>
-              <?php endif; ?>
-            </div>
-
-            <div style="margin-top:12px">
-              <h4>Tracking timeline</h4>
-              <div id="tracking-area" class="timeline">
-                <?php if (empty($order_tracking)): ?>
-                  <div class="label">No tracking updates yet.</div>
-                <?php else: ?>
-                  <?php foreach ($order_tracking as $t): ?>
-                    <?php
-                      $ts = $t['occurred_at'] ?? $t['updated_at'] ?? '';
-                      $loc = $t['location'] ?? ($t['event'] ?? '');
-                      $note = $t['note'] ?? '';
-                    ?>
-                    <div class="tl-item">
-                      <strong><?= e($loc) ?></strong>
-                      <small class="label"><?= e($ts) ?></small>
-                      <?php if ($note): ?><div class="small-muted"><?= e($note) ?></div><?php endif; ?>
-                    </div>
-                  <?php endforeach; ?>
-                <?php endif; ?>
-              </div>
-            </div>
-
-            <div style="margin-top:12px" class="actions">
-              <?php if (!empty($order_preview['awb'])): ?>
-                <button class="btn" onclick="alert('Shipment details: AWB shown above. External tracking links are removed.')">Shipment info</button>
-              <?php endif; ?>
-              <a class="btn ghost" href="order_details.php?order_id=<?= (int)$order_preview['id'] ?>">Full details</a>
-              <a href="returns.php?order_id=<?= (int)$order_preview['id'] ?>" class="btn danger">Request return</a>
-            </div>
-          </div>
-        <?php endif; ?>
-
       </section>
 
       <aside class="right">
         <div class="card">
-          <h3>Quick actions</h3>
+          <h3>Quick Actions</h3>
           <div class="actions">
             <a class="btn ghost" href="contact.php">Contact support</a>
-            <a class="btn ghost" href="products.php">Explore More</a>
+            <a class="btn ghost" href="products.php">Explore products</a>
           </div>
         </div>
 
-        <div class="card" style="margin-top:12px">
-          <h4>Shipping info</h4>
-          <div class="label">Courier</div>
+        <div class="card" style="margin-top:12px;">
+          <h4>Shipping Info</h4>
+          <div class="label">Courier details available in order page</div>
         </div>
       </aside>
     </div>
-  </main>
+</main>
 
-  <script>
-  function copyToClipboard(id){
-    var el = document.getElementById(id);
-    if (!el) return alert('Nothing to copy');
-    var txt = el.innerText || el.textContent || '';
-    if (!txt) return alert('Nothing to copy');
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(txt).then(function(){ alert('Copied'); }).catch(function(){ fallbackCopy(txt); });
-    } else {
-      fallbackCopy(txt);
-    }
-  }
-  function fallbackCopy(text){
+<script>
+function copyToClipboard(id){
+  var el = document.getElementById(id);
+  if (!el) return alert('Nothing to copy');
+  var txt = el.innerText || el.textContent || '';
+  if (!txt) return alert('Nothing to copy');
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(txt).then(() => alert('Copied'));
+  } else {
     var ta = document.createElement('textarea');
-    ta.value = text;
+    ta.value = txt;
     document.body.appendChild(ta);
     ta.select();
-    try { document.execCommand('copy'); alert('Copied'); } catch(e) { alert('Copy failed'); }
-    document.body.removeChild(ta);
+    document.execCommand('copy');
+    ta.remove();
+    alert('Copied');
   }
-  </script>
+}
+</script>
 
-  <script src="/public/js/script.js"></script>
+<script src="/public/js/script.js"></script>
 </body>
 </html>

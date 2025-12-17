@@ -461,7 +461,7 @@ async function placeOrder(btn) {
     return;
   }
 
-  // 🟢 UPI → open bottom sheet
+  // 🟢 UPI 
   if (chosen.value === "upi") {
     openUpiSheet(cart.length, total);
     return;
@@ -473,7 +473,6 @@ async function placeOrder(btn) {
     return;
   }
 
-  // Agent order payload
   const payload = {
     payment_method: "agent-id",
     transaction_id: agentIdValue,
@@ -513,12 +512,15 @@ async function placeOrder(btn) {
     btn.innerText = "Place Order";
   }
 }
+
 const backdrop = document.getElementById('upi-backdrop');
 const sheet = document.getElementById('upi-sheet');
 
 function openUpiSheet(items, amount) {
   setText('upi-items', items);
   setText('upi-amount', amount.toFixed(2));
+  document.body.classList.add('upi-open');   // 🔥 ADD
+  document.body.style.overflow = 'hidden';
 
   backdrop.classList.remove('hidden');
   sheet.classList.remove('hidden');
@@ -527,13 +529,12 @@ function openUpiSheet(items, amount) {
     backdrop.classList.add('show');
     sheet.classList.add('show');
   });
-
-  document.body.style.overflow = 'hidden';
 }
 
 function closeUpiSheet() {
   backdrop.classList.remove('show');
   sheet.classList.remove('show');
+  document.body.classList.remove('upi-open'); // 🔥 ADD
   document.body.style.overflow = '';
 
   setTimeout(() => {
@@ -543,8 +544,9 @@ function closeUpiSheet() {
 }
 
 if (backdrop) backdrop.onclick = closeUpiSheet;
-const cancelBtn = document.getElementById('upiCancel');
-if (cancelBtn) cancelBtn.onclick = closeUpiSheet;
+if (document.getElementById('upiCancel')) {
+  document.getElementById('upiCancel').onclick = closeUpiSheet;
+}
 const upiPayBtn = document.getElementById('upiPayNow');
 
 if (upiPayBtn) {

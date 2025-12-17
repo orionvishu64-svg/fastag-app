@@ -88,7 +88,6 @@ $csrf_token = $_SESSION['csrf_token'];
       </div>
 
       <div class="card hidden" id="step2-card" role="region" aria-label="Payment method" style="margin-top:16px;">
-        <button id="payment-back-btn" class="btn-outline" style="margin-bottom:12px;display:inline-block;">← Back to address</button>
         <h2 class="checkout-title" style="margin-top:0;">Payment</h2>
         <div class="checkout-sub">Choose a payment method and place your order</div>
 
@@ -139,6 +138,32 @@ $csrf_token = $_SESSION['csrf_token'];
 </div>
 <noscript>
 </noscript>
+<!-- Backdrop -->
+<div id="upi-backdrop" class="upi-backdrop hidden"></div>
+<div id="upi-sheet" class="upi-sheet hidden">
+  <div id="upi-confirm-view">
+    <div class="upi-handle"></div>
+    <h3>Confirm UPI Payment</h3>
+    <div class="upi-summary">
+      <div>Items: <strong id="upi-items">0</strong></div>
+      <div>Amount: <strong>₹<span id="upi-amount">0.00</span></strong></div>
+    </div>
+    <button id="upiPayNow" class="upi-primary">Pay Now</button>
+    <button id="upiCancel" class="upi-secondary">Cancel</button>
+  </div>
+  <div id="upi-timer-view" class="hidden">
+    <h3>Complete payment in UPI app</h3>
+    <div class="timer-ring">
+      <svg width="160" height="160">
+        <circle cx="80" cy="80" r="70" />
+        <circle id="timer-progress" cx="80" cy="80" r="70" />
+      </svg>
+      <div id="timer-text">05:00</div>
+    </div>
+
+    <p class="upi-muted">Do not close this page</p>
+  </div>
+</div>
 <script src="/public/js/script.js"></script>
 <script src="/public/js/payment.js" defer></script>
 </body>

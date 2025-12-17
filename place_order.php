@@ -162,6 +162,15 @@ try {
     ]);
     $order_id = (int)$pdo->lastInsertId();
 
+$order_code = 'AFT' . date('ymd_Hi') . ($order_id % 10);
+
+$pdo->prepare(
+    "UPDATE orders SET order_code = :oc WHERE id = :id"
+)->execute([
+    ':oc' => $order_code,
+    ':id' => $order_id
+]);
+
     $insItem = $pdo->prepare("INSERT INTO order_items (order_id, product_name, bank, quantity, price, product_id) VALUES (:oid, :pname, :bank, :qty, :price, :pid)");
     foreach ($items_to_insert as $ii) {
         $insItem->execute([
@@ -180,18 +189,12 @@ try {
     json_exit_err('db_error', 500, 'DB exception: ' . $e->getMessage());
 }
 
-$admin_create_resp = [
-    'success' => false,
-    'error' => 'shipping_integration_removed',
-    'message' => 'Automatic shipment creation has been disabled on this installation.'
-];
-
 echo json_encode([
     'success' => true,
     'status' => 'success',
     'order_id' => $order_id,
+    'order_code' => $order_code,
     'txnRef' => $transaction_id,
-    'admin_create' => $admin_create_resp,
     'calculated_total' => $calculated_total,
     'stored_order_amount' => $amount_to_store_in_orders
 ], JSON_UNESCAPED_SLASHES);

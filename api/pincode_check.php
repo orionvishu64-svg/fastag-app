@@ -27,25 +27,6 @@ if (file_exists($dbconf)) {
     log_msg("db.php missing at {$dbconf}");
 }
 
-try {
-    if (isset($pdo) && ($pdo instanceof PDO)) {
-        $stmt = $pdo->prepare("SELECT deliverable, tat FROM pincode_serviceability WHERE pincode = :p LIMIT 1");
-        $stmt->execute([':p' => $pincode]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($row) {
-            echo json_encode([
-                'success' => true,
-                'deliverable' => (bool)$row['deliverable'],
-                'tat' => isset($row['tat']) ? $row['tat'] : null,
-                'source' => 'local_db',
-            ]);
-            exit;
-        }
-    }
-} catch (Throwable $e) {
-    log_msg("local pincode lookup error: " . $e->getMessage());
-}
-
 $base = defined('DELHIVERY_BASE_URL') ? rtrim(DELHIVERY_BASE_URL, '/') : 'https://track.delhivery.com';
 $endpoint = $base . '/c/api/pin-codes/json/';
 $query = http_build_query(['filter_codes' => $pincode]);
