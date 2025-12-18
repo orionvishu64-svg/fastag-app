@@ -14,7 +14,7 @@ function e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 $orders = [];
 try {
     $stmt = $pdo->prepare("
-        SELECT id, user_id, address_id, payment_method, transaction_id, amount,
+        SELECT id, user_id, order_code, address_id, payment_method, transaction_id, amount,
                shipping_amount, awb, label_url, delhivery_status, manifest_id,
                payment_status, status, created_at, updated_at, expected_delivery_date
         FROM orders
@@ -63,7 +63,7 @@ try {
                 <article class="order-card">
                   <div class="order-meta">
                     <div class="order-id">
-                      #<?= e($o['id']) ?>
+                      <?= e($o['order_code']) ?>
                       <?= isset($o['transaction_id']) ? ' • TXN:' . e($o['transaction_id']) : '' ?>
                     </div>
                     <div class="order-date">

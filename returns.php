@@ -51,9 +51,7 @@ function forward_post_to_api($path, array $fields = []) {
     // forward X-Requested-With header (AJAX)
     curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge(
         ["X-Requested-With: XMLHttpRequest"],
-        // additional headers will be added below if needed
     ));
-    // Prepare fields - use urlencoded form data
     $postFields = http_build_query($fields);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
@@ -72,18 +70,14 @@ function forward_post_to_api($path, array $fields = []) {
     return ['ok' => true, 'http_code' => (int)$httpCode, 'body' => $raw];
 }
 
-/* ---------------- Handle POST submissions to create a return (this file now acts as the UI + fallback API proxy) ---------------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Accept both form-encoded and AJAX JSON multipart submissions (we'll use $_POST primarily)
     $order_id = (int) ($_POST['order_id'] ?? $_REQUEST['order_id'] ?? 0);
     $reason = trim((string) ($_POST['reason'] ?? $_REQUEST['reason'] ?? ''));
     $external_awb = trim((string) ($_POST['external_awb'] ?? $_REQUEST['external_awb'] ?? ''));
     $csrf = $_POST['csrf_token'] ?? $_REQUEST['csrf_token'] ?? '';
 
-    // If an API file exists, prefer forwarding the request there (non-invasive)
     $api_path = __DIR__ . '/api/create_return.php';
     if (is_file($api_path) && is_readable($api_path)) {
-        // Build fields to forward (same names expected)
         $fields = [
             'order_id' => $order_id,
             'reason' => $reason,
@@ -126,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Confirm order existence and ownership
     try {
-        $os = $pdo->prepare("SELECT id, user_id, status FROM orders WHERE id = :oid LIMIT 1");
+        $os = $pdo->prepare("SELECT id, user_id, order_code, status FROM orders WHERE id = :oid LIMIT 1");
         $os->execute([':oid' => $order_id]);
         $ord = $os->fetch(PDO::FETCH_ASSOC);
         if (!$ord || (int)$ord['user_id'] !== $user_id) {
@@ -286,7 +280,7 @@ function money($val) { return '₹ ' . number_format((float)$val, 2); }
       <div class="brand">
         <div>
           <h1>Request Return</h1>
-          <p class="lead">Order #<?= e($order['id']) ?> — <?= e($order['status'] ?? '') ?></p>
+          <p class="lead">Order- <?= e($order['order_code']) ?> — <?= e($order['status'] ?? '') ?></p>
         </div>
       </div>
       <div>
@@ -320,7 +314,7 @@ function money($val) { return '₹ ' . number_format((float)$val, 2); }
                   <div class="thumb"><?= e(substr($it['product_name'] ?? '', 0, 2)) ?></div>
                   <div class="meta">
                     <div class="title"><?= e($it['product_name'] ?? '') ?></div>
-                    <div class="small label">Qty: <?= (int)($it['quantity'] ?? 0) ?> • <?= '₹ '.number_format($it['price'] ?? 0,2) ?></div>
+                    <div class="small label">Bank <?= ($it['bank']) ?> - Qty: <?= (int)($it['quantity'] ?? 0) ?> • <?= '₹ '.number_format($it['price'] ?? 0,2) ?></div>
                   </div>
                 </div>
               <?php endforeach; endif; ?>
