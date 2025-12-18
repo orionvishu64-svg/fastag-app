@@ -149,6 +149,8 @@ if (in_array($statusRaw, ['S', 'SUCCESS'], true)) {
     $finalStatus = 'SUCCESS';
 } elseif (in_array($statusRaw, ['F', 'FAILED'], true)) {
     $finalStatus = 'FAILED';
+} elseif (in_array($statusRaw, ['T', 'TIMEOUT'], true)) {
+    $finalStatus = 'EXPIRED';
 } else {
     $finalStatus = 'PENDING';
 }
@@ -176,6 +178,16 @@ if ($finalStatus === 'FAILED') {
         ->execute([$payment['order_id']]);
 
     json_exit(['status' => 'FAILED']);
+}
+
+if ($finalStatus === 'EXPIRED') {
+    $pdo->prepare("UPDATE payments SET status='EXPIRED' WHERE id=?")
+        ->execute([$payment['payment_id']]);
+
+    $pdo->prepare("UPDATE orders SET payment_status='failed' WHERE id=?")
+        ->execute([$payment['order_id']]);
+
+    json_exit(['status' => 'EXPIRED']);
 }
 
 json_exit(['status' => 'PENDING']);

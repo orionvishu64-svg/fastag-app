@@ -3,7 +3,6 @@ class CartManager {
   constructor() {
     this.cart = this.loadCart();
     this.freeShippingThreshold = 500;
-    this.shippingCost = 50;
 
     this.init();
   }
@@ -407,47 +406,37 @@ class CartManager {
   }
 
   updateOrderSummary() {
-    // Make sure to coerce to numbers before arithmetic
-    const subtotal = this.cart.reduce((sum, item) => {
-      const price = Number(item.price) || 0;
-      const qty = Number(item.quantity) || 0;
-      return sum + price * qty;
-    }, 0);
+  const subtotal = this.cart.reduce((sum, item) => {
+    const price = Number(item.price) || 0;
+    const qty = Number(item.quantity) || 0;
+    return sum + price * qty;
+  }, 0);
 
-    const shipping = subtotal >= this.freeShippingThreshold ? 0 : this.shippingCost;
-    const total = subtotal + shipping;
+  const total = subtotal;
 
-    // Update DOM elements (guard in case missing)
-    const subtotalEl = document.getElementById("subtotal");
-    const shippingEl = document.getElementById("shipping");
-    const totalEl = document.getElementById("total");
+  const subtotalEl = document.getElementById("subtotal");
+  const totalEl = document.getElementById("total");
 
-    if (subtotalEl) subtotalEl.textContent = `₹${(Number.isFinite(subtotal) ? subtotal : 0).toLocaleString()}`;
-    if (shippingEl) shippingEl.textContent = shipping === 0 ? "Free" : `₹${shipping.toLocaleString()}`;
-    if (totalEl) totalEl.textContent = `₹${(Number.isFinite(total) ? total : 0).toLocaleString()}`;
-
-    // Update shipping info
-    const shippingInfo = document.getElementById("shippingInfo");
-    const freeShippingAmount = document.getElementById("freeShippingAmount");
-
-    if (shippingInfo && freeShippingAmount) {
-      if (subtotal < this.freeShippingThreshold) {
-        const remaining = this.freeShippingThreshold - subtotal;
-        freeShippingAmount.textContent = remaining.toLocaleString();
-        shippingInfo.style.display = "block";
-      } else {
-        shippingInfo.style.display = "none";
-      }
-    }
-
-    // Enable/disable checkout button
-    const checkoutBtn = document.getElementById("checkoutBtn");
-    if (checkoutBtn) {
-      checkoutBtn.disabled = this.cart.length === 0;
-    }
+  if (subtotalEl) {
+    subtotalEl.textContent = `₹${(Number.isFinite(subtotal) ? subtotal : 0).toLocaleString()}`;
   }
 
-  // replace proceedToCheckout() in cart.js with this:
+  if (totalEl) {
+    totalEl.textContent = `₹${(Number.isFinite(total) ? total : 0).toLocaleString()}`;
+  }
+
+  const shippingEl = document.getElementById("shipping");
+  const shippingInfo = document.getElementById("shippingInfo");
+
+  if (shippingEl) shippingEl.style.display = "none";
+  if (shippingInfo) shippingInfo.style.display = "none";
+
+  const checkoutBtn = document.getElementById("checkoutBtn");
+  if (checkoutBtn) {
+    checkoutBtn.disabled = this.cart.length === 0;
+  }
+}
+
   proceedToCheckout() {
     if (this.cart.length === 0) {
       this.showNotification("Your cart is empty", "error");

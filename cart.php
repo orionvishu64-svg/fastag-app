@@ -61,19 +61,11 @@ require_once 'config/common_start.php';
                                     <span>Subtotal</span>
                                     <span id="subtotal">₹0</span>
                                 </div>
-                                <div class="summary-row">
-                                    <span>Shipping</span>
-                                    <span id="shipping">₹0</span>
-                                </div>
                                 <div class="summary-divider"></div>
                                 <div class="summary-row total-row">
                                     <span>Total</span>
                                     <span id="total">₹0</span>
                                 </div>
-                            </div>
-
-                            <div class="shipping-info" id="shippingInfo">
-                                <p><i class="fas fa-info-circle"></i> Add ₹<span id="freeShippingAmount">0</span> more for free shipping</p>
                             </div>
 
                             <button class="checkout-btn" id="checkoutBtn">
