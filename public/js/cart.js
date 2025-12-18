@@ -291,7 +291,7 @@ class CartManager {
         `;
       modal.innerHTML = `
             <div style="
-                background: white;
+                background: var(--panel-1);
                 padding: 30px;
                 border-radius: 12px;
                 box-shadow: 0 8px 32px rgba(0,0,0,0.2);
@@ -303,7 +303,7 @@ class CartManager {
                 <div style="display: flex; justify-content: center; gap: 15px;">
                     <button id="confirmYes" style="
                         background: #10b981;
-                        color: white;
+                        color: var(--text);
                         padding: 12px 25px;
                         border: none;
                         border-radius: 8px;
@@ -313,7 +313,7 @@ class CartManager {
                     ">Yes</button>
                     <button id="confirmNo" style="
                         background: #ef4444;
-                        color: white;
+                        color: var(--text);
                         padding: 12px 25px;
                         border: none;
                         border-radius: 8px;

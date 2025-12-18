@@ -61,6 +61,12 @@ document.addEventListener("DOMContentLoaded", () => {
   let upiTimer = null;
   let upiPoller = null;
   let upiRemaining = 300;
+  let pollInterval = null;
+  let countdownInterval = null;
+  let secondsLeft = 300;
+  let currentToken = null;
+  let upiRetryCount = 0;
+  const UPI_MAX_RETRIES = 3;
 
   const cart = (() => {
     try { return JSON.parse(localStorage.getItem("cart") || "[]"); }
@@ -74,6 +80,7 @@ function setText(id, value) {
   if (el) el.innerText = value;
 }
 
+// start countdown 
 function startCountdown() {
   const circle = document.getElementById('timer-progress');
   const text = document.getElementById('timer-text');
@@ -104,6 +111,7 @@ function startCountdown() {
   }, 1000);
 }
 
+// start polling
 function startUpiPolling(token) {
   clearInterval(upiPoller);
 
@@ -130,6 +138,7 @@ function startUpiPolling(token) {
   }, 5000);
 }
 
+// handle success
 function handleSuccess(orderCode) {
   clearInterval(upiTimer);
   clearInterval(upiPoller);
@@ -144,15 +153,102 @@ function handleSuccess(orderCode) {
   }, 1200);
 }
 
+// handle failure
+function handleFailure(status) {
+  clearInterval(upiTimer);
+  clearInterval(upiPoller);
+
+  const text = document.getElementById('timer-text');
+  text.innerHTML = status === 'EXPIRED' ? 'Timed out' : 'Failed';
+  text.style.fontSize = '18px';
+  text.style.color = '#dc3545';
+
+  upiRetryCount++;
+
+  if (upiRetryCount < UPI_MAX_RETRIES) {
+    const remaining = UPI_MAX_RETRIES - upiRetryCount;
+    showRetryUI(`Payment failed. Retry (${remaining} attempts left)`);
+  } else {
+    showRestartUI();
+  }
+}
+
+// show timeout
 function showTimeoutUI() {
+  clearInterval(upiTimer);
+  clearInterval(upiPoller);
+
   const text = document.getElementById('timer-text');
   text.innerHTML = 'Timed out';
   text.style.fontSize = '18px';
   text.style.color = '#dc3545';
 
-  alert('Payment timed out. Please try again.');
+  upiRetryCount++;
+
+  if (upiRetryCount < UPI_MAX_RETRIES) {
+    const remaining = UPI_MAX_RETRIES - upiRetryCount;
+    showRetryUI(`Payment timed out. Retry (${remaining} attempts left)`);
+  } else {
+    showRestartUI();
+  }
 }
 
+// retry UI
+function showRetryUI(message) {
+  const view = document.getElementById('upi-timer-view');
+  view.classList.remove('hidden');
+
+  let retryBox = document.getElementById('upi-retry-box');
+  if (!retryBox) {
+    retryBox = document.createElement('div');
+    retryBox.id = 'upi-retry-box';
+    retryBox.style.textAlign = 'center';
+    retryBox.style.marginTop = '16px';
+
+    const btn = document.createElement('button');
+    btn.className = 'upi-primary';
+    btn.id = 'upiRetryBtn';
+    btn.innerText = 'Retry Payment';
+
+    btn.onclick = () => {
+      retryBox.remove();
+      openUpiSheet(cart.length, total);
+    };
+
+    retryBox.appendChild(document.createElement('p')).innerText = message;
+    retryBox.appendChild(btn);
+    view.appendChild(retryBox);
+  }
+}
+
+// restart UI
+function showRestartUI() {
+  const view = document.getElementById('upi-timer-view');
+  view.classList.remove('hidden');
+
+  let box = document.getElementById('upi-restart-box');
+  if (box) return;
+
+  box = document.createElement('div');
+  box.id = 'upi-restart-box';
+  box.style.textAlign = 'center';
+  box.style.marginTop = '16px';
+
+  const msg = document.createElement('p');
+  msg.innerText = 'Maximum attempts reached. Restart payment.';
+  msg.style.color = '#dc3545';
+
+  const btn = document.createElement('button');
+  btn.className = 'upi-secondary';
+  btn.innerText = 'Go back to payment page';
+  btn.onclick = () => {
+    window.location.href = 'payment.php';
+  };
+
+  box.appendChild(msg);
+  box.appendChild(btn);
+  view.appendChild(box);
+}
 
   if (paymentSection && !paymentSection.classList.contains('hidden')) {
     paymentSection.classList.add('hidden');
@@ -636,6 +732,7 @@ const upiPayBtn = document.getElementById('upiPayNow');
 
 if (upiPayBtn) {
   upiPayBtn.onclick = async () => {
+    upiRetryCount = upiRetryCount || 0;
     upiPayBtn.disabled = true;
     upiPayBtn.innerText = "Initializing UPI…";
 

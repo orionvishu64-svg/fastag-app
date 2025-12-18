@@ -123,15 +123,27 @@ curl_setopt_array($ch, [
 ]);
 
 $response = curl_exec($ch);
+if ($response === false) {
+    error_log("YESBANK CURL ERROR: " . curl_error($ch));
+    curl_close($ch);
+    json_exit(['status' => 'PENDING']);
+}
 curl_close($ch);
 
-if (!$response) {
-    error_log("YESBANK EMPTY RESPONSE | token={$token}");
+$response = trim($response);
+if ($response === '' || strpos($response, '|') === false) {
+    error_log("YESBANK INVALID RESPONSE | token={$token} | raw={$response}");
     json_exit(['status' => 'PENDING']);
 }
 
-$parts = explode('|', trim($response));
-$statusRaw = strtoupper(trim($parts[4] ?? 'PENDING'));
+$values = explode('|', $response);
+
+if (!isset($values[4])) {
+    error_log("YESBANK MALFORMED RESPONSE | token={$token} | raw={$response}");
+    json_exit(['status' => 'PENDING']);
+}
+
+$statusRaw = strtoupper(trim($values[4]));
 
 if (in_array($statusRaw, ['S', 'SUCCESS'], true)) {
     $finalStatus = 'SUCCESS';

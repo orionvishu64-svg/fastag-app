@@ -277,6 +277,7 @@ function money($val) { return '₹ ' . number_format((float)$val, 2); }
   <link rel="stylesheet" href="/public/css/styles.css" />
   <link rel="stylesheet" href="/public/css/order_details.css" />
   <link rel="stylesheet" href="/public/css/returns.css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
   <?php include __DIR__ . '/includes/header.php'; ?>

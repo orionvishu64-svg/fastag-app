@@ -160,7 +160,11 @@ $csrf_token = $_SESSION['csrf_token'];
       </svg>
       <div id="timer-text">05:00</div>
     </div>
-
+    <div id="upi-result" class="hidden">
+      <div id="upi-result-icon"></div>
+      <p id="upi-result-text"></p>
+      <button id="upi-retry-btn" class="upi-primary">Retry Payment</button>
+    </div>
     <p class="upi-muted">Do not close this page</p>
   </div>
 </div>

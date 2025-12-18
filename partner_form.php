@@ -79,6 +79,7 @@ $savedPartners = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <title>Partner Form - ApnaPayment</title>
 <link rel="stylesheet" href="/public/css/styles.css">
 <link rel="stylesheet" href="/public/css/partner.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 
 <body class="partner-page">

@@ -9,6 +9,7 @@ require_once 'config/common_start.php';
 <title>FASTag — FAQs</title>
 <link rel="stylesheet" href="/public/css/styles.css">
 <link rel="stylesheet" href="/public/css/faq.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
   <?php include __DIR__ . '/includes/header.php'; ?>

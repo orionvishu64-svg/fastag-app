@@ -162,6 +162,7 @@ $err = function_exists('flash_get') ? flash_get('error') : null;
   <title>Your Profile</title>
   <link rel="stylesheet" href="public/css/styles.css">
   <link rel="stylesheet" href="public/css/profile.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="profile-page">
 <?php include __DIR__ . '/includes/header.php'; ?>

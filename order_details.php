@@ -191,6 +191,7 @@ foreach ($db_history as $dbh) {
   <title>Order #<?= e($order['id']) ?> — Details & Tracking</title>
   <link rel="stylesheet" href="/public/css/styles.css">
   <link rel="stylesheet" href="/public/css/order_details.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
     .timeline { margin-top:10px; border-left:2px solid #e6e6e6; padding-left:14px; }
     .tl-item { margin-bottom:12px; position:relative; }
