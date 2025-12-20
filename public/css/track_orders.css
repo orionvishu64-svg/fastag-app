@@ -1,17 +1,14 @@
 /* track_orders.css */
 
-/* ===== Base / Reset ===== */
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; background: linear-gradient(180deg, var(--bg-start), var(--bg-end)); color: var(--text); -webkit-font-smoothing: antialiased; }
 a { color: inherit; text-decoration: none; }
 .container { max-width: var(--max-width); margin: 28px auto; padding: 20px; box-sizing: border-box; }
 
-/* ===== Topbar ===== */
 .topbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
 .brand{ display:flex; align-items:center; gap:14px; }
 h1{ margin:0; font-size:18px; color:var(--text); }
 
-/* ===== Layout ===== */
 .layout{ display:grid; grid-template-columns:1fr 360px; gap:20px; align-items:start; }
 @media (max-width:980px){
   .layout{ grid-template-columns:1fr; }
@@ -19,7 +16,6 @@ h1{ margin:0; font-size:18px; color:var(--text); }
   .topbar{ flex-direction:column; align-items:flex-start; gap:8px; }
 }
 
-/* ===== Card base ===== */
 .card{
   background: var(--card-bg);
   padding:18px;
@@ -29,12 +25,10 @@ h1{ margin:0; font-size:18px; color:var(--text); }
   border:1px solid var(--border-1);
 }
 
-/* header row & labels */
 .header-row{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
 .big{ font-weight:700; color:var(--text); }
 .label{ color:var(--muted); font-size:13px; }
 
-/* ===== Recent Orders heading ===== */
 .recent-orders-wrap .card-title,
 .recent-orders-wrap h2 {
   color:var(--text);
@@ -44,7 +38,6 @@ h1{ margin:0; font-size:18px; color:var(--text); }
   text-shadow:0 2px 8px rgba(0,0,0,0.45);
 }
 
-/* ===== Orders list ===== */
 .orders-list{ display:flex; flex-direction:column; gap:12px; margin-top:10px; }
 .order-card{
   display:flex; align-items:center; justify-content:space-between; padding:16px 18px;
@@ -59,12 +52,10 @@ h1{ margin:0; font-size:18px; color:var(--text); }
   border-color: color-mix(in srgb, var(--accent-warm) 20%, var(--border-2));
 }
 
-/* left: meta */
 .order-meta{ display:flex; flex-direction:column; gap:6px; }
 .order-id{ font-weight:800; color:var(--text); font-size:1.0rem; letter-spacing:0.2px; }
 .order-date{ color:var(--muted); font-size:13px; }
 
-/* right: amount & actions */
 .order-info{ display:flex; flex-direction:column; align-items:flex-end; gap:8px; min-width:140px; }
 .order-amount{
   font-weight:900; color:var(--accent-warm); font-size:1rem;
@@ -73,27 +64,12 @@ h1{ margin:0; font-size:18px; color:var(--text); }
   box-shadow: 0 8px 30px rgba(255,184,77,0.03);
 }
 
-/* small view button */
-.order-actions .btn-view{
-  background: linear-gradient(90deg, var(--accent-warm), var(--accent-warm-2));
-  color:#111;
-  padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:700;
-  transition: transform .14s ease, box-shadow .12s ease;
-  border: 0;
-}
-.order-actions .btn-view:hover{
-  transform:translateY(-2px);
-  box-shadow: 0 12px 36px rgba(0,0,0,0.4);
-}
-
-/* ===== Status pill ===== */
 .order-status{
   padding:6px 10px; border-radius:999px; font-size:13px;
   background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
   color:var(--muted); border:1px solid var(--border-1); font-weight:800;
 }
 
-/* status variants */
 .order-status.delivered{
   background: linear-gradient(90deg, rgba(16,185,129,0.12), rgba(16,185,129,0.04));
   color:#064e3b; border:1px solid rgba(16,185,129,0.12);
@@ -107,7 +83,6 @@ h1{ margin:0; font-size:18px; color:var(--text); }
   color:#7a3e00; border:1px solid rgba(245,158,11,0.12);
 }
 
-/* ===== Buttons ===== */
 .btn{
   padding:8px 12px; border-radius:10px; border:0;
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
@@ -115,25 +90,12 @@ h1{ margin:0; font-size:18px; color:var(--text); }
   box-shadow:var(--shadow-soft);
   transition: transform .14s var(--transition-fast), box-shadow .22s ease, background .18s ease;
 }
-.btn.small{ padding:6px 10px; font-size:13px; border:1px solid var(--border-1); background: transparent; color:var(--accent-warm); }
-.btn.small:hover{ background: linear-gradient(90deg, var(--accent-warm), var(--accent-warm-2)); color:#111; box-shadow:0 14px 36px rgba(255,184,77,0.08); transform:translateY(-2px); }
+.btn.small{ padding:6px 10px; font-size:13px; border:1px solid var(--border-1); background: linear-gradient(90deg, var(--accent-warm), var(--accent-warm-2)); color:var(--text); }
+.btn.small:hover{ background: transparent;  color:var(--accent-warm-2); box-shadow:0 14px 36px rgba(255,184,77,0.08); transform:translateY(-2px); }
 
-/* primary & danger */
-.btn.primary{
-  background: linear-gradient(90deg, var(--accent-warm), var(--accent-warm-2));
-  color:#111; font-weight:900; box-shadow: 0 20px 60px rgba(255,184,77,0.12);
-}
-.btn.primary:hover{ transform:translateY(-3px); filter:brightness(.98); }
-.btn.ghost{ background: rgba(255,255,255,0.02); border:1px solid var(--border-1); color:var(--accent-warm-2); }
-.btn.ghost:hover{ background: var(--card-bg); color:var(--text); }
-.btn.danger{
-  background: linear-gradient(90deg, var(--accent-warm-red), var(--accent-warm));
-  color:#111; font-weight:900;
-  box-shadow: 0 16px 48px rgba(232,92,65,0.10);
-}
-.btn.danger:hover{ transform:translateY(-2px); }
+.btn.ghost{ background: linear-gradient(90deg, var(--accent-warm-red), var(--accent-warm));border:1px solid var(--border-1); color:var(--text); }
+.btn.ghost:hover{ background: var(--card-bg); color:var(--accent-warm-red); }
 
-/* ===== Progress & timeline ===== */
 .progress{ display:flex; gap:18px; align-items:flex-start; margin-top:14px; }
 .stage{ display:flex; flex-direction:column; align-items:center; flex:1; min-width:52px; }
 .dot{
@@ -156,7 +118,6 @@ h1{ margin:0; font-size:18px; color:var(--text); }
   transition: width .7s ease;
 }
 
-/* ===== Order summary & items ===== */
 .order-summary{ display:grid; grid-template-columns:1fr 260px; gap:16px; margin-top:18px; }
 @media (max-width:720px){ .order-summary{ grid-template-columns:1fr; } }
 
@@ -177,7 +138,6 @@ h1{ margin:0; font-size:18px; color:var(--text); }
 .price{ font-weight:900; color:var(--accent-warm); }
 .small.label{ font-size:13px; color:var(--muted); }
 
-/* ===== Timeline ===== */
 .timeline{ margin-top:16px; border-left:2px solid rgba(255,255,255,0.03); padding-left:14px; }
 .tl-item{ position:relative; padding:12px 0; }
 .tl-item:before{
@@ -188,23 +148,101 @@ h1{ margin:0; font-size:18px; color:var(--text); }
 .tl-item.done:before{ background: linear-gradient(135deg, var(--accent-warm), var(--accent-warm-2)); border:0; }
 .tl-item small{ display:block; color:var(--muted); font-size:12px; }
 
-/* ===== Helpers ===== */
 .actions{ display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; }
 .summary-list{ display:flex; flex-direction:column; gap:8px; margin-top:12px; }
 .row{ display:flex; justify-content:space-between; color:var(--muted); }
 .row.total{ font-weight:900; color:var(--accent-warm); font-size:15px; }
 .no-orders{ text-align:center; color:var(--muted); padding:20px; font-size:1.05em; background:transparent; border-radius:8px; }
 
-/* ===== Responsive tweaks ===== */
 @media (max-width:420px){
   .logo{ width:40px; height:40px; }
   .thumb{ width:56px; height:56px; }
   .dot{ width:30px; height:30px; }
 }
 
-/* ===== Accessibility & overrides ===== */
 :focus{ outline:3px solid rgba(255,184,77,0.12); outline-offset:2px; }
 .card, .order-card, .mini { border-color: var(--border-1) !important; }
-.btn.primary, .btn.danger { box-shadow: 0 18px 50px rgba(0,0,0,0.6) !important; }
+.btn.danger { box-shadow: 0 18px 50px rgba(0,0,0,0.6) !important; }
 
-/* End of file */
+/* ===============================
+   MOBILE SAFE FIX (NON-DESTRUCTIVE)
+   =============================== */
+
+@media (max-width: 768px) {
+
+  /* Stop page zoom-out */
+  html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Container should fit screen */
+  .container {
+    max-width: 100%;
+    padding: 14px;
+  }
+
+  /* Layout already stacks — just ensure no width leak */
+  .layout {
+    width: 100%;
+  }
+
+  /* Order card stays horizontal but tighter */
+  .order-card {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+
+  /* Left side wraps safely */
+  .order-meta {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .order-id {
+    font-size: 0.92rem;
+    line-height: 1.25;
+    word-break: break-word;
+  }
+
+  .order-date {
+    font-size: 12px;
+  }
+
+  /* Right side compact */
+  .order-info {
+    min-width: 110px;
+    gap: 6px;
+  }
+
+  .order-amount {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+  }
+
+  .order-status {
+    font-size: 12px;
+    padding: 5px 9px;
+  }
+
+  .btn.small {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 420px) {
+
+  .order-card {
+    padding: 10px 12px;
+  }
+
+  .order-id {
+    font-size: 0.88rem;
+  }
+
+  .order-info {
+    min-width: 96px;
+  }
+}

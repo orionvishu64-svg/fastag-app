@@ -79,17 +79,6 @@ try {
 
                   <div class="order-actions">
                     <a class="btn small" href="order_details.php?order_id=<?= (int)$o['id'] ?>">View</a>
-
-                    <?php if (!empty($o['awb'])): ?>
-                      <button class="btn small ghost"
-                        onclick="alert('External tracking is disabled. View full details for more info.')">
-                        Track AWB
-                      </button>
-
-                      <button class="btn small" onclick="copyToClipboard('awb-<?= (int)$o['id'] ?>')">
-                        Copy AWB
-                      </button>
-                    <?php endif; ?>
                   </div>
                   <?php if (!empty($o['awb'])): ?>
                     <div id="awb-<?= (int)$o['id'] ?>" style="display:none;"><?= e($o['awb']) ?></div>

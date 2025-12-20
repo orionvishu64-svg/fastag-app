@@ -45,6 +45,20 @@
   --border-2: rgba(148, 148, 148, 0.304);
   --shadow-soft: 0 8px 30px rgba(18,25,35,0.06);
 }
+/* Remove underline from all links */
+a,
+a:visited,
+a:hover,
+a:active,
+a:focus {
+  text-decoration: none;
+}
+
+/* Ensure buttons styled as links also look clean */
+a.btn,
+a.btn-outline {
+  text-decoration: none !important;
+}
 
 /* ---------- RESET & BASE ---------- */
 * {

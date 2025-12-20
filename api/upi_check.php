@@ -88,9 +88,12 @@ curl_setopt_array($ch, [
 $response = curl_exec($ch);
 
 if ($response === false) {
-    error_log("SENIOR API CURL ERROR: " . curl_error($ch));
+    $err = curl_error($ch);
+    curl_close($ch);
+    error_log("Payment Api error: " . $err);
     json_exit(['status' => 'PENDING']);
 }
+curl_close($ch);
 
 $pdo->prepare("
     UPDATE payments
@@ -102,6 +105,11 @@ $pdo->prepare("
 ]);
 
 error_log("SENIOR API RAW RESPONSE: " . $response);
+
+if (stripos($response, '{') !== 0) {
+    error_log("UPI NON-JSON RESPONSE: " . $response);
+    json_exit(['status' => 'PENDING']);
+}
 
 $data = json_decode($response, true);
 if (!isset($data['status'][4])) {
@@ -125,7 +133,7 @@ if (in_array($statusRaw, ['S', 'SUCCESS'], true)) {
     ]);
 }
 
-if (in_array($statusRaw, ['F', 'FAILED'], true)) {
+if (in_array($statusRaw, ['F', 'FAILED', 'FAILURE', 'NORECORD'], true)) {
     $pdo->prepare("UPDATE payments SET status='FAILED' WHERE id=?")
         ->execute([$payment['payment_id']]);
 
