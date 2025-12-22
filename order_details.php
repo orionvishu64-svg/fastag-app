@@ -93,11 +93,43 @@ try {
 }
 
 try {
-    $itstm = $pdo->prepare("SELECT id, order_id, bank, product_name, quantity, price, product_id FROM order_items WHERE order_id = :oid");
+    $itstm = $pdo->prepare("SELECT 
+    oi.id AS order_item_id,
+    oi.bank,
+    oi.product_name,
+    oi.quantity,
+    oi.price,
+    p.image AS product_image
+  FROM order_items oi
+  LEFT JOIN products p ON p.id = oi.product_id
+  WHERE oi.order_id = :oid
+  ");
     $itstm->execute([':oid' => $order_id]);
     $items = $itstm->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
     $items = [];
+}
+// ---- LOAD ALL SERIES FOR ORDER ITEMS ----
+$seriesByItem = [];
+
+try {
+    $sstm = $pdo->prepare("
+        SELECT order_item_id, start_series, end_series
+        FROM order_item_series
+        WHERE order_id = :oid
+        ORDER BY order_item_id ASC, id ASC
+    ");
+    $sstm->execute([':oid' => $order_id]);
+    $seriesRows = $sstm->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($seriesRows as $row) {
+        $seriesByItem[$row['order_item_id']][] = [
+            'start' => $row['start_series'],
+            'end'   => $row['end_series']
+        ];
+    }
+} catch (Exception $e) {
+    $seriesByItem = [];
 }
 
 try {
@@ -215,16 +247,38 @@ foreach ($db_history as $dbh) {
         <div class="items">
           <?php foreach ($items as $it): ?>
             <div class="item">
-              <div class="thumb"><?= e(substr($it['product_name'],0,2)) ?></div>
-              <div class="meta">
-                <div class="title"><?= e($it['product_name']) ?></div>
-                <div class="small">
-                  Bank <?= ($it['bank']) ?> - Qty <?= (int)$it['quantity'] ?> · ₹ <?= number_format($it['price'],2) ?>
-                </div>
+
+              <div class="thumb">
+                <?php if (!empty($it['product_image'])): ?>
+                  <img src="<?= e($it['product_image']) ?>" alt="<?= e($it['product_name']) ?>">
+                <?php else: ?>
+                <?= e(substr($it['product_name'], 0, 2)) ?>
+                <?php endif; ?>
               </div>
-            </div>
-          <?php endforeach; ?>
+
+      <div class="meta">
+        <div class="title"><?= e($it['product_name']) ?></div>
+
+        <div class="small">
+          Bank <?= e($it['bank']) ?> ·
+          Qty <?= (int)$it['quantity'] ?> ·
+          ₹ <?= number_format($it['price'], 2) ?>
         </div>
+
+        <?php if (!empty($seriesByItem[$it['order_item_id']])): ?>
+          <div class="series-block">
+            <?php foreach ($seriesByItem[$it['order_item_id']] as $s): ?>
+              <div class="series-row">
+                Series: <?= e($s['start']) ?> – <?= e($s['end']) ?>
+              </div>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
+      </div>
+
+    </div>
+  <?php endforeach; ?>
+</div>
       </div>
 
       <div class="card">
@@ -290,13 +344,25 @@ foreach ($db_history as $dbh) {
           </div>
         <?php else: ?>
           <div class="timeline">
-            <?php foreach ($merged_history as $h): ?>
-              <div class="tl-item">
-                <strong><?= e($h['status']) ?></strong>
-                <small><?= e($h['date']) ?></small>
-                <?php if ($h['location']): ?><div class="label"><?= e($h['location']) ?></div><?php endif; ?>
-                <?php if ($h['note']): ?><div class="label"><?= e($h['note']) ?></div><?php endif; ?>
+            <?php foreach ($merged_history as $index => $h): ?>
+            <?php $isLatest = ($index === 0); ?>
+              <div class="tl-item <?= $isLatest ? 'latest' : '' ?>">
+                <div class="tl-dot">
+                  <i class="fa-solid <?= $isLatest ? 'fa-truck-fast' : 'fa-circle-check' ?>"></i>
+                </div>
+                <div class="tl-content">
+                  <div class="tl-status"><?= e($h['status']) ?></div>
+                  <div class="tl-time"><?= e(date('d M Y, h:i A', strtotime($h['date']))) ?></div>
+
+                  <?php if ($h['location']): ?>
+                    <div class="tl-location"><?= e($h['location']) ?></div>
+                  <?php endif; ?>
+
+                  <?php if ($h['note']): ?>
+                <div class="tl-note"><?= e($h['note']) ?></div>
+               <?php endif; ?>
               </div>
+            </div>
             <?php endforeach; ?>
           </div>
         <?php endif; ?>

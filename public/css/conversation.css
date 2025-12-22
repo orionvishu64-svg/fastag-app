@@ -101,61 +101,75 @@ main{
 .ticket .replies{margin-top:12px;display:flex;flex-direction:column;gap:10px;}
 #openThread{max-height:52vh;overflow-y:auto;padding-right:6px;display:flex;flex-direction:column;gap:10px;margin-top:10px;}
 
-/* ---------- MESSAGE BUBBLES ---------- */
 .message{
   min-width:64px;
   max-width:62%;
   padding:10px 12px 18px 12px;
-  border-radius:12px;
+  border-radius:14px;
   word-break:break-word;
   position:relative;
   font-size:.92rem;
-  line-height:1.28;
-  box-shadow:0 6px 18px rgba(0,0,0,0.6);
-  transition:transform .08s ease;
+  line-height:1.4;
+  box-shadow:0 8px 22px rgba(0,0,0,0.35);
+  transition:transform .12s ease;
   color:var(--text);
 }
 
-/* small shared adjustments for user/admin */
-.message.user,.message.admin{padding:8px 12px 16px 12px;border-radius:12px;}
+.message.user,
+.message.admin{
+  padding:9px 12px 16px 12px;
+}
 
-/* user message — warm accent */
+/* USER — blue */
 .message.user{
   align-self:flex-end;
-  /* preserved decorative gradient so visual intent remains */
-  background: linear-gradient(#fffb94, rgba(255, 255, 255, 0.175));
-  color:#1b1200;
-  border-left:4px solid rgba(255,184,77,0.85);
-  border-top-right-radius:6px;
-  box-shadow:0 10px 26px rgba(255,184,77,0.03);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent-info, #4da3ff) 85%, #fff),
+      color-mix(in srgb, var(--accent-info, #4da3ff) 65%, #000)
+    );
+  color:#081625;
+  border-radius:14px 14px 6px 14px;
+  box-shadow:0 10px 28px rgba(77,163,255,0.25);
 }
 
-/* admin message — warm accent alternative */
+/* ADMIN — green */
 .message.admin{
   align-self:flex-start;
-  background: linear-gradient(#f19d7b, rgba(255, 255, 255, 0.175));
-  border-left:4px solid rgba(240, 86, 55, 0.85);
-  color: #1b1200;
-  border-top-left-radius:6px;
-  box-shadow:0 10px 26px rgba(0,0,0,0.7);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent-success, #2ecc71) 80%, #fff),
+      color-mix(in srgb, var(--accent-success, #2ecc71) 60%, #000)
+    );
+  color:#081a10;
+  border-radius:14px 14px 14px 6px;
+  box-shadow:0 10px 28px rgba(46,204,113,0.22);
 }
 
-/* smaller messages in closed tickets */
-#closedTicketsContainer .replies .message{max-width:220px;margin-bottom:6px;}
+/* closed tickets = muted bubbles */
+#closedTicketsContainer .replies .message{
+  opacity:.78;
+  max-width:220px;
+}
 
-/* message meta (timestamp etc.) */
+/* message meta */
 .message .meta{
   position:absolute;
   bottom:6px;
   right:8px;
   font-size:0.68rem;
-  color:rgba(243,243,243,0.55);
+  color:rgba(0,0,0,0.45);
   background:transparent;
-  padding:0 2px;
 }
 
-/* spacing helper for bubble tail */
-.message::after{content:'';display:block;height:14px;}
+/* spacing helper */
+.message::after{
+  content:'';
+  display:block;
+  height:12px;
+}
 
 /* ---------- REPLY FORM ---------- */
 #replyForm{display:flex;gap:10px;align-items:center;margin-top:12px;}

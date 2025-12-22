@@ -19,6 +19,7 @@ $dsn = "mysql:host=$host;dbname=$dbname;charset=utf8mb4;unix_socket=/opt/bitnami
 try {
     $pdo = new PDO($dsn, $user, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->exec("SET time_zone = '+05:30'");
 } catch (PDOException $e) {
     die("Database connection failed: " . $e->getMessage());
 }

@@ -33,160 +33,94 @@ function json_exit($payload, $status = 200) {
     exit;
 }
 
-function forward_post_to_api($path, array $fields = []) {
-    // Build base URL using same host/scheme as request
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'] ?? '127.0.0.1';
-    $url = $scheme . '://' . $host . $path;
-
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    // Forward session cookie (PHPSESSID) so API can rely on same session
-    if (session_status() === PHP_SESSION_ACTIVE) {
-        $sess = session_id();
-        if ($sess) curl_setopt($ch, CURLOPT_HTTPHEADER, ["Cookie: PHPSESSID={$sess}"]);
-    }
-    // forward X-Requested-With header (AJAX)
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge(
-        ["X-Requested-With: XMLHttpRequest"],
-    ));
-    $postFields = http_build_query($fields);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
-    // Set content-type
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/x-www-form-urlencoded", "X-Requested-With: XMLHttpRequest"]);
-
-    $raw = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $err = curl_error($ch);
-    curl_close($ch);
-
-    if ($raw === false || $err) {
-        error_log("forward_post_to_api: curl error to {$url} : {$err}");
-        return ['ok' => false, 'http_code' => 0, 'body' => '', 'error' => $err];
-    }
-    return ['ok' => true, 'http_code' => (int)$httpCode, 'body' => $raw];
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $order_id = (int) ($_POST['order_id'] ?? $_REQUEST['order_id'] ?? 0);
-    $reason = trim((string) ($_POST['reason'] ?? $_REQUEST['reason'] ?? ''));
-    $external_awb = trim((string) ($_POST['external_awb'] ?? $_REQUEST['external_awb'] ?? ''));
-    $csrf = $_POST['csrf_token'] ?? $_REQUEST['csrf_token'] ?? '';
 
-    $api_path = __DIR__ . '/api/create_return.php';
-    if (is_file($api_path) && is_readable($api_path)) {
-        $fields = [
-            'order_id' => $order_id,
-            'reason' => $reason,
-            'external_awb' => $external_awb,
-            'csrf_token' => $csrf
-        ];
-        $res = forward_post_to_api('/api/create_return.php', $fields);
-        if ($res['ok']) {
-            $body = $res['body'];
-            $code = $res['http_code'] ?: 200;
-            $firstBrace = strpos($body, '{');
-            if ($firstBrace !== false) {
-                $maybe = substr($body, $firstBrace);
-                $decoded = json_decode($maybe, true);
-                if (json_last_error() === JSON_ERROR_NONE) {
-                    http_response_code($code);
-                    header('Content-Type: application/json; charset=utf-8');
-                    echo json_encode($decoded);
-                    exit;
-                }
-            }
-            http_response_code($code);
-            header('Content-Type: text/plain; charset=utf-8');
-            echo $body;
-            exit;
-        }
-        error_log('returns.php: forwarding to api/create_return.php failed, falling back to local handler');
-    }
+    $order_id = (int)($_POST['order_id'] ?? 0);
+    $reason   = trim($_POST['reason'] ?? '');
+    $csrf     = $_POST['csrf_token'] ?? '';
 
-    if ($order_id <= 0) {
-        json_exit(['success' => false, 'message' => 'invalid_order_id'], 400);
-    }
-    if ($reason === '') {
-        json_exit(['success' => false, 'message' => 'reason_required'], 400);
-    }
-    // Validate CSRF
-    if (empty($_SESSION['return_csrf_token']) || !hash_equals($_SESSION['return_csrf_token'], (string)$csrf)) {
-        json_exit(['success' => false, 'message' => 'invalid_csrf'], 403);
-    }
+    $genericError = 'Something went wrong. Please try again.';
 
-    // Confirm order existence and ownership
-    try {
-        $os = $pdo->prepare("SELECT id, user_id, order_code, status FROM orders WHERE id = :oid LIMIT 1");
-        $os->execute([':oid' => $order_id]);
-        $ord = $os->fetch(PDO::FETCH_ASSOC);
-        if (!$ord || (int)$ord['user_id'] !== $user_id) {
-            json_exit(['success' => false, 'message' => 'order_not_found_or_access_denied'], 404);
-        }
-    } catch (Throwable $e) {
-        error_log('returns.php: order lookup failed on POST: ' . $e->getMessage());
-        json_exit(['success' => false, 'message' => 'server_error'], 500);
-    }
-
-    // Check for an existing return for this order and user
-    try {
-        $check = $pdo->prepare("SELECT id, status FROM returns WHERE order_id = :oid AND user_id = :uid LIMIT 1");
-        $check->execute([':oid' => $order_id, ':uid' => $user_id]);
-        $existing = $check->fetch(PDO::FETCH_ASSOC);
-        if ($existing) {
-            json_exit(['success' => false, 'message' => 'return_already_exists', 'return_id' => $existing['id'], 'status' => $existing['status'] ?? 'requested'], 409);
-        }
-    } catch (Throwable $e) {
-        error_log('returns.php: existing return check failed: ' . $e->getMessage());
-        json_exit(['success' => false, 'message' => 'server_error'], 500);
-    }
-
-    // Insert the return request
-    try {
-        $ins = $pdo->prepare("INSERT INTO returns (order_id, user_id, reason, external_awb, status, created_at, updated_at) VALUES (:oid, :uid, :reason, :awb, :status, NOW(), NOW())");
-        $ins->execute([
-            ':oid' => $order_id,
-            ':uid' => $user_id,
-            ':reason' => $reason,
-            ':awb' => $external_awb !== '' ? $external_awb : null,
-            ':status' => 'requested'
+    if ($order_id <= 0 || $reason === '') {
+        json_exit([
+            'success' => false,
+            'message' => $genericError
         ]);
-        $return_id = (int)$pdo->lastInsertId();
-
-        // Optionally log the event to order_tracking (local timeline) for visibility
-        try {
-            $tins = $pdo->prepare("INSERT INTO order_tracking (order_id, location, event, note, event_status, event_source, occurred_at, updated_at) VALUES (:oid, :loc, :evt, :note, :st, :src, NOW(), NOW())");
-            $tins->execute([
-                ':oid' => $order_id,
-                ':loc' => 'Return requested',
-                ':evt' => 'Return Requested',
-                ':note' => substr("Return ID {$return_id}: " . $reason, 0, 1000),
-                ':st' => 'return_requested',
-                ':src' => 'system_returns'
-            ]);
-        } catch (Throwable $_e) {
-            // don't fail the return on tracking insert errors; just log
-            error_log('returns.php: failed to insert tracking note for return ' . $_e->getMessage());
-        }
-
-        // Successful response
-        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
-            json_exit(['success' => true, 'message' => 'return_created', 'return_id' => $return_id], 201);
-        } else {
-            // Non-AJAX: redirect to the same page (GET) to show the success UI
-            header('Location: returns.php?order_id=' . urlencode($order_id) . '&created_return=' . urlencode($return_id));
-            exit;
-        }
-    } catch (Throwable $e) {
-        error_log('returns.php: failed inserting return: ' . $e->getMessage());
-        json_exit(['success' => false, 'message' => 'db_insert_failed'], 500);
     }
+
+    if (
+        empty($_SESSION['return_csrf_token']) ||
+        !hash_equals($_SESSION['return_csrf_token'], $csrf)
+    ) {
+        json_exit([
+            'success' => false,
+            'message' => $genericError
+        ]);
+    }
+
+    $q = $pdo->prepare("
+        SELECT id, user_id, status
+        FROM orders
+        WHERE id = :id
+        LIMIT 1
+    ");
+    $q->execute([':id' => $order_id]);
+    $orderRow = $q->fetch(PDO::FETCH_ASSOC);
+
+    if (!$orderRow || (int)$orderRow['user_id'] !== $user_id) {
+        json_exit([
+            'success' => false,
+            'message' => 'Unable to process return for this order.'
+        ]);
+    }
+
+    $allowedStatuses = ['delivered', 'completed'];
+    if (!in_array(strtolower($orderRow['status']), $allowedStatuses, true)) {
+        json_exit([
+            'success' => false,
+            'message' => 'Return is available only after delivery.'
+        ]);
+    }
+
+    $chk = $pdo->prepare("
+        SELECT id FROM returns
+        WHERE order_id = :oid
+        AND status IN ('requested','approved')
+        LIMIT 1
+    ");
+    $chk->execute([':oid' => $order_id]);
+    if ($chk->fetch()) {
+        json_exit([
+            'success' => false,
+            'message' => 'You have already requested a return for this order.'
+        ]);
+    }
+
+    try {
+        $ins = $pdo->prepare("
+            INSERT INTO returns (order_id, user_id, reason, status, created_at, updated_at)
+            VALUES (:oid, :uid, :reason, 'requested', NOW(), NOW())
+        ");
+        $ins->execute([
+            ':oid'    => $order_id,
+            ':uid'    => $user_id,
+            ':reason' => $reason
+        ]);
+    } catch (Throwable $e) {
+        error_log('return insert failed: '.$e->getMessage());
+        json_exit([
+            'success' => false,
+            'message' => $genericError
+        ], 500);
+    }
+
+    json_exit([
+        'success'   => true,
+        'return_id'=> $pdo->lastInsertId(),
+        'message'  => 'Return request submitted successfully.'
+    ]);
 }
 
-// Validate order_id on GET
 if (empty($_GET['order_id']) || !is_numeric($_GET['order_id'])) {
     http_response_code(400);
     echo "Invalid order id.";
@@ -245,7 +179,7 @@ try {
 $return_exists = false;
 $existing_return = null;
 try {
-    $r = $pdo->prepare("SELECT id, status, created_at, reason, external_awb FROM returns WHERE order_id = :oid AND user_id = :uid LIMIT 1");
+    $r = $pdo->prepare("SELECT id, status, created_at, reason FROM returns WHERE order_id = :oid AND user_id = :uid LIMIT 1");
     $r->execute([':oid' => $order_id, ':uid' => $user_id]);
     $existing_return = $r->fetch(PDO::FETCH_ASSOC) ?: null;
     $return_exists = (bool)$existing_return;
@@ -375,9 +309,6 @@ function money($val) { return '₹ ' . number_format((float)$val, 2); }
                   <?php if (!empty($existing_return['reason'])): ?>
                     <div class="small">Reason: <?= e($existing_return['reason']) ?></div>
                   <?php endif; ?>
-                  <?php if (!empty($existing_return['external_awb'])): ?>
-                    <div class="small">External AWB: <?= e($existing_return['external_awb']) ?></div>
-                  <?php endif; ?>
                 <?php endif; ?>
               </div>
 
@@ -394,11 +325,6 @@ function money($val) { return '₹ ' . number_format((float)$val, 2); }
                 <div class="field">
                   <label for="reason">Reason for return <span class="small muted">(required)</span></label>
                   <textarea id="reason" name="reason" required maxlength="1000" placeholder="Describe why you want to return this order"></textarea>
-                </div>
-
-                <div class="field">
-                  <label for="external_awb">External AWB / Tracking (optional)</label>
-                  <input type="text" id="external_awb" name="external_awb" placeholder="Courier AWB / tracking number">
                 </div>
 
                 <div class="actions">
@@ -459,22 +385,35 @@ function money($val) { return '₹ ' . number_format((float)$val, 2); }
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
       });
 
-      if (!resp.ok) {
-        let txt = await resp.text().catch(()=> '');
-        throw new Error('HTTP ' + resp.status + (txt ? ': ' + txt : ''));
+      let data;
+      try {
+        data = await resp.json();
+      } catch {
+        throw new Error('Something went wrong. Please try again.');
       }
-      const data = await resp.json();
       if (data.success) {
-        resultDiv.innerHTML = '<div class="msg success">Return requested successfully. Return ID: ' + escapeHtml(data.return_id || '') + '</div>';
+        resultDiv.innerHTML =
+          '<div class="msg success">' +
+          escapeHtml(data.message || 'Return request submitted successfully.') +
+          '</div>';
+
         setTimeout(() => {
-          window.location.href = 'order_details.php?order_id=' + encodeURIComponent(ORDER_ID);
+          window.location.href =
+            'order_details.php?order_id=' + encodeURIComponent(ORDER_ID);
         }, 900);
       } else {
-        resultDiv.innerHTML = '<div class="msg error">' + escapeHtml(data.message || data.error || 'Failed to create return') + '</div>';
+        resultDiv.innerHTML =
+          '<div class="msg error">' +
+          escapeHtml(data.message || 'Return is available only after delivery.') +
+          '</div>';
       }
+
     } catch (err) {
-      resultDiv.innerHTML = '<div class="msg error">Error: ' + escapeHtml(err.message) + '</div>';
-      console.error('create_return submit error', err);
+      resultDiv.innerHTML =
+        '<div class="msg error">' +
+        'Something went wrong. Please try again later.' +
+        '</div>';
+      console.error('return submit error', err);
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Submit return request';

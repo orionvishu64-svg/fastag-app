@@ -202,7 +202,7 @@ html, body {
 /* Heading glow per bank kept but expressed via variables for light mode */
 .kotak-theme .categories-section h2 { text-shadow: 0 0 10px rgba(232, 92, 65, 0.35), 0 0 20px rgba(232,92,65,0.18); }
 .sbi-theme .categories-section h2   { text-shadow: 0 0 10px rgba(96,165,250,0.35), 0 0 20px rgba(59,130,246,0.12); }
-.bajaj-theme .categories-section h2 { text-shadow: 0 0 10px rgba(14,165,233,0.35), 0 0 20px rgba(14,165,233,0.12); }
+.bajaj-theme .categories-section h2 { text-shadow: 0 0 10px rgba(2, 40, 97, 0.9), 0 0 20px rgba(7, 54, 141, 0.445); }
 .idfc-theme .categories-section h2  { text-shadow: 0 0 10px rgba(139,92,246,0.35), 0 0 20px rgba(139,92,246,0.12); }
 
 /* CATEGORY GRID */

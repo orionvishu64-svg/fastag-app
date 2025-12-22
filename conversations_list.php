@@ -48,10 +48,8 @@ try {
     <table>
       <thead>
         <tr>
-          <th>User Id</th>
           <th>Ticket</th>
           <th>Subject</th>
-          <th>Status</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -59,10 +57,8 @@ try {
       <?php foreach ($tickets as $t): ?>
         <?php $cls = ($t['status'] === 'open') ? 'open' : 'closed'; ?>
         <tr class="<?= $cls ?>" data-contact-query-id="<?= htmlspecialchars($t['id'], ENT_QUOTES, 'UTF-8') ?>">
-          <td data-label="User ID"><?= htmlspecialchars($t['user_id'], ENT_QUOTES, 'UTF-8') ?></td>
           <td data-label="Ticket"><?= htmlspecialchars($t['ticket_id'], ENT_QUOTES, 'UTF-8') ?></td>
           <td data-label="Subject"><?= htmlspecialchars($t['subject'], ENT_QUOTES, 'UTF-8') ?></td>
-          <td data-label="Status"><?= htmlspecialchars($t['status'], ENT_QUOTES, 'UTF-8') ?></td>
           <td data-label="Actions">
             <div class="actions-wrap">
             <?php if ($t['status'] === 'open'): ?>

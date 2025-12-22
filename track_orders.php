@@ -10,7 +10,7 @@ if (empty($_SESSION['user']['id'])) {
 $user_id = (int) $_SESSION['user']['id'];
 function e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 
-// Fetch user's recent orders
+// Fetch user's recent PAID orders only
 $orders = [];
 try {
     $stmt = $pdo->prepare("
@@ -19,6 +19,7 @@ try {
                payment_status, status, created_at, updated_at, expected_delivery_date
         FROM orders
         WHERE user_id = :uid
+          AND payment_status = 'paid'
         ORDER BY created_at DESC
         LIMIT 200
     ");

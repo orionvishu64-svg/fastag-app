@@ -1,193 +1,205 @@
-/* partner.css
-   Uses global variables from styles.css (no local :root)
-*/
-
-/* ---------- Optional page wrapper (instead of styling body directly) ---------- */
-.partner-page {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  min-height: 100vh;
-  padding: 100px 16px 40px;
-  background: linear-gradient(180deg, var(--bg-start), var(--bg-end));
-  box-sizing: border-box;
+.partner-page{
+  min-height:100vh;
+  padding:96px 16px 40px;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  background:linear-gradient(180deg,var(--bg-start),var(--bg-end));
 }
 
-/* ---------- Logo ---------- */
-.nav-logo {
-  position: fixed;
-  top: 20px;
-  left: 24px;
-  z-index: 10;
+.nav-logo{
+  position:fixed;
+  top:18px;
+  left:22px;
+  z-index:10;
 }
-.nav-logo img {
-  height: 38px;
-  width: auto;
-  display: block;
+.nav-logo img{
+  height:36px;
+  display:block;
 }
-
-/* ---------- Container ---------- */
-.partner-container {
-  width: 100%;
-  max-width: 720px;
-  background: var(--card-bg);
-  border-radius: var(--card-radius);
-  padding: 28px;
-  box-shadow: var(--shadow-soft);
-  border: 1px solid var(--border-1);
-  color: var(--text);
-  box-sizing: border-box;
-  margin: 0 auto;
+.partner-container{
+  width:100%;
+  max-width:720px;
+  background:var(--card-bg);
+  border-radius:var(--card-radius);
+  padding:26px;
+  border:1px solid var(--border-1);
+  box-shadow:var(--shadow-soft);
+  color:var(--text);
 }
 
-/* ---------- Headings ---------- */
-.partner-container h2 {
-  text-align: center;
-  font-size: 1.4rem;
-  color: var(--accent-warm);
-  font-weight: 800;
-  margin-bottom: 0.5rem;
-}
-.partner-container p {
-  text-align: center;
-  color: var(--muted);
-  margin-bottom: 1rem;
-  font-size: 0.95rem;
+.partner-container h2{
+  text-align:center;
+  font-size:1.45rem;
+  font-weight:800;
+  color:var(--accent-warm);
+  margin-bottom:6px;
 }
 
-/* ---------- Form ---------- */
-.partner-container label {
-  display: block;
-  margin: 10px 0 6px;
-  font-weight: 600;
-  color: var(--muted);
-  font-size: 0.95rem;
+.partner-container > p{
+  text-align:center;
+  font-size:.95rem;
+  color:var(--muted);
+  margin-bottom:20px;
 }
+
+.partner-container label{
+  display:block;
+  margin:14px 0 6px;
+  font-size:.9rem;
+  font-weight:600;
+  color:var(--muted);
+}
+
 .partner-container input,
 .partner-container select,
-.partner-container textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border-1);
-  border-radius: 10px;
-  background: linear-gradient(180deg, var(--panel-1), var(--panel-2));
-  color: var(--text);
-  font-size: 15px;
-  transition: all 0.18s ease;
-  box-sizing: border-box;
+.partner-container textarea{
+  width:100%;
+  padding:11px 12px;
+  border-radius:10px;
+  border:1px solid var(--border-1);
+  background:linear-gradient(180deg,var(--panel-1),var(--panel-2));
+  color:var(--text);
+  font-size:15px;
+  transition:border-color .15s ease,box-shadow .15s ease;
 }
-.partner-container input::placeholder {
-  color: rgba(243,243,243,0.28);
+
+.partner-container textarea{
+  resize:vertical;
+  min-height:90px;
 }
+
+.partner-container input::placeholder{
+  color:rgba(243,243,243,.35);
+}
+
 .partner-container input:focus,
 .partner-container select:focus,
-.partner-container textarea:focus {
-  border-color: var(--accent-warm);
-  box-shadow: 0 0 0 6px rgba(255,184,77,0.04);
-  outline: none;
+.partner-container textarea:focus{
+  outline:none;
+  border-color:var(--accent-warm);
+  box-shadow:0 0 0 4px rgba(255,184,77,.08);
 }
 
-/* ---------- Buttons ---------- */
-.partner-container button {
-  cursor: pointer;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-weight: 700;
-  transition: transform 0.06s ease, filter 0.12s ease;
+.partner-container button{
+  border:none;
+  border-radius:10px;
+  padding:10px 14px;
+  font-weight:700;
+  cursor:pointer;
+  transition:transform .12s ease,filter .12s ease,box-shadow .12s ease;
 }
 
-.save-btn {
-  width: 100%;
-  background: linear-gradient(90deg, var(--accent-warm), var(--accent-warm-2));
-  color: #111;
-  margin-top: 10px;
-  box-shadow: 0 10px 26px var(--accent-glow);
+.save-btn{
+  width:100%;
+  margin-top:16px;
+  background:linear-gradient(90deg,var(--accent-warm),var(--accent-warm-2));
+  color:#111;
+  box-shadow:0 10px 26px var(--accent-glow);
 }
-.save-btn:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.05);
+.save-btn:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.05);
 }
 
 .save-partner,
-.save-gv {
-  background: linear-gradient(90deg, var(--accent-warm), var(--accent-warm-2));
-  color: #111;
-}
-.delete-btn {
-  background: linear-gradient(180deg, var(--accent-warm-red), color-mix(in srgb, var(--accent-warm-red) 70%, black 10%));
-  color: #111;
-  padding: 8px 10px;
-  border-radius: 8px;
-  box-shadow: 0 6px 18px rgba(232,92,65,0.1);
+.save-gv{
+  background:linear-gradient(90deg,var(--accent-warm),var(--accent-warm-2));
+  color:#111;
 }
 
-/* ---------- Messages ---------- */
-.msg {
-  padding: 10px;
-  border-radius: 8px;
-  margin: 10px 0;
-  font-weight: 700;
-  font-size: 14px;
-  border: 1px solid rgba(255,255,255,0.02);
-}
-.msg.success {
-  background: linear-gradient(180deg, rgba(255,248,236,0.04), rgba(255,248,236,0.02));
-  color: var(--accent-warm);
-  border-color: rgba(255,184,77,0.06);
-}
-.msg.error {
-  background: linear-gradient(180deg, rgba(60,10,10,0.08), rgba(40,6,6,0.06));
-  color: var(--accent-warm-red);
-  border-color: rgba(232,92,65,0.06);
+.delete-btn{
+  background:linear-gradient(
+    180deg,
+    var(--accent-warm-red),
+    color-mix(in srgb,var(--accent-warm-red) 75%,#000)
+  );
+  color:#111;
+  padding:8px 12px;
+  border-radius:8px;
+  box-shadow:0 6px 18px rgba(232,92,65,.15);
 }
 
-/* ---------- Saved Partner Cards ---------- */
-.cards {
-  margin-top: 18px;
-}
-.cards h3 {
-  margin-bottom: 12px;
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--text);
-}
-.partner-card {
-  background: linear-gradient(180deg, var(--panel-1), var(--panel-2));
-  border: 1px solid var(--border-1);
-  padding: 14px;
-  border-radius: 10px;
-  margin-bottom: 12px;
-  box-shadow: var(--shadow-soft);
-}
-.partner-card p {
-  margin: 6px 0;
-  color: var(--muted);
-  font-size: 14px;
+.msg{
+  margin:14px 0;
+  padding:10px 12px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:700;
+  border:1px solid transparent;
 }
 
-/* ---------- Utility ---------- */
-.btn-row {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 12px;
-}
-.or-divider {
-  text-align: center;
-  font-weight: 700;
-  color: var(--muted);
-  margin: 18px 0;
+.msg.success{
+  background:linear-gradient(
+    180deg,
+    color-mix(in srgb,var(--accent-warm) 12%,transparent),
+    transparent
+  );
+  color:var(--accent-warm);
+  border-color:rgba(255,184,77,.15);
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 768px) {
-  .partner-container { padding: 18px; }
-  .nav-logo { top: 14px; left: 16px; }
+.msg.error{
+  background:linear-gradient(
+    180deg,
+    color-mix(in srgb,var(--accent-warm-red) 18%,transparent),
+    transparent
+  );
+  color:var(--accent-warm-red);
+  border-color:rgba(232,92,65,.18);
 }
 
-/* Accessibility */
-:focus {
-  outline: 3px solid rgba(255,184,77,0.08);
-  outline-offset: 2px;
+.cards{
+  margin-top:26px;
+}
+
+.cards h3{
+  margin-bottom:12px;
+  font-size:1rem;
+  font-weight:800;
+  color:var(--text);
+}
+
+.partner-card{
+  padding:14px;
+  border-radius:10px;
+  border:1px solid var(--border-1);
+  background:linear-gradient(180deg,var(--panel-1),var(--panel-2));
+  box-shadow:var(--shadow-soft);
+  margin-bottom:12px;
+}
+
+.partner-card p{
+  margin:6px 0;
+  font-size:.9rem;
+  color:var(--muted);
+}
+
+.btn-row{
+  display:flex;
+  gap:10px;
+  margin-top:12px;
+  flex-wrap:wrap;
+}
+
+.or-divider{
+  margin:22px 0;
+  text-align:center;
+  font-weight:700;
+  font-size:.85rem;
+  color:var(--muted);
+}
+
+@media (max-width:768px){
+  .partner-container{padding:18px;}
+  .nav-logo{top:14px;left:14px;}
+}
+
+:focus{
+  outline:3px solid rgba(255,184,77,.12);
+  outline-offset:2px;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important;}
 }

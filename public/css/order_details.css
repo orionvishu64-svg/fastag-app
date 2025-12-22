@@ -1,6 +1,5 @@
 /* order_details.css */
 
-/* ---------- Layout container ---------- */
 .container {
   max-width: 1100px;
   margin: 28px auto;
@@ -31,7 +30,6 @@ h1 { margin: 0; font-size: 20px; color: var(--text); }
   .right { order: 2; }
 }
 
-/* ---------- Cards (global card styles applied) ---------- */
 .card {
   background: var(--card-bg);
   padding: 18px;
@@ -117,6 +115,76 @@ h2 { margin: 0; font-size: 18px; color: var(--text); }
   color: #9fb0be;
   margin-top: 12px;
   border: 1px solid var(--border-1);
+}
+/* Tracking Timeline */
+.timeline {
+  position: relative;
+  margin-top: 16px;
+}
+
+.tl-item {
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  position: relative;
+}
+
+.tl-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 36px;
+  width: 2px;
+  height: 100%;
+  background: #e5e7eb;
+}
+
+.tl-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.tl-item.latest .tl-dot {
+  background: #2563eb;
+  color: #fff;
+}
+
+.tl-content {
+  flex: 1;
+}
+
+.tl-status {
+  font-weight: 700;
+  color: #111827;
+}
+
+.tl-item.latest .tl-status {
+  color: #2563eb;
+}
+
+.tl-time {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.tl-location {
+  font-size: 14px;
+  margin-top: 6px;
+  color: #374151;
+}
+
+.tl-note {
+  font-size: 13px;
+  margin-top: 4px;
+  color: #6b7280;
 }
 
 .timeline {
@@ -283,4 +351,18 @@ h2 { margin: 0; font-size: 18px; color: var(--text); }
 .right .card {
   position: sticky;
   top: 90px;
+}
+.series-block {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border-1);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.series-row {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+  word-break: break-all;
 }
