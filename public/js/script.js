@@ -1,7 +1,7 @@
 // drop-in replacement
 function safeFetch(...args) {
   return fetch(...args)
-    .then(response => {
+    .then((response) => {
       if (!response.ok) {
         const err = new Error("HTTP " + response.status);
         err.response = response;
@@ -9,183 +9,199 @@ function safeFetch(...args) {
       }
       return response;
     })
-    .catch(err => {
-      try { console.error("Network error:", err); } catch (e) {}
-      try { if (typeof alert !== 'undefined') alert("Network error. Please try again."); } catch (e) {}
+    .catch((err) => {
+      try {
+        console.error("Network error:", err);
+      } catch (e) {}
+      try {
+        if (typeof alert !== "undefined")
+          alert("Network error. Please try again.");
+      } catch (e) {}
       throw err;
     });
 }
 
 // Minimal sidebar toggle (paste at end of script.js)
 (function () {
-  const toggle = document.getElementById('sidebarToggle');
+  const toggle = document.getElementById("sidebarToggle");
   const body = document.body;
-  const sidebar = document.querySelector('.sidebar');
+  const sidebar = document.querySelector(".sidebar");
 
   if (!toggle || !sidebar) return;
 
   function setState(open) {
-    body.classList.toggle('sidebar-open', open);
-    toggle.setAttribute('aria-expanded', String(open));
-    toggle.setAttribute('aria-label', open ? 'Close sidebar' : 'Open sidebar');
-    sidebar.setAttribute('aria-hidden', String(!open));
+    body.classList.toggle("sidebar-open", open);
+    toggle.setAttribute("aria-expanded", String(open));
+    toggle.setAttribute("aria-label", open ? "Close sidebar" : "Open sidebar");
+    sidebar.setAttribute("aria-hidden", String(!open));
   }
 
   // initial state
   setState(false);
 
-  toggle.addEventListener('click', function (e) {
-    setState(!body.classList.contains('sidebar-open'));
+  toggle.addEventListener("click", function (e) {
+    setState(!body.classList.contains("sidebar-open"));
   });
 
   // Escape to close
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && body.classList.contains('sidebar-open')) {
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && body.classList.contains("sidebar-open")) {
       setState(false);
     }
   });
 
   // Optional: click outside to close — only if you want it simple (keeps no overlay)
-  document.addEventListener('click', function (e) {
-    if (!body.classList.contains('sidebar-open')) return;
+  document.addEventListener("click", function (e) {
+    if (!body.classList.contains("sidebar-open")) return;
     // if click on sidebar or toggle, do nothing
     if (sidebar.contains(e.target) || toggle.contains(e.target)) return;
     setState(false);
   });
-// logo chnage
-  function setTheme(isLight){
-  const root = document.documentElement;
-  if (isLight) {
-    root.classList.add('theme-light');
-    root.setAttribute('data-theme', 'light');
-    localStorage.setItem(KEY, 'light');
-  } else {
-    root.classList.remove('theme-light');
-    root.removeAttribute('data-theme');
-    localStorage.setItem(KEY, 'dark');
+  // logo chnage
+  function setTheme(isLight) {
+    const root = document.documentElement;
+    if (isLight) {
+      root.classList.add("theme-light");
+      root.setAttribute("data-theme", "light");
+      localStorage.setItem(KEY, "light");
+    } else {
+      root.classList.remove("theme-light");
+      root.removeAttribute("data-theme");
+      localStorage.setItem(KEY, "dark");
+    }
+    syncToggleUI();
   }
-  syncToggleUI();
-}
 })();
 
 // Smooth scrolling for anchor links
 document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
   anchor.addEventListener("click", function (e) {
-    const href = this.getAttribute("href")
+    const href = this.getAttribute("href");
 
     // Skip empty "#" links (like Logout or JS handlers)
     if (!href || href === "#") {
-      return
+      return;
     }
 
-    e.preventDefault()
-    const target = document.querySelector(href)
+    e.preventDefault();
+    const target = document.querySelector(href);
     if (target) {
       target.scrollIntoView({
         behavior: "smooth",
         block: "start",
-      })
+      });
     }
-  })
-})
+  });
+});
 
-  // Fade in animation on scroll
-  const observerOptions = {
-    threshold: 0.1,
-    rootMargin: "0px 0px -50px 0px",
-  }
+// Fade in animation on scroll
+const observerOptions = {
+  threshold: 0.1,
+  rootMargin: "0px 0px -50px 0px",
+};
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("visible")
-      }
-    })
-  }, observerOptions)
-
-  // Observe elements for fade-in animation
-  document.querySelectorAll(".feature-card, .bank-card, .post-card").forEach((el) => {
-    el.classList.add("fade-in")
-    observer.observe(el)
-  })
-
-  // Newsletter form submission
-  const newsletterForm = document.querySelector(".newsletter-form")
-  if (newsletterForm) {
-    newsletterForm.addEventListener("submit", function (e) {
-      e.preventDefault()
-      const email = this.querySelector('input[type="email"]').value
-
-      if (email) {
-        // Show loading state
-        const button = this.querySelector("button")
-        const originalText = button.textContent
-        button.innerHTML = '<span class="loading"></span> Subscribing...'
-        button.disabled = true
-
-        // Simulate API call
-        setTimeout(() => {
-          alert("Thank you for subscribing to our newsletter!")
-          this.reset()
-          button.textContent = originalText
-          button.disabled = false
-        }, 2000)
-      }
-    })
-  }
-
-
-  // Cart functionality
-  let cartCount = 0
-  const cartCountElement = document.querySelector(".cart-count")
-
-  // Add to cart buttons
-  document.querySelectorAll(".btn").forEach((button) => {
-    if (button.textContent.includes("Add to Cart") || button.textContent.includes("Select")) {
-      button.addEventListener("click", function (e) {
-        if (this.textContent.includes("Add to Cart")) {
-          e.preventDefault()
-         // Try to find the product element (customize selectors as needed)
-  const productCard = this.closest(".product-card") || this.closest(".bank-card") || this.closest(".category-card")
-
-  if (productCard) {
-    const name = productCard.querySelector(".product-name")?.textContent?.trim() || "Unknown Product"
-    const priceText = productCard.querySelector(".product-price, .price")?.textContent?.replace(/[^\d]/g, "")
-    const price = parseInt(priceText, 10) || 0
-
-    const item = {
-      id: Date.now().toString(),
-      name,
-      price,
-      quantity: 1
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("visible");
     }
+  });
+}, observerOptions);
 
-    // Get current cart from localStorage
-    const existingCart = JSON.parse(localStorage.getItem("cart")) || []
-    existingCart.push(item)
-    localStorage.setItem("cart", JSON.stringify(existingCart))
+// Observe elements for fade-in animation
+document
+  .querySelectorAll(".feature-card, .bank-card, .post-card")
+  .forEach((el) => {
+    el.classList.add("fade-in");
+    observer.observe(el);
+  });
 
-    cartCount = existingCart.length
-    if (cartCountElement) {
-      cartCountElement.textContent = cartCount
-      cartCountElement.style.display = "flex"
+// Newsletter form submission
+const newsletterForm = document.querySelector(".newsletter-form");
+if (newsletterForm) {
+  newsletterForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const email = this.querySelector('input[type="email"]').value;
+
+    if (email) {
+      // Show loading state
+      const button = this.querySelector("button");
+      const originalText = button.textContent;
+      button.innerHTML = '<span class="loading"></span> Subscribing...';
+      button.disabled = true;
+
+      // Simulate API call
+      setTimeout(() => {
+        alert("Thank you for subscribing to our newsletter!");
+        this.reset();
+        button.textContent = originalText;
+        button.disabled = false;
+      }, 2000);
     }
+  });
+}
 
-    showNotification(`${name} added to cart!`, "success")
-  } else {
-    showNotification("Error: Could not identify product", "error")
-  }
-} 
-    })
+// Cart functionality
+let cartCount = 0;
+const cartCountElement = document.querySelector(".cart-count");
+
+// Add to cart buttons
+document.querySelectorAll(".btn").forEach((button) => {
+  if (
+    button.textContent.includes("Add to Cart") ||
+    button.textContent.includes("Select")
+  ) {
+    button.addEventListener("click", function (e) {
+      if (this.textContent.includes("Add to Cart")) {
+        e.preventDefault();
+        // Try to find the product element (customize selectors as needed)
+        const productCard =
+          this.closest(".product-card") ||
+          this.closest(".bank-card") ||
+          this.closest(".category-card");
+
+        if (productCard) {
+          const name =
+            productCard.querySelector(".product-name")?.textContent?.trim() ||
+            "Unknown Product";
+          const priceText = productCard
+            .querySelector(".product-price, .price")
+            ?.textContent?.replace(/[^\d]/g, "");
+          const price = parseInt(priceText, 10) || 0;
+
+          const item = {
+            id: Date.now().toString(),
+            name,
+            price,
+            quantity: 1,
+          };
+
+          // Get current cart from localStorage
+          const existingCart = JSON.parse(localStorage.getItem("cart")) || [];
+          existingCart.push(item);
+          localStorage.setItem("cart", JSON.stringify(existingCart));
+
+          cartCount = existingCart.length;
+          if (cartCountElement) {
+            cartCountElement.textContent = cartCount;
+            cartCountElement.style.display = "flex";
+          }
+
+          showNotification(`${name} added to cart!`, "success");
+        } else {
+          showNotification("Error: Could not identify product", "error");
         }
-    })
+      }
+    });
+  }
+});
 
-  // Show notification function
-  function showNotification(message, type = "info") {
-    const notification = document.createElement("div")
-    notification.className = `notification ${type}`
-    notification.textContent = message
-    notification.style.cssText = `
+// Show notification function
+function showNotification(message, type = "info") {
+  const notification = document.createElement("div");
+  notification.className = `notification ${type}`;
+  notification.textContent = message;
+  notification.style.cssText = `
             position: fixed;
             top: 100px;
             right: 20px;
@@ -197,34 +213,34 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
             z-index: 1000;
             transform: translateX(100%);
             transition: transform 0.3s ease;
-        `
+        `;
 
-    document.body.appendChild(notification)
+  document.body.appendChild(notification);
 
-    // Animate in
+  // Animate in
+  setTimeout(() => {
+    notification.style.transform = "translateX(0)";
+  }, 100);
+
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.style.transform = "translateX(100%)";
     setTimeout(() => {
-      notification.style.transform = "translateX(0)"
-    }, 100)
+      document.body.removeChild(notification);
+    }, 300);
+  }, 3000);
+}
 
-    // Remove after 3 seconds
-    setTimeout(() => {
-      notification.style.transform = "translateX(100%)"
-      setTimeout(() => {
-        document.body.removeChild(notification)
-      }, 300)
-    }, 3000)
-  }
+// Initialize cart count display
+if (cartCountElement) {
+  cartCountElement.style.display = cartCount > 0 ? "flex" : "none";
+}
 
-  // Initialize cart count display
-  if (cartCountElement) {
-    cartCountElement.style.display = cartCount > 0 ? "flex" : "none"
-  }
-
-  // Back to top button
-  const backToTopButton = document.createElement("button")
-  backToTopButton.innerHTML = '<i class="fas fa-arrow-up"></i>'
-  backToTopButton.className = "back-to-top"
-  backToTopButton.style.cssText = `
+// Back to top button
+const backToTopButton = document.createElement("button");
+backToTopButton.innerHTML = '<i class="fas fa-arrow-up"></i>';
+backToTopButton.className = "back-to-top";
+backToTopButton.style.cssText = `
         position: fixed;
         bottom: 30px;
         right: 30px;
@@ -241,96 +257,97 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         transition: all 0.3s ease;
         z-index: 1000;
-    `
+    `;
 
-  document.body.appendChild(backToTopButton)
+document.body.appendChild(backToTopButton);
 
-  // Show/hide back to top button
-  window.addEventListener("scroll", () => {
-    if (window.pageYOffset > 300) {
-      backToTopButton.style.display = "flex"
-    } else {
-      backToTopButton.style.display = "none"
-    }
-  })
+// Show/hide back to top button
+window.addEventListener("scroll", () => {
+  if (window.pageYOffset > 300) {
+    backToTopButton.style.display = "flex";
+  } else {
+    backToTopButton.style.display = "none";
+  }
+});
 
-  // Back to top functionality
-  backToTopButton.addEventListener("click", () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    })
-  })
+// Back to top functionality
+backToTopButton.addEventListener("click", () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+});
 
-  // Form validation
-  document.querySelectorAll("form").forEach((form) => {
-    form.addEventListener("submit", function (e) {
-      const requiredFields = this.querySelectorAll("[required]")
-      let isValid = true
+// Form validation
+document.querySelectorAll("form").forEach((form) => {
+  form.addEventListener("submit", function (e) {
+    const requiredFields = this.querySelectorAll("[required]");
+    let isValid = true;
 
-      requiredFields.forEach((field) => {
-        if (!field.value.trim()) {
-          isValid = false
-          field.style.borderColor = "#ef4444"
-          field.addEventListener(
-            "input",
-            function () {
-              this.style.borderColor = ""
-            },
-            { once: true },
-          )
-        }
-      })
-
-      if (!isValid) {
-        e.preventDefault()
-        showNotification("Please fill in all required fields", "error")
+    requiredFields.forEach((field) => {
+      if (!field.value.trim()) {
+        isValid = false;
+        field.style.borderColor = "#ef4444";
+        field.addEventListener(
+          "input",
+          function () {
+            this.style.borderColor = "";
+          },
+          { once: true }
+        );
       }
-    })
-  })
+    });
+
+    if (!isValid) {
+      e.preventDefault();
+      showNotification("Please fill in all required fields", "error");
+    }
+  });
+});
 
 // Utility functions
 function formatCurrency(amount) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-  }).format(amount)
+  }).format(amount);
 }
 
 function debounce(func, wait) {
-  let timeout
+  let timeout;
   return function executedFunction(...args) {
     const later = () => {
-      clearTimeout(timeout)
-      func(...args)
-    }
-    clearTimeout(timeout)
-    timeout = setTimeout(later, wait)
-  }
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
 }
 
 // Search functionality (if needed)
 function initializeSearch() {
-  const searchInput = document.querySelector("#search")
+  const searchInput = document.querySelector("#search");
   if (searchInput) {
     const debouncedSearch = debounce((query) => {
       // Implement search logic here
-      console.log("Searching for:", query)
-    }, 300)
+      console.log("Searching for:", query);
+    }, 300);
 
     searchInput.addEventListener("input", function () {
-      debouncedSearch(this.value)
-    })
+      debouncedSearch(this.value);
+    });
   }
 }
 
 // Initialize search on page load
-document.addEventListener("DOMContentLoaded", initializeSearch)
+document.addEventListener("DOMContentLoaded", initializeSearch);
 
 // Update navbar login button based on auth state
 function getLoggedInEmail() {
   try {
-    const storedUserJson = localStorage.getItem("app_user") || localStorage.getItem("user");
+    const storedUserJson =
+      localStorage.getItem("app_user") || localStorage.getItem("user");
     if (storedUserJson) {
       const storedUser = JSON.parse(storedUserJson);
       if (storedUser && storedUser.email) {
@@ -349,67 +366,153 @@ function getLoggedInEmail() {
 
 // Wire global logout on all pages that include the navbar
 function wireGlobalLogout() {
-  const logoutLink = document.getElementById("nav-logout")
-  if (!logoutLink) return
+  const logoutLink = document.getElementById("nav-logout");
+  if (!logoutLink) return;
 
   logoutLink.addEventListener("click", async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
       // Clear client-side auth state
-      localStorage.removeItem("user")
-localStorage.removeItem("userEmail")
-localStorage.removeItem("app_logged_in")
-localStorage.removeItem("app_user")
+      localStorage.removeItem("user");
+      localStorage.removeItem("userEmail");
+      localStorage.removeItem("app_logged_in");
+      localStorage.removeItem("app_user");
       // Invalidate server session
-      await safeFetch("config/logout.php", { credentials: "include" })
+      await safeFetch("config/logout.php", { credentials: "include" });
     } catch (_) {}
 
     // Redirect to a safe page
     if (window.top) {
-      window.top.location.href = "index.html"
+      window.top.location.href = "index.html";
     } else {
-      window.location.href = "index.html"
+      window.location.href = "index.html";
     }
-  })
+  });
 }
 
-document.addEventListener("DOMContentLoaded", wireGlobalLogout)
+document.addEventListener("DOMContentLoaded", wireGlobalLogout);
 
 // Also wire any explicit logout button on profile page to same flow
 function wireProfileLogoutButton() {
-  const explicitLogoutBtn = document.querySelector(".logout-btn")
-  if (!explicitLogoutBtn) return
+  const explicitLogoutBtn = document.querySelector(".logout-btn");
+  if (!explicitLogoutBtn) return;
 
   explicitLogoutBtn.addEventListener("click", async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      localStorage.removeItem("user")
-      localStorage.removeItem("userEmail")
-      await safeFetch("config/logout.php", { credentials: "include" })
+      localStorage.removeItem("user");
+      localStorage.removeItem("userEmail");
+      await safeFetch("config/logout.php", { credentials: "include" });
     } catch (_) {}
     if (window.top) {
-      window.top.location.href = "index.html"
+      window.top.location.href = "index.html";
     } else {
-      window.location.href = "index.html"
+      window.location.href = "index.html";
     }
-  })
+  });
 }
 
-document.addEventListener("DOMContentLoaded", wireProfileLogoutButton)
+document.addEventListener("DOMContentLoaded", wireProfileLogoutButton);
 
 // theme helpers
 window.theme = {
-  copyToClipboard: function(text){
-    if(navigator.clipboard){
+  copyToClipboard: function (text) {
+    if (navigator.clipboard) {
       return navigator.clipboard.writeText(text);
     }
-    var ta = document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; document.body.appendChild(ta); ta.select();
-    try{ document.execCommand('copy'); }catch(e){}
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand("copy");
+    } catch (e) {}
     document.body.removeChild(ta);
     return Promise.resolve();
   },
-  toast: function(msg, timeout=2500){
-    var t = document.createElement('div'); t.className='toast'; t.innerText = msg; document.body.appendChild(t);
-    setTimeout(()=> t.style.opacity=0, timeout-200); setTimeout(()=> t.remove(), timeout);
-  }
+  toast: function (msg, timeout = 2500) {
+    var t = document.createElement("div");
+    t.className = "toast";
+    t.innerText = msg;
+    document.body.appendChild(t);
+    setTimeout(() => (t.style.opacity = 0), timeout - 200);
+    setTimeout(() => t.remove(), timeout);
+  },
 };
+
+document.addEventListener("DOMContentLoaded", () => {
+  const cards = document.querySelectorAll(".feature-card");
+  const prevBtn = document.querySelector(".feature-btn.prev");
+  const nextBtn = document.querySelector(".feature-btn.next");
+  const dotsWrap = document.getElementById("featureDots");
+  const grid = document.getElementById("featuresGrid");
+
+  if (!cards.length) return;
+
+  let current = 0;
+  let startX = 0;
+
+  /* ---------- helpers ---------- */
+  function showCard(index) {
+    cards.forEach((c) => c.classList.remove("active"));
+    cards[index].classList.add("active");
+    updateDots();
+  }
+
+  function next() {
+    current = (current + 1) % cards.length;
+    showCard(current);
+  }
+
+  function prev() {
+    current = (current - 1 + cards.length) % cards.length;
+    showCard(current);
+  }
+
+  /* ---------- dots ---------- */
+  function buildDots() {
+    dotsWrap.innerHTML = "";
+    cards.forEach((_, i) => {
+      const dot = document.createElement("span");
+      dot.addEventListener("click", () => {
+        current = i;
+        showCard(current);
+      });
+      dotsWrap.appendChild(dot);
+    });
+    updateDots();
+  }
+
+  function updateDots() {
+    const dots = dotsWrap.querySelectorAll("span");
+    dots.forEach((d) => d.classList.remove("active"));
+    dots[current]?.classList.add("active");
+  }
+
+  /* ---------- buttons ---------- */
+  prevBtn?.addEventListener("click", prev);
+  nextBtn?.addEventListener("click", next);
+
+  /* ---------- swipe gestures ---------- */
+  grid.addEventListener(
+    "touchstart",
+    (e) => {
+      startX = e.touches[0].clientX;
+    },
+    { passive: true }
+  );
+
+  grid.addEventListener("touchend", (e) => {
+    const endX = e.changedTouches[0].clientX;
+    const diff = startX - endX;
+
+    if (Math.abs(diff) > 50) {
+      diff > 0 ? next() : prev();
+    }
+  });
+
+  /* ---------- init ---------- */
+  showCard(current);
+  buildDots();
+});

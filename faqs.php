@@ -30,7 +30,7 @@ require_once 'config/common_start.php';
           <input id="qsearch" placeholder="Search questions (install, recharge, not working...)" aria-label="Search FAQs">
         </div>
 
-        <select id="perpage" title="Items per page" style="background:transparent;color:var(--muted);border-radius:10px;padding:8px;border:1px solid rgba(255, 255, 255, 0.28);">
+        <select id="perpage" title="Items per page" style="background:var(--panel-1) ;color:var(--muted);border-radius:10px;padding:8px;border:1px solid rgba(255, 255, 255, 0.28);">
           <option value="3">3 / page</option>
           <option value="6">6 / page</option>
           <option value="9">9 / page</option>
@@ -184,7 +184,7 @@ function renderList(){
           <div class="q-meta">#${escapeHtml(item.id)}</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-          <button class="ghost expand-btn" data-id="${item.id}" aria-expanded="false" aria-controls="body-${item.id}">Toggle</button>
+          <button class="ghost expand-btn" data-id="${item.id}" aria-expanded="false" aria-controls="body-${item.id}">⮟</button>
         </div>
       </div>
       <div id="body-${item.id}" class="q-body" aria-hidden="true">${item.a}</div>

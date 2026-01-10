@@ -7,12 +7,7 @@
   margin: 0 auto;
   padding: 0 16px;
   box-sizing: border-box;
-  background: url('/uploads/images/gettyimages-1365996071-612x612.jpg')
-              center/cover no-repeat fixed;
-}
-.theme-light .wrap {
-  background: url('/uploads/images/gettyimages-1369748264-612x612.jpg')
-              center/cover no-repeat fixed;
+  background:var(--panel-1);
 }
 
 /* Header / title */

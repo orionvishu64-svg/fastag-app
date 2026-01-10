@@ -97,44 +97,47 @@
     </section>
 
     <!-- Values Section -->
-    <section class="values-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>Our Values</h2>
-                <p>The principles that guide everything we do</p>
-            </div>
-            <div class="values-grid">
-                <div class="value-card">
-                    <div class="value-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3>Trust & Security</h3>
-                    <p>We prioritize the security of your transactions and personal data with bank-grade encryption.</p>
-                </div>
-                <div class="value-card">
-                    <div class="value-icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <h3>Innovation</h3>
-                    <p>Constantly improving our services with the latest technology to serve you better.</p>
-                </div>
-                <div class="value-card">
-                    <div class="value-icon">
-                        <i class="fas fa-heart"></i>
-                    </div>
-                    <h3>Customer First</h3>
-                    <p>Every decision we make is centered around providing the best experience for our customers.</p>
-                </div>
-                <div class="value-card">
-                    <div class="value-icon">
-                        <i class="fas fa-award"></i>
-                    </div>
-                    <h3>Excellence</h3>
-                    <p>We strive for excellence in every aspect of our service delivery and customer support.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+<section class="values-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Our Values</h2>
+      <p>The principles that guide everything we do</p>
+    </div>
+
+    <div class="value-nav">
+      <button class="value-btn prev" aria-label="Previous value">◀</button>
+      <button class="value-btn next" aria-label="Next value">▶</button>
+    </div>
+
+    <div class="values-grid" id="valuesGrid">
+      <div class="value-card active">
+        <div class="value-icon"><i class="fas fa-shield-alt"></i></div>
+        <h3>Trust & Security</h3>
+        <p>We prioritize the security of your transactions and personal data with bank-grade encryption.</p>
+      </div>
+
+      <div class="value-card">
+        <div class="value-icon"><i class="fas fa-bolt"></i></div>
+        <h3>Innovation</h3>
+        <p>Constantly improving our services with the latest technology to serve you better.</p>
+      </div>
+
+      <div class="value-card">
+        <div class="value-icon"><i class="fas fa-heart"></i></div>
+        <h3>Customer First</h3>
+        <p>Every decision we make is centered around providing the best experience for our customers.</p>
+      </div>
+
+      <div class="value-card">
+        <div class="value-icon"><i class="fas fa-award"></i></div>
+        <h3>Excellence</h3>
+        <p>We strive for excellence in every aspect of our service delivery and customer support.</p>
+      </div>
+    </div>
+
+    <div class="value-dots" id="valueDots"></div>
+  </div>
+</section>
 
     <!-- Team Section -->
     <section class="team-section">
@@ -219,5 +222,74 @@
     </section>
     <script src="/public/js/script.js"></script>
 <?php include __DIR__ . '/includes/footer.php'; ?>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+  const cards = document.querySelectorAll('.value-card');
+  const prevBtn = document.querySelector('.value-btn.prev');
+  const nextBtn = document.querySelector('.value-btn.next');
+  const dotsWrap = document.getElementById('valueDots');
+  const grid = document.getElementById('valuesGrid');
+
+  if (!cards.length) return;
+
+  let current = 0;
+  let startX = 0;
+
+  function showCard(index) {
+    cards.forEach(c => c.classList.remove('active'));
+    cards[index].classList.add('active');
+    updateDots();
+  }
+
+  function next() {
+    current = (current + 1) % cards.length;
+    showCard(current);
+  }
+
+  function prev() {
+    current = (current - 1 + cards.length) % cards.length;
+    showCard(current);
+  }
+
+  function buildDots() {
+    dotsWrap.innerHTML = '';
+    cards.forEach((_, i) => {
+      const dot = document.createElement('span');
+      dot.addEventListener('click', () => {
+        current = i;
+        showCard(current);
+      });
+      dotsWrap.appendChild(dot);
+    });
+    updateDots();
+  }
+
+  function updateDots() {
+    const dots = dotsWrap.querySelectorAll('span');
+    dots.forEach(d => d.classList.remove('active'));
+    dots[current]?.classList.add('active');
+  }
+
+  prevBtn?.addEventListener('click', prev);
+  nextBtn?.addEventListener('click', next);
+
+  /* swipe */
+  grid.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+  }, { passive: true });
+
+  grid.addEventListener('touchend', e => {
+    const endX = e.changedTouches[0].clientX;
+    const diff = startX - endX;
+
+    if (Math.abs(diff) > 50) {
+      diff > 0 ? next() : prev();
+    }
+  });
+
+  showCard(current);
+  buildDots();
+});
+</script>
 </body>
 </html>

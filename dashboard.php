@@ -30,33 +30,44 @@
     </section>
 
     <!-- Features Section -->
-    <section class="features">
-        <div class="container">
-            <h2>Why Choose Our FASTag?</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <i class="fas fa-bolt"></i>
-                    <h3>Instant Activation</h3>
-                    <p>Get your FASTag activated within 24 hours</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-shield-alt"></i>
-                    <h3>Secure Payments</h3>
-                    <p>Bank-grade security for all transactions</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-clock"></i>
-                    <h3>24/7 Support</h3>
-                    <p>Round-the-clock customer support</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-check-circle"></i>
-                    <h3>Easy Installation</h3>
-                    <p>Simple installation process with guidance</p>
-                </div>
-            </div>
-        </div>
-    </section>
+<section class="features">
+  <div class="container">
+    <h2>Why Choose Our FASTag?</h2>
+
+    <!-- MOBILE ARROWS -->
+    <div class="feature-nav">
+      <button class="feature-btn prev" aria-label="Previous feature">◀</button>
+      <button class="feature-btn next" aria-label="Next feature">▶</button>
+    </div>
+
+    <div class="features-grid" id="featuresGrid">
+      <div class="feature-card active">
+        <i class="fas fa-bolt"></i>
+        <h3>Instant Activation</h3>
+        <p>Get your FASTag activated within 24 hours</p>
+      </div>
+
+      <div class="feature-card">
+        <i class="fas fa-shield-alt"></i>
+        <h3>Secure Payments</h3>
+        <p>Bank-grade security for all transactions</p>
+      </div>
+
+      <div class="feature-card">
+        <i class="fas fa-clock"></i>
+        <h3>24/7 Support</h3>
+        <p>Round-the-clock customer support</p>
+      </div>
+
+      <div class="feature-card">
+        <i class="fas fa-check-circle"></i>
+        <h3>Easy Installation</h3>
+        <p>Simple installation process with guidance</p>
+      </div>
+    </div>
+    <div class="feature-dots" id="featureDots"></div>
+  </div>
+</section>
 
     <!-- Bank Partners Section -->
     <section class="banks">
