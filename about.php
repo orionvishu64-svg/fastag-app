@@ -1,295 +1,234 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us - Apna Payment Services</title>
-    <link rel="stylesheet" href="/public/css/styles.css">
-    <link rel="stylesheet" href="/public/css/about.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
 <?php include __DIR__ . '/includes/header.php'; ?>
-    <!-- Hero Section -->
-    <section class="about-hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1>About Apna Payment Services</h1>
-                <p>Apna Payment Services Private Limited - India's most trusted FASTag partner, making toll payments seamless for millions of travelers</p>
-                <div class="trust-badge">
-                    <i class="fas fa-award"></i>
-                    <span>Trusted by 1M+ Customers</span>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Stats Section -->
-    <section class="stats-section">
-        <div class="container">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <i class="fas fa-users"></i>
-                    <h3>1M+</h3>
-                    <p>Happy Customers</p>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <h3>50+</h3>
-                    <p>Cities Covered</p>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-shield-alt"></i>
-                    <h3>99.9%</h3>
-                    <p>Uptime</p>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-clock"></i>
-                    <h3>24/7</h3>
-                    <p>Support</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Our Story Section -->
-    <section class="story-section">
-        <div class="container">
-            <div class="story-content">
-                <div class="story-text">
-                    <h2>Our Story</h2>
-                    <div class="story-paragraphs">
-                       <b><p>Founded in 2021, Apna Payment Services Private Limited was born out of a simple frustration - the long queues at toll plazas and the hassle of getting genuine FASTags from reliable sources. Our founders, having experienced this pain firsthand during their frequent travels, decided to create a solution.</p>
-                        
-                        <p>What started as a small initiative to help friends and family get authentic FASTags quickly has now grown into India's most trusted FASTag platform, serving over 1 million customers across 50+ cities through Apna Payment Services.</p>
-                        
-                        <p>We partner directly with major banks like Kotak, SBI, Bajaj, and IDFC to ensure you get genuine FASTags with the fastest activation and best customer support in the industry.</p></b>
-                    </div>
-                    <a href="contact.php" class="btn btn-primary">Learn More About Our Journey</a>
-                </div>
-                <div class="story-image">
-                    <img loading="lazy" src="https://as2.ftcdn.net/v2/jpg/04/51/27/79/1000_F_451277925_1MJ2JgqoCpDZoV2YPf62RpQ7O344mfqF.jpg" alt="Toll plaza with FASTag" >
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Mission & Vision -->
-    <section class="mission-vision">
-        <div class="container">
-            <div class="mv-grid">
-                <div class="mv-card mission">
-                    <div class="mv-icon">
-                        <i class="fas fa-bullseye"></i>
-                    </div>
-                    <h3>Our Mission</h3>
-                    <p>To make toll payments seamless and hassle-free for every Indian traveler by providing authentic FASTags with the fastest delivery, easiest installation, and best customer support in the industry.</p>
-                </div>
-                <div class="mv-card vision">
-                    <div class="mv-icon">
-                        <i class="fas fa-eye"></i>
-                    </div>
-                    <h3>Our Vision</h3>
-                    <p>To become India's most trusted digital payments partner, expanding beyond FASTags to create a comprehensive ecosystem of travel and transportation payment solutions.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Values Section -->
-<section class="values-section">
-  <div class="container">
-    <div class="section-header">
-      <h2>Our Values</h2>
-      <p>The principles that guide everything we do</p>
-    </div>
-
-    <div class="value-nav">
-      <button class="value-btn prev" aria-label="Previous value">◀</button>
-      <button class="value-btn next" aria-label="Next value">▶</button>
-    </div>
-
-    <div class="values-grid" id="valuesGrid">
-      <div class="value-card active">
-        <div class="value-icon"><i class="fas fa-shield-alt"></i></div>
-        <h3>Trust & Security</h3>
-        <p>We prioritize the security of your transactions and personal data with bank-grade encryption.</p>
-      </div>
-
-      <div class="value-card">
-        <div class="value-icon"><i class="fas fa-bolt"></i></div>
-        <h3>Innovation</h3>
-        <p>Constantly improving our services with the latest technology to serve you better.</p>
-      </div>
-
-      <div class="value-card">
-        <div class="value-icon"><i class="fas fa-heart"></i></div>
-        <h3>Customer First</h3>
-        <p>Every decision we make is centered around providing the best experience for our customers.</p>
-      </div>
-
-      <div class="value-card">
-        <div class="value-icon"><i class="fas fa-award"></i></div>
-        <h3>Excellence</h3>
-        <p>We strive for excellence in every aspect of our service delivery and customer support.</p>
-      </div>
-    </div>
-
-    <div class="value-dots" id="valueDots"></div>
+<!-- HERO -->
+<section class="py-5 bg-light border-bottom">
+  <div class="container text-center">
+    <span class="badge bg-warning text-dark mb-3">Trusted by 1M+ Customers</span>
+    <h1 class="fw-bold mt-3">About Apna Payment Services</h1>
+    <p class="text-muted mt-3 fs-5">
+      India’s most trusted FASTag partner, making toll payments seamless
+      for millions of travelers.
+    </p>
   </div>
 </section>
 
-    <!-- Team Section -->
-    <section class="team-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>Meet Our Team</h2>
-                <p>The passionate people behind Apna Payment Services' success</p>
-            </div>
-            <div class="team-grid">
-                <div class="team-card">
-                    <h3>Mr. Mukesh Choudhary</h3>
-                    <p class="role">CEO & Founder</p>
-                    <p class="description">Expert in banking and finance sector</p>
-                </div>
-                <div class="team-card">
-                    <h3>Mr. Ankit Sharma</h3>
-                    <p class="role">CEO & Founder</p>
-                    <p class="description">Expert in payment systems and technology</p>
-                </div>
-            </div>
-        </div>
-    </section>
+<!-- STATS -->
+<section class="py-5">
+  <div class="container">
+    <div class="row text-center g-4">
 
-    <!-- Certifications Section -->
-    <section class="certifications-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>Certifications & Partners</h2>
-                <p>Trusted by leading banks and certified by regulatory authorities</p>
-            </div>
-            <div class="certifications-grid">
-                <div class="cert-card">
-                    <div class="cert-logo">
-                        <img src="https://indiashippingnews.com/wp-content/uploads/2023/02/NHAI.webp" alt="NHAI Certified">
-                    </div>
-                    <h3>NHAI Certified</h3>
-                </div>
-                <div class="cert-card">
-                    <div class="cert-logo">
-                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSFu5PIQc1n0bYQxo0C7fhY8WH3UfQK3f3221Z78nbv9Kff_oHeJQwdrWNWLHcoZp8wmac&usqp=CAU" alt="RBI Approved">
-                    </div>
-                    <h3>RBI Approved</h3>
-                </div>
-                <div class="cert-card">
-                    <div class="cert-logo">
-                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFQUKjFcEJmjluYBnyKYOsj4lmWpCPa4y0YQ&s" alt="Kotak Mahindra Bank">
-                    </div>
-                    <h3>Kotak Mahindra Bank</h3>
-                </div>
-                <div class="cert-card">
-                    <div class="cert-logo">
-                        <img src="https://i.pinimg.com/736x/88/3e/c9/883ec9bb37983cdb50f4c1774e54d4ed.jpg" alt="State Bank Of India">
-                    </div>
-                    <h3>State Bank Of India</h3>
-                </div>
-                 <div class="cert-card">
-                    <div class="cert-logo">
-                        <img src="https://images.seeklogo.com/logo-png/36/1/bajaj-finserv-logo-png_seeklogo-363526.png" alt="Bajaj Finserv">
-                    </div>
-                    <h3>Bajaj Finserv</h3>
-                </div>
-                 <div class="cert-card">
-                    <div class="cert-logo">
-                        <img src="https://static.theprint.in/wp-content/uploads/2025/07/ANI-20250731072843.jpg" alt="IDFC First Bank">
-                    </div>
-                    <h3>IDFC First Bank</h3>
-                </div>
-            </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-4 h-100">
+          <i class="fas fa-users fs-2 text-warning mb-2"></i>
+          <h4 class="fw-bold">1M+</h4>
+          <p class="text-muted mb-0">Happy Customers</p>
         </div>
-    </section>
+      </div>
 
-    <!-- CTA Section -->
-    <section class="about-cta">
-        <div class="container">
-            <h2>Ready to Join Our Journey?</h2>
-            <p>Be part of the Apna Payment Services family and experience the future of toll payments</p>
-            <div class="cta-buttons">
-                <a href="products.php" class="btn btn-primary">Get Your FASTag Now</a>
-                <a href="contact.php" class="btn btn-secondary">Join Our Team</a>
-            </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-4 h-100">
+          <i class="fas fa-map-marker-alt fs-2 text-primary mb-2"></i>
+          <h4 class="fw-bold">50+</h4>
+          <p class="text-muted mb-0">Cities Covered</p>
         </div>
-    </section>
-    <script src="/public/js/script.js"></script>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-4 h-100">
+          <i class="fas fa-shield-alt fs-2 text-success mb-2"></i>
+          <h4 class="fw-bold">99.9%</h4>
+          <p class="text-muted mb-0">Uptime</p>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-4 h-100">
+          <i class="fas fa-clock fs-2 text-info mb-2"></i>
+          <h4 class="fw-bold">24×7</h4>
+          <p class="text-muted mb-0">Support</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- OUR STORY -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="row align-items-center g-5">
+
+      <div class="col-md-6">
+        <h2 class="fw-bold mb-3">Our Story</h2>
+        <p class="text-muted">
+          Founded in 2021, Apna Payment Services was born from the frustration
+          of long toll queues and unreliable FASTag sources.
+        </p>
+        <p class="text-muted">
+          What started as a small initiative has grown into India’s most trusted
+          FASTag platform, serving over 1 million customers across 50+ cities.
+        </p>
+        <p class="text-muted">
+          We partner directly with leading banks like Kotak, SBI, Bajaj, and IDFC
+          to ensure fast activation and genuine FASTags.
+        </p>
+        <a href="contact.php" class="btn btn-warning fw-semibold mt-2">
+          Learn More About Our Journey
+        </a>
+      </div>
+
+      <div class="col-md-6 text-center">
+        <img
+          src="https://as2.ftcdn.net/v2/jpg/04/51/27/79/1000_F_451277925_1MJ2JgqoCpDZoV2YPf62RpQ7O344mfqF.jpg"
+          class="img-fluid rounded shadow-sm"
+          alt="FASTag Toll Plaza"
+          loading="lazy"
+        >
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- MISSION & VISION -->
+<section class="py-5">
+  <div class="container">
+    <div class="row g-4">
+
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-4 h-100">
+          <i class="fas fa-bullseye fs-2 text-warning mb-3"></i>
+          <h4 class="fw-bold">Our Mission</h4>
+          <p class="text-muted">
+  Our mission is to simplify toll payments for every Indian traveler by delivering
+  authentic FASTags with lightning-fast activation, transparent pricing, and
+  dependable customer support.
+</p>
+<p class="text-muted mb-0">
+  We empower field agents and partners with efficient tools to ensure smooth
+  on-site installation, accurate KYC verification, and instant issue resolution.
+</p>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-4 h-100">
+          <i class="fas fa-eye fs-2 text-primary mb-3"></i>
+          <h4 class="fw-bold">Our Vision</h4>
+          <p class="text-muted">
+  Our vision is to become India’s most trusted digital mobility payments partner,
+  enabling seamless travel experiences across highways, cities, and smart
+  infrastructure.
+</p>
+<p class="text-muted mb-0">
+  Beyond FASTags, we aim to build a scalable ecosystem that supports future
+  transportation and digital payment innovations.
+</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- VALUES -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold">Our Values</h2>
+      <p class="text-muted">The principles that guide everything we do</p>
+    </div>
+
+    <div class="row g-4">
+
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-4 h-100 text-center">
+          <i class="fas fa-shield-alt fs-2 text-success mb-2"></i>
+          <h5 class="fw-semibold">Trust & Security</h5>
+          <p class="text-muted small">Bank-grade encryption & security</p>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-4 h-100 text-center">
+          <i class="fas fa-bolt fs-2 text-warning mb-2"></i>
+          <h5 class="fw-semibold">Innovation</h5>
+          <p class="text-muted small">Always improving with technology</p>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-4 h-100 text-center">
+          <i class="fas fa-heart fs-2 text-danger mb-2"></i>
+          <h5 class="fw-semibold">Customer First</h5>
+          <p class="text-muted small">Every decision starts with users</p>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-4 h-100 text-center">
+          <i class="fas fa-award fs-2 text-primary mb-2"></i>
+          <h5 class="fw-semibold">Excellence</h5>
+          <p class="text-muted small">High standards in service</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section class="py-5">
+  <div class="container text-center">
+    <h2 class="fw-bold mb-4">Meet Our Team</h2>
+
+    <div class="row justify-content-center g-4">
+
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-4">
+          <h5 class="fw-bold mb-1">Mr. Mukesh Choudhary</h5>
+          <span class="text-muted">CEO & Founder</span>
+          <p class="small mt-2">Expert in banking & finance</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-4">
+          <h5 class="fw-bold mb-1">Mr. Ankit Sharma</h5>
+          <span class="text-muted">CEO & Founder</span>
+          <p class="small mt-2">Expert in payment systems</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="py-5">
+  <div class="container">
+    <div class="rounded-4 p-5 text-center shadow"
+         style="background:#ffffff; border-top:6px solid #ffc107;">
+
+      <h2 class="fw-bold mb-3">
+        Ready to Join Our Journey?
+      </h2>
+
+      <p class="mb-4 fs-5 text-muted">
+        Be part of Apna Payment Services and experience the future of toll payments
+      </p>
+
+      <div class="d-flex justify-content-center gap-3">
+        <a href="products.php" class="btn btn-warning btn-lg px-4 fw-semibold">
+          Get Your FASTag Now
+        </a>
+        <a href="contact.php" class="btn btn-outline-secondary btn-lg px-4">
+          Contact Us
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <?php include __DIR__ . '/includes/footer.php'; ?>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-  const cards = document.querySelectorAll('.value-card');
-  const prevBtn = document.querySelector('.value-btn.prev');
-  const nextBtn = document.querySelector('.value-btn.next');
-  const dotsWrap = document.getElementById('valueDots');
-  const grid = document.getElementById('valuesGrid');
-
-  if (!cards.length) return;
-
-  let current = 0;
-  let startX = 0;
-
-  function showCard(index) {
-    cards.forEach(c => c.classList.remove('active'));
-    cards[index].classList.add('active');
-    updateDots();
-  }
-
-  function next() {
-    current = (current + 1) % cards.length;
-    showCard(current);
-  }
-
-  function prev() {
-    current = (current - 1 + cards.length) % cards.length;
-    showCard(current);
-  }
-
-  function buildDots() {
-    dotsWrap.innerHTML = '';
-    cards.forEach((_, i) => {
-      const dot = document.createElement('span');
-      dot.addEventListener('click', () => {
-        current = i;
-        showCard(current);
-      });
-      dotsWrap.appendChild(dot);
-    });
-    updateDots();
-  }
-
-  function updateDots() {
-    const dots = dotsWrap.querySelectorAll('span');
-    dots.forEach(d => d.classList.remove('active'));
-    dots[current]?.classList.add('active');
-  }
-
-  prevBtn?.addEventListener('click', prev);
-  nextBtn?.addEventListener('click', next);
-
-  /* swipe */
-  grid.addEventListener('touchstart', e => {
-    startX = e.touches[0].clientX;
-  }, { passive: true });
-
-  grid.addEventListener('touchend', e => {
-    const endX = e.changedTouches[0].clientX;
-    const diff = startX - endX;
-
-    if (Math.abs(diff) > 50) {
-      diff > 0 ? next() : prev();
-    }
-  });
-
-  showCard(current);
-  buildDots();
-});
-</script>
-</body>
-</html>

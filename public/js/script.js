@@ -21,56 +21,92 @@ function safeFetch(...args) {
     });
 }
 
-// Minimal sidebar toggle (paste at end of script.js)
+// sidebar
+document.getElementById("sidebarToggle")?.addEventListener("click", () => {
+  document.body.classList.toggle("sidebar-open");
+});
+
+//dashboard reviews
 (function () {
-  const toggle = document.getElementById("sidebarToggle");
-  const body = document.body;
-  const sidebar = document.querySelector(".sidebar");
+  const reviews = [
+    {
+      name: "Rakesh Verma",
+      stars: 5,
+      text: "FASTag activation is instant. Customers are satisfied.",
+    },
+    {
+      name: "Amit Sharma",
+      stars: 5,
+      text: "Dashboard helps me finish installations quickly.",
+    },
+    {
+      name: "Sanjay Meena",
+      stars: 4,
+      text: "Support team responds fast when issues arise.",
+    },
+    {
+      name: "Rahul Singh",
+      stars: 5,
+      text: "Best platform for highway FASTag installations.",
+    },
+    {
+      name: "Deepak Yadav",
+      stars: 3,
+      text: "Overall good, sometimes network issues in rural areas.",
+    },
+    {
+      name: "Manoj Kumar",
+      stars: 5,
+      text: "KYC and activation flow is very smooth.",
+    },
+    {
+      name: "Vikram Patel",
+      stars: 4,
+      text: "Commission tracking is clear and transparent.",
+    },
+    {
+      name: "Nitin Choudhary",
+      stars: 2,
+      text: "Rare delays during peak hours.",
+    },
+    {
+      name: "Pankaj Jain",
+      stars: 5,
+      text: "Works perfectly for on-site installations.",
+    },
+    {
+      name: "Anil Gupta",
+      stars: 1,
+      text: "Had one failed activation, resolved later.",
+    },
+  ];
 
-  if (!toggle || !sidebar) return;
+  const container = document.getElementById("agentReviews");
+  if (!container) return;
 
-  function setState(open) {
-    body.classList.toggle("sidebar-open", open);
-    toggle.setAttribute("aria-expanded", String(open));
-    toggle.setAttribute("aria-label", open ? "Close sidebar" : "Open sidebar");
-    sidebar.setAttribute("aria-hidden", String(!open));
-  }
+  const list = [...reviews, ...reviews]; // duplicate for infinite loop
 
-  // initial state
-  setState(false);
-
-  toggle.addEventListener("click", function (e) {
-    setState(!body.classList.contains("sidebar-open"));
+  list.forEach((r) => {
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <strong>${r.name}</strong><br>
+      <span class="text-warning">${"★".repeat(r.stars)}${"☆".repeat(
+      5 - r.stars
+    )}</span>
+      <div class="text-muted small">${r.text}</div>
+    `;
+    container.appendChild(div);
   });
 
-  // Escape to close
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && body.classList.contains("sidebar-open")) {
-      setState(false);
+  let y = 0;
+  setInterval(() => {
+    y += 1;
+    container.style.transform = `translateY(-${y}px)`;
+    if (y >= container.scrollHeight / 2) {
+      y = 0;
+      container.style.transform = "translateY(0)";
     }
-  });
-
-  // Optional: click outside to close — only if you want it simple (keeps no overlay)
-  document.addEventListener("click", function (e) {
-    if (!body.classList.contains("sidebar-open")) return;
-    // if click on sidebar or toggle, do nothing
-    if (sidebar.contains(e.target) || toggle.contains(e.target)) return;
-    setState(false);
-  });
-  // logo chnage
-  function setTheme(isLight) {
-    const root = document.documentElement;
-    if (isLight) {
-      root.classList.add("theme-light");
-      root.setAttribute("data-theme", "light");
-      localStorage.setItem(KEY, "light");
-    } else {
-      root.classList.remove("theme-light");
-      root.removeAttribute("data-theme");
-      localStorage.setItem(KEY, "dark");
-    }
-    syncToggleUI();
-  }
+  }, 40);
 })();
 
 // Smooth scrolling for anchor links
@@ -141,10 +177,6 @@ if (newsletterForm) {
   });
 }
 
-// Cart functionality
-let cartCount = 0;
-const cartCountElement = document.querySelector(".cart-count");
-
 // Add to cart buttons
 document.querySelectorAll(".btn").forEach((button) => {
   if (
@@ -152,45 +184,43 @@ document.querySelectorAll(".btn").forEach((button) => {
     button.textContent.includes("Select")
   ) {
     button.addEventListener("click", function (e) {
-      if (this.textContent.includes("Add to Cart")) {
-        e.preventDefault();
-        // Try to find the product element (customize selectors as needed)
-        const productCard =
-          this.closest(".product-card") ||
-          this.closest(".bank-card") ||
-          this.closest(".category-card");
+      if (!this.textContent.includes("Add to Cart")) return;
 
-        if (productCard) {
-          const name =
-            productCard.querySelector(".product-name")?.textContent?.trim() ||
-            "Unknown Product";
-          const priceText = productCard
-            .querySelector(".product-price, .price")
-            ?.textContent?.replace(/[^\d]/g, "");
-          const price = parseInt(priceText, 10) || 0;
+      e.preventDefault();
 
-          const item = {
-            id: Date.now().toString(),
-            name,
-            price,
-            quantity: 1,
-          };
+      const productCard =
+        this.closest(".product-card") ||
+        this.closest(".bank-card") ||
+        this.closest(".category-card");
 
-          // Get current cart from localStorage
-          const existingCart = JSON.parse(localStorage.getItem("cart")) || [];
-          existingCart.push(item);
-          localStorage.setItem("cart", JSON.stringify(existingCart));
+      if (!productCard) {
+        showNotification("Error: Could not identify product", "error");
+        return;
+      }
 
-          cartCount = existingCart.length;
-          if (cartCountElement) {
-            cartCountElement.textContent = cartCount;
-            cartCountElement.style.display = "flex";
-          }
+      const name =
+        productCard.querySelector(".product-name")?.textContent?.trim() ||
+        "Unknown Product";
 
-          showNotification(`${name} added to cart!`, "success");
-        } else {
-          showNotification("Error: Could not identify product", "error");
-        }
+      const priceText = productCard
+        .querySelector(".product-price, .price")
+        ?.textContent?.replace(/[^\d]/g, "");
+
+      const price = parseInt(priceText, 10) || 0;
+
+      const item = {
+        id: Date.now().toString(),
+        name,
+        price,
+        quantity: 1,
+      };
+
+      if (typeof window.addToCart === "function") {
+        this.disabled = true;
+        window.addToCart(item);
+        setTimeout(() => (this.disabled = false), 600);
+      } else {
+        showNotification("Cart system not ready", "error");
       }
     });
   }
@@ -229,11 +259,6 @@ function showNotification(message, type = "info") {
       document.body.removeChild(notification);
     }, 300);
   }, 3000);
-}
-
-// Initialize cart count display
-if (cartCountElement) {
-  cartCountElement.style.display = cartCount > 0 ? "flex" : "none";
 }
 
 // Back to top button
@@ -440,79 +465,3 @@ window.theme = {
     setTimeout(() => t.remove(), timeout);
   },
 };
-
-document.addEventListener("DOMContentLoaded", () => {
-  const cards = document.querySelectorAll(".feature-card");
-  const prevBtn = document.querySelector(".feature-btn.prev");
-  const nextBtn = document.querySelector(".feature-btn.next");
-  const dotsWrap = document.getElementById("featureDots");
-  const grid = document.getElementById("featuresGrid");
-
-  if (!cards.length) return;
-
-  let current = 0;
-  let startX = 0;
-
-  /* ---------- helpers ---------- */
-  function showCard(index) {
-    cards.forEach((c) => c.classList.remove("active"));
-    cards[index].classList.add("active");
-    updateDots();
-  }
-
-  function next() {
-    current = (current + 1) % cards.length;
-    showCard(current);
-  }
-
-  function prev() {
-    current = (current - 1 + cards.length) % cards.length;
-    showCard(current);
-  }
-
-  /* ---------- dots ---------- */
-  function buildDots() {
-    dotsWrap.innerHTML = "";
-    cards.forEach((_, i) => {
-      const dot = document.createElement("span");
-      dot.addEventListener("click", () => {
-        current = i;
-        showCard(current);
-      });
-      dotsWrap.appendChild(dot);
-    });
-    updateDots();
-  }
-
-  function updateDots() {
-    const dots = dotsWrap.querySelectorAll("span");
-    dots.forEach((d) => d.classList.remove("active"));
-    dots[current]?.classList.add("active");
-  }
-
-  /* ---------- buttons ---------- */
-  prevBtn?.addEventListener("click", prev);
-  nextBtn?.addEventListener("click", next);
-
-  /* ---------- swipe gestures ---------- */
-  grid.addEventListener(
-    "touchstart",
-    (e) => {
-      startX = e.touches[0].clientX;
-    },
-    { passive: true }
-  );
-
-  grid.addEventListener("touchend", (e) => {
-    const endX = e.changedTouches[0].clientX;
-    const diff = startX - endX;
-
-    if (Math.abs(diff) > 50) {
-      diff > 0 ? next() : prev();
-    }
-  });
-
-  /* ---------- init ---------- */
-  showCard(current);
-  buildDots();
-});

@@ -93,110 +93,155 @@ if (!empty($post['tag'])) {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title><?php echo $title; ?> - FASTag Blog</title>
-  <link rel="stylesheet" href="/public/css/styles.css">
-  <link rel="stylesheet" href="/public/css/blog.css">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
 <?php include __DIR__ . '/includes/header.php'; ?>
 
-<a href="blog.php" class="btn btn-back">Go Back</a>
+<main class="py-5 bg-light">
 
-<main class="single-post">
   <div class="container">
-    <article class="single-article">
-      <header>
-        <h1><?php echo $title; ?></h1>
 
-        <div class="meta">
-          <?php if ($created): ?>
-            <span><?php echo h($created); ?></span>
-          <?php endif; ?>
+    <!-- Back button -->
+    <div class="mb-4">
+      <a href="blog.php" class="btn btn-outline-secondary btn-sm">
+        ← Back to Blog
+      </a>
+    </div>
 
-          <?php if ($author): ?>
-            <span>By <?php echo $author; ?></span>
-          <?php endif; ?>
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
 
-          <?php if ($tag): ?>
-            <span class="category"><?php echo $tag; ?></span>
-          <?php endif; ?>
+        <!-- ARTICLE -->
+        <article class="card border-0 shadow-sm mb-5">
 
-          <span class="read-time"><?php echo $read_time; ?></span>
-        </div>
+          <!-- Featured image -->
+          <img
+            src="<?php echo h($img); ?>"
+            class="card-img-top"
+            alt="<?php echo $title; ?>"
+            loading="lazy"
+            style="max-height:420px;object-fit:cover;"
+          >
 
-        <div class="single-thumb">
-          <img loading="lazy" src="<?php echo h($img); ?>" alt="<?php echo $title; ?>">
-        </div>
-      </header>
+          <div class="card-body p-4 p-lg-5">
 
-      <div class="single-content">
-        <?php
-        echo $content;
-        ?>
+            <!-- Meta -->
+            <div class="d-flex flex-wrap align-items-center gap-3 mb-3 small text-muted">
+              <?php if ($created): ?>
+                <span><i class="far fa-calendar-alt me-1"></i><?php echo h($created); ?></span>
+              <?php endif; ?>
+
+              <?php if ($author): ?>
+                <span><i class="far fa-user me-1"></i><?php echo $author; ?></span>
+              <?php endif; ?>
+
+              <?php if ($tag): ?>
+                <span class="badge bg-warning text-dark"><?php echo $tag; ?></span>
+              <?php endif; ?>
+
+              <span><i class="far fa-clock me-1"></i><?php echo $read_time; ?></span>
+            </div>
+
+            <!-- Title -->
+            <h1 class="fw-bold mb-4"><?php echo $title; ?></h1>
+
+            <!-- Content -->
+            <div class="fs-5 lh-lg text-dark">
+              <?php echo $content; ?>
+            </div>
+
+            <!-- Share -->
+            <div class="border-top pt-4 mt-5">
+              <div class="d-flex align-items-center gap-3">
+                <span class="fw-semibold">Share:</span>
+
+                <a class="btn btn-outline-primary btn-sm share-btn" data-share="twitter">
+                  <i class="fab fa-twitter"></i>
+                </a>
+
+                <a class="btn btn-outline-primary btn-sm share-btn" data-share="fb">
+                  <i class="fab fa-facebook"></i>
+                </a>
+
+                <a class="btn btn-outline-success btn-sm share-btn" data-share="wa">
+                  <i class="fab fa-whatsapp"></i>
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </article>
+
       </div>
+    </div>
 
-      <div class="post-actions">
-        <a class="share-btn" data-share="twitter" title="Share on Twitter">
-          <i class="fab fa-twitter"></i>
-        </a>
-        <a class="share-btn" data-share="fb" title="Share on Facebook">
-          <i class="fab fa-facebook"></i>
-        </a>
-        <a class="share-btn" data-share="wa" title="Share on WhatsApp">
-          <i class="fab fa-whatsapp"></i>
-        </a>
-      </div>
-
-    </article>
   </div>
 </main>
 
+<!-- RELATED POSTS -->
 <?php if (!empty($related)): ?>
-<section class="related-wrap">
+<section class="py-5">
   <div class="container">
-    <h3 class="related-title">Related posts</h3>
-    <div class="related-grid">
+
+    <h3 class="fw-bold mb-4 text-center">Related Posts</h3>
+
+    <div class="row g-4 justify-content-center">
+
       <?php foreach ($related as $rp):
-          $rtitle   = h($rp['title'] ?? '');
-          $rexcerpt = h($rp['excerpt'] ?? '');
-          $rslug    = h($rp['slug'] ?? ('post-' . (int)$rp['id']));
-          $rimg     = blog_image_url_public($rp['image_url'] ?? '');
-          $rauthor  = h($rp['author'] ?? '');
-          $rtime    = h($rp['read_time'] ?? '1 min');
-          $rtag     = h($rp['tag'] ?? '');
+        $rtitle   = h($rp['title'] ?? '');
+        $rexcerpt = h($rp['excerpt'] ?? '');
+        $rslug    = h($rp['slug'] ?? ('post-' . (int)$rp['id']));
+        $rimg     = blog_image_url_public($rp['image_url'] ?? '');
+        $rauthor  = h($rp['author'] ?? '');
+        $rtime    = h($rp['read_time'] ?? '1 min');
+        $rtag     = h($rp['tag'] ?? '');
       ?>
-        <article class="post-card">
-          <a class="post-link" href="blog_post.php?slug=<?php echo urlencode($rslug); ?>">
-            <div class="post-image">
-              <img loading="lazy" src="<?php echo h($rimg); ?>" alt="<?php echo $rtitle; ?>">
-            </div>
-            <div class="post-body">
-              <div class="post-meta">
+
+      <div class="col-lg-4 col-md-6">
+        <article class="card h-100 border-0 shadow-sm">
+
+          <a href="blog_post.php?slug=<?php echo urlencode($rslug); ?>"
+             class="text-decoration-none text-dark">
+
+            <img
+              src="<?php echo h($rimg); ?>"
+              class="card-img-top"
+              alt="<?php echo $rtitle; ?>"
+              loading="lazy"
+              style="height:200px;object-fit:cover;"
+            >
+
+            <div class="card-body d-flex flex-column">
+
+              <div class="d-flex justify-content-between align-items-center mb-2">
                 <?php if ($rtag): ?>
-                  <span class="category"><?php echo $rtag; ?></span>
+                  <span class="badge bg-warning text-dark"><?php echo $rtag; ?></span>
                 <?php endif; ?>
-                <span class="read-time"><?php echo $rtime; ?></span>
+                <small class="text-muted"><?php echo $rtime; ?></small>
               </div>
-              <h4 class="post-title"><?php echo $rtitle; ?></h4>
-              <p class="post-excerpt"><?php echo $rexcerpt; ?></p>
+
+              <h5 class="fw-bold"><?php echo $rtitle; ?></h5>
+
+              <p class="text-muted small mb-3"><?php echo $rexcerpt; ?></p>
+
               <?php if ($rauthor): ?>
-                <div class="author">By <?php echo $rauthor; ?></div>
+                <small class="mt-auto text-secondary">
+                  By <?php echo $rauthor; ?>
+                </small>
               <?php endif; ?>
+
             </div>
           </a>
+
         </article>
+      </div>
+
       <?php endforeach; ?>
+
     </div>
   </div>
 </section>
 <?php endif; ?>
 
+<!-- SHARE SCRIPT (UNCHANGED LOGIC) -->
 <script>
 document.addEventListener('click', function(e){
   const btn = e.target.closest && e.target.closest('.share-btn');
@@ -220,7 +265,5 @@ document.addEventListener('click', function(e){
   }
 });
 </script>
+
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
-<script src="/public/js/script.js"></script>
-</body>
-</html>

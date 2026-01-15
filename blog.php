@@ -1,6 +1,6 @@
 <?php
 // fastag_website/blog.php
-require_once __DIR__ . '/config/db.php'; // must define $pdo
+require_once __DIR__ . '/config/db.php';
 
 if (!function_exists('h')) {
     function h($s) {
@@ -38,7 +38,7 @@ if (!function_exists('blog_image_url_public')) {
     }
 }
 
-$limit  = 9;
+$limit  = 6;
 $page   = max(1, (int)($_GET['page'] ?? 1));
 $offset = ($page - 1) * $limit;
 
@@ -60,34 +60,86 @@ $countStmt  = $pdo->query("SELECT COUNT(*) FROM blog_posts WHERE is_published = 
 $total      = (int)$countStmt->fetchColumn();
 $totalPages = max(1, (int)ceil($total / $limit));
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FASTag Blog</title>
-    <link rel="stylesheet" href="/public/css/styles.css">
-    <link rel="stylesheet" href="/public/css/blog.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
 <?php include __DIR__ . '/includes/header.php'; ?>
+<style>
+.blog-hero {
+  min-height: 340px;
+  display: flex;
+  align-items: center;
+}
 
+.blog-hero-bg {
+  position: absolute;
+  inset: 0;
+  background: url('/uploads/images/blog.jpg') center center / cover no-repeat;
+}
+
+.blog-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+@media (max-width: 768px) {
+  .blog-hero {
+    min-height: 240px;
+  }
+}
+
+.post-card,
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.post-card:hover,
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+}
+
+.post-image img,
+.card img {
+  transition: transform 0.4s ease;
+}
+
+.post-card:hover img,
+.card:hover img {
+  transform: scale(1.06);
+}
+</style>
 <main>
-  <section class="hero">
-    <div class="container">
-      <h1>FASTag Blog</h1>
-      <p>Latest updates, tutorials and news</p>
+  <!-- HERO -->
+  <section class="blog-hero position-relative overflow-hidden">
+    <div class="blog-hero-bg"></div>
+    <div class="blog-hero-overlay"></div>
+
+    <div class="container position-relative text-center">
+      <h1 class="fw-bold mb-2 text-dark">FASTag Blog</h1>
+      <p class="fs-5 text-dark mb-0">
+        Latest updates, tutorials, and news about FASTag services
+      </p>
     </div>
   </section>
 
-  <section class="featured-posts">
+  <!-- BLOG LIST -->
+  <section class="py-5">
     <div class="container">
-      <h2>Latest Articles</h2>
-      <div class="posts-grid">
-        <?php if (empty($posts)): ?>
-          <p>No posts yet. Check back soon.</p>
-        <?php else: ?>
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Latest Articles</h2>
+        <span class="text-muted small">
+          Showing <?php echo count($posts); ?> of <?php echo $total; ?> posts
+        </span>
+      </div>
+
+      <?php if (empty($posts)): ?>
+        <div class="alert alert-info">
+          No posts yet. Please check back soon.
+        </div>
+      <?php else: ?>
+
+        <div class="row g-4">
           <?php foreach ($posts as $post): ?>
             <?php
               $title     = h($post['title'] ?? '');
@@ -101,53 +153,93 @@ $totalPages = max(1, (int)ceil($total / $limit));
                            ? date('F j, Y', strtotime($post['created_at']))
                            : '';
             ?>
-            <article class="post-card">
-              <a class="post-link" href="blog_post.php?slug=<?php echo urlencode($slug); ?>">
-                <div class="post-image">
-                  <img loading="lazy" src="<?php echo h($img); ?>" alt="<?php echo $title; ?>">
-                </div>
-                <div class="post-body">
-                  <div class="post-meta">
-                    <?php if ($tag): ?>
-                      <span class="category"><?php echo $tag; ?></span>
+
+            <div class="col-lg-4 col-md-6">
+              <article class="card h-100 border-0 shadow-sm">
+
+                <a href="blog_post.php?slug=<?php echo urlencode($slug); ?>"
+                   class="text-decoration-none text-dark">
+
+                  <img
+                    src="<?php echo h($img); ?>"
+                    class="card-img-top"
+                    alt="<?php echo $title; ?>"
+                    loading="lazy"
+                    style="object-fit: cover; height: 200px;"
+                  >
+
+                  <div class="card-body d-flex flex-column">
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <?php if ($tag): ?>
+                        <span class="badge bg-warning text-dark">
+                          <?php echo $tag; ?>
+                        </span>
+                      <?php endif; ?>
+                      <small class="text-muted"><?php echo $read_time; ?></small>
+                    </div>
+
+                    <h5 class="fw-bold mb-2">
+                      <?php echo $title; ?>
+                    </h5>
+
+                    <?php if ($created): ?>
+                      <small class="text-muted mb-2 d-block">
+                        <?php echo h($created); ?>
+                      </small>
                     <?php endif; ?>
-                    <span class="read-time"><?php echo $read_time; ?></span>
+
+                    <p class="text-muted mb-3">
+                      <?php echo $excerpt; ?>
+                    </p>
+
+                    <?php if ($author): ?>
+                      <small class="mt-auto text-secondary">
+                        By <?php echo $author; ?>
+                      </small>
+                    <?php endif; ?>
+
                   </div>
+                </a>
 
-                  <h3 class="post-title"><?php echo $title; ?></h3>
+              </article>
+            </div>
 
-                  <?php if ($created): ?>
-                    <p class="post-date"><?php echo h($created); ?></p>
-                  <?php endif; ?>
-
-                  <p class="post-excerpt"><?php echo $excerpt; ?></p>
-
-                  <?php if ($author): ?>
-                    <p class="author">By <?php echo $author; ?></p>
-                  <?php endif; ?>
-                </div>
-              </a>
-            </article>
           <?php endforeach; ?>
-        <?php endif; ?>
-      </div>
+        </div>
 
-      <!-- Pagination -->
-      <div class="pagination">
-        <?php if ($page > 1): ?>
-          <a href="?page=<?php echo $page - 1; ?>">&laquo; Prev</a>
-        <?php endif; ?>
+      <?php endif; ?>
 
-        <span>Page <?php echo $page; ?> of <?php echo $totalPages; ?></span>
+      <!-- PAGINATION -->
+      <?php if ($totalPages > 1): ?>
+        <nav class="mt-5">
+          <ul class="pagination justify-content-center">
 
-        <?php if ($page < $totalPages): ?>
-          <a href="?page=<?php echo $page + 1; ?>">Next &raquo;</a>
-        <?php endif; ?>
-      </div>
+            <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
+              <a class="page-link"
+                 href="?page=<?php echo max(1, $page - 1); ?>">
+                &laquo; Previous
+              </a>
+            </li>
+
+            <li class="page-item disabled">
+              <span class="page-link">
+                Page <?php echo $page; ?> of <?php echo $totalPages; ?>
+              </span>
+            </li>
+
+            <li class="page-item <?php echo ($page >= $totalPages) ? 'disabled' : ''; ?>">
+              <a class="page-link"
+                 href="?page=<?php echo min($totalPages, $page + 1); ?>">
+                Next &raquo;
+              </a>
+            </li>
+
+          </ul>
+        </nav>
+      <?php endif; ?>
+
     </div>
   </section>
 </main>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
-<script src="/public/js/script.js"></script>
-</body>
-</html>

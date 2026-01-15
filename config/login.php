@@ -7,18 +7,15 @@ require_once __DIR__ . '/config_auth.php';
 
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
-// Response headers
 if (!headers_sent()) {
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
     header('Pragma: no-cache');
 }
 
-// Toggle to true if you want to store a HASH of the mpin locally (recommended over plaintext).
 define('SAVE_MPIN_HASH', false);
 
 try {
-    // Accept JSON or form POST
     $raw = file_get_contents('php://input');
     $json = json_decode($raw, true);
     $in = is_array($json) ? $json : $_POST;
@@ -27,7 +24,6 @@ try {
     $phone = isset($in['phone']) ? preg_replace('/\D/', '', (string)$in['phone']) : '';
     $email = isset($in['email']) ? trim((string)$in['email']) : '';
 
-    // Basic validations
     if (!preg_match('/^\d{4,6}$/', $mpin)) {
         throw new Exception('Invalid mPIN');
     }
@@ -38,7 +34,6 @@ try {
         throw new Exception('Invalid phone');
     }
 
-    // ---------- 1) Fast path: device-bound cookie ----------
     $rawCookieToken = $_COOKIE[AUTH_COOKIE_NAME] ?? '';
     $u = null;
 
@@ -56,7 +51,6 @@ try {
             $u = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
 
             if ($u) {
-                // rotate token for safety
                 try {
                     $newRaw = createAuthToken($pdo, (int)$u['id'], AUTH_COOKIE_TTL);
                     setAuthCookie($newRaw, AUTH_COOKIE_TTL);
@@ -72,7 +66,6 @@ try {
         }
     }
 
-    // ---------- 2) Provider-first attempt (ApnaPayment) ----------
     $provider_user_not_found = false;
     if (!$u && !empty($phone)) {
         $provider_url = 'https://www.apnapayment.com/api/agent/loginMpin';
@@ -95,7 +88,6 @@ try {
         } else {
             $prov_json = json_decode($prov_resp, true);
 
-            // provider success: observed "success": "MPIN verified" and "data" block
             $prov_success = ($prov_status === 200 && isset($prov_json['success']) && stripos((string)$prov_json['success'], 'verified') !== false);
             $prov_not_found = ($prov_status === 404)
                 || (!empty($prov_json['message']) && stripos($prov_json['message'], 'not found') !== false)
@@ -107,7 +99,6 @@ try {
             if ($prov_success) {
                 $pdata = $prov_json['data'] ?? [];
 
-                // canonical provider user
                 $prov_user = [
                     'remote_id'  => $pdata['id'] ?? null,
                     'name'       => trim(($pdata['first_name'] ?? '') . ' ' . ($pdata['last_name'] ?? '')),
@@ -116,7 +107,6 @@ try {
                     'phone'      => $phone
                 ];
 
-                // Upsert into local users table: prefer remote_id, then phone, then email
                 try {
                     $existing = null;
 
@@ -197,14 +187,12 @@ try {
                         $userId = $pdo->lastInsertId();
                     }
 
-                    // Load canonical local row into $u
                     $stmt = $pdo->prepare('SELECT id, name, email, phone, login_type, mpin_hash, avatar_url, remote_id FROM users WHERE id = ? LIMIT 1');
                     $stmt->execute([$userId]);
                     $u = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
 
                 } catch (Throwable $ex) {
                     error_log('/login.php: provider upsert failed: '.$ex->getMessage());
-                    // allow login to continue using minimal provider data
                     $u = [
                         'id' => null,
                         'name' => $prov_user['name'],
@@ -216,7 +204,6 @@ try {
                         'remote_id' => $prov_user['remote_id']
                     ];
                 }
-                // Create session
                 session_regenerate_id(true);
                 $_SESSION['user'] = [
                     'id' => isset($u['id']) && $u['id'] !== null ? (int)$u['id'] : null,
@@ -230,7 +217,6 @@ try {
                 $_SESSION['user_id'] = isset($u['id']) && $u['id'] !== null ? (int)$u['id'] : null;
                 $_SESSION['last_activity'] = time();
 
-                // Set auth cookie (bind to local id if available)
                 try {
                     $cookie_user_id = isset($u['id']) && $u['id'] !== null ? (int)$u['id'] : null;
                     $rawTokenForClient = createAuthToken($pdo, $cookie_user_id, AUTH_COOKIE_TTL);
@@ -239,7 +225,6 @@ try {
                     error_log('/login.php: setAuthCookie failed: '.$ex->getMessage());
                 }
 
-                // partner_required check (reuse your logic)
                 $partner_required = false;
                 try {
                     if (!empty($u['id'])) {
@@ -270,23 +255,18 @@ try {
                 exit;
             }
 
-            // provider not found -> flag and continue to local fallback
             if ($prov_not_found) {
                 $provider_user_not_found = true;
             }
 
-            // provider invalid mPIN -> immediate invalid response
             if ($prov_invalid_mpin) {
                 http_response_code(401);
                 echo json_encode(['success' => false, 'status' => 'invalid_credentials', 'message' => 'Invalid mPIN (provider). Use Forgot mPIN to reset.']);
                 exit;
             }
-
-            // else fallback to local DB below
         }
     }
 
-    // ---------- 3) Local DB fallback (email/phone) ----------
     if (!$u) {
         if ($phone === '' && $email === '') {
             throw new Exception('Please enter your phone or email to log in on this device.');
@@ -303,7 +283,6 @@ try {
         $u = $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // If provider said user not found and local DB also doesn't have user, tell frontend to signup
     if (isset($provider_user_not_found) && $provider_user_not_found && !$u) {
         http_response_code(404);
         echo json_encode(['status' => 'not_registered', 'success' => false, 'message' => 'User not registered with provider; please create an account.']);
@@ -314,12 +293,10 @@ try {
         throw new Exception('Account not found. Check your details.');
     }
 
-    // ---------- 4) Verify mPIN against local stored hash ----------
     if (empty($u['mpin_hash']) || !password_verify($mpin, $u['mpin_hash'])) {
         throw new Exception('Incorrect mPIN');
     }
 
-    // ---------- 5) Successful local auth -> create session & cookie ----------
     session_regenerate_id(true);
     $_SESSION['user'] = [
         'id' => (int)$u['id'],
@@ -333,7 +310,6 @@ try {
     $_SESSION['user_id'] = (int)$u['id'];
     $_SESSION['last_activity'] = time();
 
-    // ensure device cookie
     try {
         $rawTokenForClient = createAuthToken($pdo, (int)$u['id'], AUTH_COOKIE_TTL);
         setAuthCookie($rawTokenForClient, AUTH_COOKIE_TTL);
@@ -341,14 +317,11 @@ try {
         error_log('/login.php: setAuthCookie failed for local login: '.$ex->getMessage());
     }
 
-    // touch last-activity timestamp in DB
     try {
         $pdo->prepare('UPDATE users SET updated_at = NOW() WHERE id = ?')->execute([$u['id']]);
     } catch (Throwable $ex) {
-        // ignore
     }
 
-    // partner_required check for local login
     $partner_required = false;
     try {
         $stmt1 = $pdo->prepare('SELECT COUNT(*) FROM gv_partners WHERE user_id = ?');
