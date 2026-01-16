@@ -1,23 +1,17 @@
 <?php
 // config/sms_otp.php
-// Unified SMS OTP handler for Signup, Phone Verification, and mPIN Reset.
 
-// === Configuration ===
 $DIGIMATE_SECRET_KEY = getenv('DIGIMATE_SECRET_KEY') ?: 'GV@Secure9044';
 $DIGIMATE_ENDPOINT   = getenv('DIGIMATE_SEND_ENDPOINT') ?: 'https://www.apnapayment.com/api/agent/otp/sendOtp';
 $LOG_FILE            = __DIR__ . '/../logs/sms_otp.log';
 $SIMULATE_MODE       = getenv('SIMULATE_DIGIMATE') === '1';
 
-// --- Utility: log helper ---
 function sms_write_log($msg) {
     global $LOG_FILE;
     $ts = date('Y-m-d H:i:s');
     @file_put_contents($LOG_FILE, "[$ts] $msg\n", FILE_APPEND | LOCK_EX);
 }
 
-/**
- * Send OTP via provider or simulate.
- */
 function sms_send_provider($mobile_clean, $otp) {
     global $DIGIMATE_ENDPOINT, $DIGIMATE_SECRET_KEY, $SIMULATE_MODE;
 
@@ -58,9 +52,6 @@ function sms_send_provider($mobile_clean, $otp) {
     ];
 }
 
-/**
- * Generate OTP, store hashed in session, return plain OTP.
- */
 function sms_generate_and_store_otp($mobile_clean, $ttl = 300) {
     if (session_status() !== PHP_SESSION_ACTIVE) session_start();
     $otp = random_int(100000, 999999);
@@ -70,9 +61,6 @@ function sms_generate_and_store_otp($mobile_clean, $ttl = 300) {
     return $otp;
 }
 
-/**
- * Verify stored OTP for a phone.
- */
 function sms_verify_stored_otp($mobile_clean, $otp_given) {
     if (session_status() !== PHP_SESSION_ACTIVE) session_start();
     $hash_key = 'otp_' . $mobile_clean;
@@ -93,9 +81,7 @@ function sms_verify_stored_otp($mobile_clean, $otp_given) {
     return ['success' => false, 'error' => 'invalid_otp'];
 }
 
-// === Endpoint Handler (only when called directly) ===
 if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
-    // JSON response helper
     function json_response($code, $data) {
         http_response_code($code);
         header('Content-Type: application/json');
@@ -145,10 +131,8 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
         if ($v['success']) {
             if (session_status() === PHP_SESSION_NONE) session_start();
 
-            // Default: mark phone as verified (signup / collect_phone)
             $_SESSION['phone_verified'] = $mobile_clean;
 
-            // If caller requested purpose 'reset' -> set separate flag for mPIN reset flow
             if (!empty($input['purpose']) && $input['purpose'] === 'reset') {
                 $_SESSION['reset_phone_verified'] = $mobile_clean;
             }
@@ -158,8 +142,6 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
             json_response(400, $v);
         }
     }
-
-    // ---- INVALID ----
     else {
         json_response(400, ['success' => false, 'error' => 'invalid_action']);
     }

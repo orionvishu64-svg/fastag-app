@@ -4,207 +4,176 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Create an Account</title>
-
-    <!-- Bootstrap 5 -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-
-    <style>
-      body {
-        background: #f5f7fb;
-      }
-      .auth-card {
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-      }
-      .ok {
-        color: #16a34a;
-        font-weight: 600;
-        font-size: 0.9rem;
-        margin-left: 8px;
-      }
-      .toggle-btn {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: none;
-        border: none;
-        color: #2563eb;
-        font-weight: 500;
-        cursor: pointer;
-      }
-      .input-wrapper {
-        position: relative;
-      }
-      .divider {
-        text-align: center;
-        margin: 1.5rem 0;
-        color: #6b7280;
-      }
-      .google-btn {
-        display: flex;
-        justify-content: center;
-      }
-    </style>
+    <link rel="stylesheet" href="/public/css/signup.css" />
   </head>
-
   <body>
-    <div
-      class="container min-vh-100 d-flex align-items-center justify-content-center"
-    >
-      <div class="row w-100 justify-content-center">
-        <div class="col-lg-6 col-md-8">
-          <!-- Logo -->
-          <div class="text-center mb-4">
-            <img
-              src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png"
-              alt="ApnaPayment"
-              style="max-width: 180px"
-            />
-          </div>
+    <div class="auth-layout">
+      <div class="nav-logo">
+        <img
+          src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png"
+          alt="ApnaPayment"
+        />
+      </div>
+      <div class="form-column">
+        <div class="overlay">
+          <form id="signupForm" class="auth-card" autocomplete="off">
+            <h2 class="header">Create an Account</h2>
 
-          <!-- Card -->
-          <div class="card auth-card p-4 p-md-5">
-            <form id="signupForm" autocomplete="off">
-              <h3 class="text-center fw-bold mb-4">Create an Account</h3>
+            <div class="row">
+              <label>Full Name</label>
+              <input name="name" type="text" required placeholder="Your name" />
+            </div>
 
-              <!-- Name -->
-              <div class="mb-3">
-                <label class="form-label">Full Name</label>
-                <input
-                  name="name"
-                  type="text"
-                  class="form-control"
-                  required
-                  placeholder="Your name"
-                />
-              </div>
-
-              <!-- Email -->
-              <div class="mb-3">
-                <label class="form-label">Email</label>
-                <div class="d-flex align-items-center">
-                  <input
-                    name="email"
-                    id="emailInput"
-                    type="email"
-                    class="form-control"
-                    required
-                    placeholder="you@example.com"
-                  />
-                </div>
-              </div>
-
-              <!-- Phone -->
-              <div class="mb-3">
-                <label class="form-label">Phone</label>
-                <div class="d-flex align-items-center">
-                  <input
-                    name="phone"
-                    id="phoneInput"
-                    type="tel"
-                    class="form-control"
-                    required
-                    placeholder="10-digit number"
-                  />
-                  <span id="phoneTick" class="ok" style="display: none"
-                    >✓ Verified</span
-                  >
-                </div>
-              </div>
-
-              <div class="mb-3">
-                <button
-                  class="btn btn-outline-primary btn-sm"
-                  id="sendPhoneOtp"
-                  type="button"
-                >
-                  Send Phone OTP
-                </button>
-              </div>
-
-              <div
-                class="mb-3 d-flex align-items-center gap-2"
-                id="phoneOtpRow"
+            <!-- Email -->
+            <div class="row" style="align-items: center">
+              <label>Email</label>
+              <input
+                name="email"
+                id="emailInput"
+                type="email"
+                required
+                placeholder="you@example.com"
+              />
+              <span
+                id="emailTick"
+                class="ok"
+                aria-hidden="true"
                 style="display: none"
+                >✓ Verified</span
               >
+            </div>
+
+            <div class="row">
+              <span class="spacer-label"></span>
+              <button class="small" id="sendEmailOtp" type="button">
+                Send OTP
+              </button>
+            </div>
+
+            <div
+              class="row"
+              id="emailOtpRow"
+              style="display: none; align-items: center"
+            >
+              <label>Email OTP</label>
+              <input
+                id="emailOtp"
+                inputmode="numeric"
+                maxlength="6"
+                pattern="\d{6}"
+                placeholder="6-digit code"
+              />
+              <button class="small" id="verifyEmailOtp" type="button">
+                Verify
+              </button>
+            </div>
+
+            <!-- Phone -->
+            <div class="row" style="align-items: center">
+              <label>Phone</label>
+              <input
+                name="phone"
+                id="phoneInput"
+                type="tel"
+                inputmode="numeric"
+                maxlength="10"
+                pattern="\d{10}"
+                required
+                placeholder="10-digit number"
+              />
+              <span
+                id="phoneTick"
+                class="ok"
+                aria-hidden="true"
+                style="display: none"
+                >✓ Verified</span
+              >
+            </div>
+
+            <div class="row">
+              <span class="spacer-label"></span>
+              <button class="small" id="sendPhoneOtp" type="button">
+                Send OTP
+              </button>
+            </div>
+
+            <div
+              class="row"
+              id="phoneOtpRow"
+              style="display: none; align-items: center"
+            >
+              <label>Phone OTP</label>
+              <input
+                id="phoneOtp"
+                inputmode="numeric"
+                maxlength="6"
+                pattern="\d{6}"
+                placeholder="6-digit code"
+              />
+              <button class="small" id="verifyPhoneOtp" type="button">
+                Verify
+              </button>
+            </div>
+
+            <!-- mPIN -->
+            <div class="row" style="align-items: center">
+              <label>mPIN</label>
+              <div class="input-wrapper" style="flex: 1">
                 <input
-                  id="phoneOtp"
-                  class="form-control"
+                  name="mpin"
+                  id="mpin"
+                  type="password"
                   inputmode="numeric"
                   maxlength="6"
-                  placeholder="6-digit OTP"
+                  pattern="\d{6}"
+                  required
+                  placeholder="6 digits"
                 />
-                <button
-                  class="btn btn-success btn-sm"
-                  id="verifyPhoneOtp"
-                  type="button"
-                >
-                  Verify
+                <button type="button" class="toggle-btn" data-target="mpin">
+                  Show
                 </button>
               </div>
+            </div>
 
-              <!-- MPIN -->
-              <div class="mb-3">
-                <label class="form-label">mPIN</label>
-                <div class="input-wrapper">
-                  <input
-                    name="mpin"
-                    id="mpin"
-                    type="password"
-                    class="form-control"
-                    maxlength="6"
-                    placeholder="6 digits"
-                  />
-                  <button type="button" class="toggle-btn" data-target="mpin">
-                    Show
-                  </button>
-                </div>
+            <div class="row" style="align-items: center">
+              <label>Confirm mPIN</label>
+              <div class="input-wrapper" style="flex: 1">
+                <input
+                  name="mpin_confirm"
+                  id="mpin_confirm"
+                  type="password"
+                  inputmode="numeric"
+                  maxlength="6"
+                  pattern="\d{6}"
+                  required
+                  placeholder="Repeat mPIN"
+                />
+                <button
+                  type="button"
+                  class="toggle-btn"
+                  data-target="mpin_confirm"
+                >
+                  Show
+                </button>
               </div>
+            </div>
 
-              <div class="mb-4">
-                <label class="form-label">Confirm mPIN</label>
-                <div class="input-wrapper">
-                  <input
-                    name="mpin_confirm"
-                    id="mpin_confirm"
-                    type="password"
-                    class="form-control"
-                    maxlength="6"
-                    placeholder="Repeat mPIN"
-                  />
-                  <button
-                    type="button"
-                    class="toggle-btn"
-                    data-target="mpin_confirm"
-                  >
-                    Show
-                  </button>
-                </div>
-              </div>
+            <button type="submit">Sign Up</button>
+            <div id="msg" class="err" role="status" aria-live="polite"></div>
 
-              <button type="submit" class="btn btn-primary w-100 py-2">
-                Sign Up
-              </button>
+            <div class="divider">or</div>
 
-              <div id="msg" class="text-danger text-center mt-3"></div>
+            <!-- Google button renders here -->
+            <div id="google-signup" class="google-btn"></div>
 
-              <div class="divider">or</div>
-
-              <div id="google-signup" class="google-btn mb-3"></div>
-
-              <div class="text-center">
-                Already have an account?
-                <a href="index.html" class="fw-semibold">Sign In</a>
-              </div>
-            </form>
-          </div>
+            <div class="footer-links">
+              Already have an account? <a href="index.html">Sign In</a>
+            </div>
+          </form>
         </div>
       </div>
     </div>
+
     <script
       src="https://accounts.google.com/gsi/client"
       async
@@ -212,7 +181,6 @@
       onload="initGoogle()"
     ></script>
     <script src="/public/js/google-auth.js"></script>
-
     <script>
       const $ = (s) => document.querySelector(s);
       const $$ = (s) => Array.from(document.querySelectorAll(s));
@@ -225,6 +193,9 @@
         return d.length === 10 ? d : "";
       }
 
+      $("#emailInput").addEventListener("input", () => {
+        $("#emailTick").style.display = "none";
+      });
       $("#phoneInput").addEventListener("input", () => {
         $("#phoneTick").style.display = "none";
       });
@@ -251,6 +222,65 @@
           return { ok: response.ok, json: null, text };
         }
       }
+
+      // ---- Email OTP send/verify ----
+      $("#sendEmailOtp").onclick = async () => {
+        say("");
+        const email = $("#emailInput").value.trim();
+        if (!email) return say("Enter your email first");
+        try {
+          const res = await fetch("/config/email_otp.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ action: "send", email }),
+          });
+          const parsed = await safeJson(res);
+          if (!parsed.ok) {
+            return say(
+              parsed.json?.error || parsed.text || "Failed to send email OTP"
+            );
+          }
+          const d = parsed.json;
+          if (!d) return say("Server returned invalid response");
+          if (!d.success) return say(d.error || "Failed to send email OTP");
+          $("#emailOtpRow").style.display = "flex";
+          $("#emailOtp").focus();
+        } catch (err) {
+          console.error(err);
+          say("Network error sending email OTP");
+        }
+      };
+
+      $("#verifyEmailOtp").onclick = async () => {
+        say("");
+        const email = $("#emailInput").value.trim();
+        const code = $("#emailOtp").value.trim();
+        if (!/^\d{6}$/.test(code)) return say("Enter a valid 6-digit OTP");
+        try {
+          const res = await fetch("/config/email_otp.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ action: "verify", email, code }),
+          });
+          const parsed = await safeJson(res);
+          if (!parsed.ok) {
+            return say(
+              parsed.json?.error || parsed.text || "Failed to verify email OTP"
+            );
+          }
+          const d = parsed.json;
+          if (!d) return say("Server returned invalid response");
+          if (!d.success) return say(d.error || "Email OTP invalid");
+          $("#emailTick").style.display = "inline";
+          $("#emailOtpRow").style.display = "none";
+          say("");
+        } catch (err) {
+          console.error(err);
+          say("Network error verifying email OTP");
+        }
+      };
 
       // ---- Phone OTP send/verify ----
       $("#sendPhoneOtp").onclick = async () => {
@@ -330,6 +360,8 @@
         if (mpin !== mpin2) return say("mPINs do not match");
 
         // Ensure OTPs were verified (client-side UI check)
+        if (window.getComputedStyle($("#emailTick")).display === "none")
+          return say("Please verify your email OTP first");
         if (window.getComputedStyle($("#phoneTick")).display === "none")
           return say("Please verify your phone OTP first");
 

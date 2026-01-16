@@ -208,180 +208,198 @@ foreach ($db_history as $dbh) {
     if (!$dup) $merged_history[] = $dbh;
 }
 ?>
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Order #<?= e($order['id']) ?> — Details</title>
-  <link rel="stylesheet" href="/public/css/styles.css">
-  <link rel="stylesheet" href="/public/css/order_details.css">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
+<style>
+body { background:#f5f7fb; }
+.order-hero { background:#fff; border-radius:14px; }
+.timeline-dot {
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:#0d6efd;
+}
+.timeline-line {
+  width:2px;
+  background:#dee2e6;
+}
+.btn-invoice {
+  color: #f59e0b !important;
+  border: 2px solid #f59e0b !important;
+  background-color: transparent !important;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+}
+.btn-invoice:hover,
+.btn-invoice:focus {
+  background-color: #f59e0b !important;
+  color: #111 !important;
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 0.2rem rgba(245, 158, 11, 0.35);
+}
+.btn-invoice:active {
+  background-color: #d97706 !important;
+  border-color: #d97706 !important;
+  color: #111 !important;
+}
+.btn-invoice i {
+  color: inherit !important;
+}
+.btn-invoice:hover {
+  transform: translateY(-1px);
+}
+</style>
 <?php include __DIR__ . '/includes/header.php'; ?>
-<main class="container">
-  <header class="topbar">
-    <div>
-      <h1>Order details</h1>
-      <p class="label">Order- <?= e($order['id']) ?> — <?= e($order['status'] ?? '') ?></p>
+<div class="container py-4">
+
+  <!-- ORDER HEADER -->
+  <div class="order-hero p-4 shadow-sm mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h4 class="mb-1">Order #<?= e($order['order_code'] ?? $order['id']) ?></h4>
+        <small class="text-muted">
+          Placed on <?= date('d M Y, h:i A', strtotime($order['created_at'])) ?>
+        </small>
+      </div>
+      <div class="text-end">
+        <div class="fw-bold fs-5 text-primary">₹ <?= number_format($order['amount'],2) ?></div>
+        <span class="badge bg-success"><?= ucfirst($order['payment_status']) ?></span>
+      </div>
     </div>
-  </header>
+  </div>
 
-  <div class="layout">
-    <section class="left">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <h2>Order summary</h2>
-            <div class="label">
-              Placed on <?= e(date('d M, Y H:i', strtotime($order['created_at'] ?? 'now'))) ?>
-            </div>
-          </div>
-          <div>
-            <div class="label">Order total</div>
-            <div class="big">₹ <?= number_format($order['amount'] ?? 0, 2) ?></div>
-          </div>
-        </div>
+  <div class="row g-4">
 
-        <div class="items">
+    <!-- LEFT -->
+    <div class="col-lg-8">
+
+      <!-- ITEMS -->
+      <div class="card mb-4">
+        <div class="card-header fw-semibold">Order Items</div>
+        <div class="card-body">
           <?php foreach ($items as $it): ?>
-            <div class="item">
-
-              <div class="thumb">
-                <?php if (!empty($it['product_image'])): ?>
-                  <img src="<?= e($it['product_image']) ?>" alt="<?= e($it['product_name']) ?>">
+            <div class="d-flex gap-3 align-items-center border-bottom pb-3 mb-3">
+              <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                   style="width:60px;height:60px">
+                <?php if($it['product_image']): ?>
+                  <img src="<?= e($it['product_image']) ?>" class="img-fluid rounded">
                 <?php else: ?>
-                <?= e(substr($it['product_name'], 0, 2)) ?>
+                  <strong><?= e(substr($it['product_name'],0,2)) ?></strong>
                 <?php endif; ?>
               </div>
 
-      <div class="meta">
-        <div class="title"><?= e($it['product_name']) ?></div>
+              <div class="flex-grow-1">
+                <div class="fw-semibold"><?= e($it['product_name']) ?></div>
+                <small class="text-muted">
+                  Bank: <?= e($it['bank']) ?> · Qty: <?= (int)$it['quantity'] ?>
+                </small>
 
-        <div class="small">
-          Bank <?= e($it['bank']) ?> ·
-          Qty <?= (int)$it['quantity'] ?> ·
-          ₹ <?= number_format($it['price'], 2) ?>
+                <?php if (!empty($seriesByItem[$it['order_item_id']])): ?>
+                  <div class="mt-1">
+                    <?php foreach ($seriesByItem[$it['order_item_id']] as $s): ?>
+                      <small class="text-muted d-block">
+                        Series: <?= e($s['start']) ?> – <?= e($s['end']) ?>
+                      </small>
+                    <?php endforeach; ?>
+                  </div>
+                <?php endif; ?>
+              </div>
+
+              <div class="fw-bold">
+                ₹ <?= number_format($it['price'],2) ?>
+              </div>
+            </div>
+          <?php endforeach; ?>
         </div>
+      </div>
 
-        <?php if (!empty($seriesByItem[$it['order_item_id']])): ?>
-          <div class="series-block">
-            <?php foreach ($seriesByItem[$it['order_item_id']] as $s): ?>
-              <div class="series-row">
-                Series: <?= e($s['start']) ?> – <?= e($s['end']) ?>
+      <!-- SHIPPING + PAYMENT -->
+      <div class="card mb-4">
+        <div class="card-header fw-semibold">Shipping & Payment</div>
+        <div class="card-body">
+          <div class="row mb-2">
+            <div class="col-5 text-muted">Address</div>
+            <div class="col">
+              <?= e(($address['house_no'] ?? '') . ', ' . ($address['city'] ?? '') . ' - ' . ($address['pincode'] ?? '')) ?>
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-5 text-muted">Payment</div>
+            <div class="col"><?= e($order['payment_method']) ?> (<?= e($order['payment_status']) ?>)</div>
+          </div>
+          <div class="row">
+            <div class="col-5 text-muted">Transaction ID</div>
+            <div class="col"><?= e($order['transaction_id'] ?: '—') ?></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRACKING -->
+      <div class="card">
+        <div class="card-header fw-semibold">Tracking Timeline</div>
+        <div class="card-body">
+          <?php if ($awb_missing): ?>
+            <div class="text-muted">Tracking will be available once shipment is created.</div>
+          <?php else: ?>
+            <?php foreach ($merged_history as $h): ?>
+              <div class="d-flex gap-3 mb-3">
+                <div class="timeline-dot mt-2"></div>
+                <div>
+                  <div class="fw-semibold"><?= e($h['status']) ?></div>
+                  <small class="text-muted">
+                    <?= date('d M Y, h:i A', strtotime($h['date'])) ?>
+                    <?= $h['location'] ? ' · '.$h['location'] : '' ?>
+                  </small>
+                  <?php if($h['note']): ?>
+                    <div class="small text-muted"><?= e($h['note']) ?></div>
+                  <?php endif; ?>
+                </div>
               </div>
             <?php endforeach; ?>
-          </div>
-        <?php endif; ?>
+          <?php endif; ?>
+        </div>
       </div>
 
     </div>
-  <?php endforeach; ?>
+
+    <!-- RIGHT -->
+    <div class="col-lg-4">
+      <div class="card sticky-top" style="top:90px">
+        <div class="card-header fw-semibold">Actions</div>
+        <div class="card-body d-grid gap-2">
+
+  <!-- Invoice -->
+<a href="invoice.php?order_id=<?= $order_id ?>"
+   target="_blank"
+   class="btn btn-invoice d-flex align-items-center justify-content-center gap-2">
+  <i class="fa-solid fa-file-invoice"></i>
+  View Invoice
+</a>
+
+  <!-- Support -->
+  <a href="contact.php?order_id=<?= $order_id ?>"
+     class="btn btn-outline-primary d-flex align-items-center justify-content-center gap-2">
+    <i class="fa-solid fa-headset"></i>
+    Contact Support
+  </a>
+
+  <?php if(!$return_exists): ?>
+    <a href="returns.php?order_id=<?= $order_id ?>"
+       class="btn btn-outline-danger d-flex align-items-center justify-content-center gap-2">
+      <i class="fa-solid fa-rotate-left"></i>
+      Request Return
+    </a>
+  <?php endif; ?>
+
+  <a href="track_orders.php"
+     class="btn btn-primary d-flex align-items-center justify-content-center gap-2">
+    <i class="fa-solid fa-arrow-left"></i>
+    Back to Orders
+  </a>
+
 </div>
       </div>
-
-      <div class="card">
-        <h2>Shipping & Payment</h2>
-
-        <div class="summary-list">
-          <div class="row">
-            <span>Delivery address</span>
-            <span>
-              <?= e(($address['house_no'] ?? '').', '.$address['city'].' - '.$address['pincode']) ?>
-            </span>
-          </div>
-
-          <div class="row">
-            <span>Payment</span>
-            <span><?= e($order['payment_method']) ?> · <?= e($order['payment_status']) ?></span>
-          </div>
-
-          <div class="row">
-            <span>Transaction ID</span>
-            <span><?= e($order['transaction_id'] ?: '—') ?></span>
-          </div>
-
-          <div class="row">
-            <span>Shipping charge</span>
-            <span>₹ <?= number_format($order['shipping_amount'] ?? 0,2) ?></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>Shipping reference</h2>
-
-        <div class="summary-list">
-          <div class="row">
-            <span>AWB / Tracking</span>
-            <span>
-              <?= $awb ?: '—' ?>
-              <?php if ($awb): ?>
-                <button class="btn ghost" onclick="copyText('awb')">Copy</button>
-              <?php endif; ?>
-            </span>
-          </div>
-
-          <div class="row">
-            <span>Shipment status</span>
-            <span><?= e($order['shipment_status'] ?? 'Not available') ?></span>
-          </div>
-
-          <div class="row">
-            <span><?php if (!$return_exists): ?>
-              <a class="btn danger" href="returns.php?order_id=<?= $order_id ?>">Request return</a>
-            <?php endif; ?></span>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <h2>Tracking timeline</h2>
-
-        <?php if ($awb_missing): ?>
-          <div class="label">
-            Tracking will be available once the shipment is created.
-          </div>
-        <?php else: ?>
-          <div class="timeline">
-            <?php foreach ($merged_history as $index => $h): ?>
-            <?php $isLatest = ($index === 0); ?>
-              <div class="tl-item <?= $isLatest ? 'latest' : '' ?>">
-                <div class="tl-dot">
-                  <i class="fa-solid <?= $isLatest ? 'fa-truck-fast' : 'fa-circle-check' ?>"></i>
-                </div>
-                <div class="tl-content">
-                  <div class="tl-status"><?= e($h['status']) ?></div>
-                  <div class="tl-time"><?= e(date('d M Y, h:i A', strtotime($h['date']))) ?></div>
-
-                  <?php if ($h['location']): ?>
-                    <div class="tl-location"><?= e($h['location']) ?></div>
-                  <?php endif; ?>
-
-                  <?php if ($h['note']): ?>
-                <div class="tl-note"><?= e($h['note']) ?></div>
-               <?php endif; ?>
-              </div>
-            </div>
-            <?php endforeach; ?>
-          </div>
-        <?php endif; ?>
-      </div>
-    </section>
-    
-    <aside class="right">
-      <div class="card">
-        <h2>Quick actions</h2>
-
-        <div class="actions">
-          <a class="btn" href="contact.php?order_id=<?= $order_id ?>">Contact support</a>
-
-          <a class="btn primary" href="track_orders.php">Back to orders</a>
-        </div>
-      </div>
-    </aside>
+    </div>
   </div>
-</main>
+</div>
 <script>
 function copyText(id){
   const el = document.getElementById(id);
@@ -390,6 +408,3 @@ function copyText(id){
   alert('Copied');
 }
 </script>
-  <script src="/public/js/script.js"></script>
-</body>
-</html>

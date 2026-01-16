@@ -70,82 +70,176 @@ $shipping = isset($order['shipping_amount']) ? (float)$order['shipping_amount'] 
 $grand = $totalAmount + $shipping;
 ?>
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Invoice #<?php echo esc($order['id']); ?></title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="stylesheet" href="/public/css/styles.css">
-  <link rel="stylesheet" href="public/css/invoice.css" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <title>Invoice #<?= esc($order['id']) ?></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: #f4f6f9;
+    }
+
+    .invoice-card {
+      border-radius: 14px;
+      border: none;
+    }
+
+    .company-logo {
+      max-height: 48px;
+    }
+
+    .invoice-title {
+      font-weight: 700;
+      letter-spacing: .5px;
+    }
+
+    .section-title {
+      font-weight: 600;
+      font-size: .9rem;
+      color: #6c757d;
+      margin-bottom: 6px;
+    }
+
+    .table th {
+      background: #f8f9fa;
+      font-weight: 600;
+    }
+
+    .total-box {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    @media print {
+      body { background: #fff !important; }
+      .no-print { display: none !important; }
+      .invoice-card { box-shadow: none !important; }
+    }
+  </style>
 </head>
+
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="company">
-        <h2>Apna Payments Services PVT LTD</h2>
-        <div class="small">A-40, KARDHANI, GOVINDPURA,<br>JAIPUR, RAJASTHAN, 302012  • GSTIN: 08AAVCA0650L1ZA</div>
-      </div>
-      <div class="meta">
-        <div><strong>Invoice</strong></div>
-        <div>Invoice #: <strong><?php echo esc($order['id']); ?></strong></div>
-        <div>Date: <?php echo esc($order['created_at'] ?? date('Y-m-d H:i:s')); ?></div>
-        <div class="small">Order #: <?php echo esc($order['id']); ?></div>
-      </div>
-    </div>
+<div class="container my-5">
+  <div class="card shadow-sm invoice-card">
+    <div class="card-body p-4 p-md-5">
 
-    <div style="margin-top:16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
-      <div style="flex:1;min-width:220px">
-        <h4 style="margin:0 0 6px 0">Billed To</h4>
-        <div><?php echo esc($order['customer_name'] ?? ''); ?></div>
-        <div class="small"><?php echo esc($order['customer_email'] ?? ''); ?></div>
-        <?php if(!empty($order['customer_phone'])): ?><div class="small"><?php echo esc($order['customer_phone']); ?></div><?php endif; ?>
-      </div>
+      <!-- HEADER -->
+      <div class="row align-items-center mb-4">
+        <div class="col-md-7 d-flex align-items-center gap-3">
+          <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200Black.png"
+               alt="Apna Payments"
+               class="company-logo">
+          <div>
+            <h5 class="mb-1 fw-bold">Apna Payments Services Pvt Ltd</h5>
+            <div class="text-muted small">
+              A-40, Kardhani, Govindpura<br>
+              Jaipur, Rajasthan – 302012<br>
+              GSTIN: 08AAVCA0650L1ZA
+            </div>
+          </div>
+        </div>
 
-      <div style="flex:1;min-width:220px">
-        <h4 style="margin:0 0 6px 0">Shipping</h4>
-        <?php if(!empty($order['house_no'])): ?><div><?php echo esc($order['house_no']); ?></div><?php endif; ?>
-        <?php if(!empty($order['landmark'])): ?><div class="small"><?php echo esc($order['landmark']); ?></div><?php endif; ?>
-        <?php if(!empty($order['city']) || !empty($order['pincode'])): ?><div class="small"><?php echo esc($order['city'] ?? '') . ' - ' . esc($order['pincode'] ?? ''); ?></div><?php endif; ?>
-        <?php if(!empty($order['awb'])): ?><div style="margin-top:8px"><strong>AWB:</strong> <?php echo esc($order['awb']); ?></div><?php endif; ?>
-        <?php if(!empty($order['order_status'])): ?><div class="small">Status: <?php echo esc($order['order_status']); ?></div><?php endif; ?>
+        <div class="col-md-5 text-md-end mt-4 mt-md-0">
+          <h4 class="invoice-title mb-2">INVOICE</h4>
+          <div class="small">Invoice #: <strong><?= esc($order['id']) ?></strong></div>
+          <div class="small">Date: <?= esc($order['created_at']) ?></div>
+          <div class="small">Order #: <?= esc($order['id']) ?></div>
+        </div>
       </div>
 
-      <div style="min-width:200px">
-        <h4 style="margin:0 0 6px 0">Payment</h4>
-        <div><?php echo esc(ucfirst($order['payment_method'] ?? '')); ?></div>
-        <div class="small">Payment status: <?php echo esc($order['payment_status'] ?? ''); ?></div>
+      <hr class="my-4">
+
+      <!-- INFO -->
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <div class="section-title">BILLED TO</div>
+          <div class="fw-semibold"><?= esc($order['customer_name']) ?></div>
+          <div class="small text-muted"><?= esc($order['customer_email']) ?></div>
+          <?php if(!empty($order['customer_phone'])): ?>
+            <div class="small text-muted"><?= esc($order['customer_phone']) ?></div>
+          <?php endif; ?>
+        </div>
+
+        <div class="col-md-4 mt-3 mt-md-0">
+          <div class="section-title">SHIPPING ADDRESS</div>
+          <div><?= esc($order['house_no']) ?></div>
+          <div class="small text-muted"><?= esc($order['landmark']) ?></div>
+          <div class="small text-muted"><?= esc($order['city']) ?> - <?= esc($order['pincode']) ?></div>
+          <?php if(!empty($order['awb'])): ?>
+            <div class="small mt-1"><strong>AWB:</strong> <?= esc($order['awb']) ?></div>
+          <?php endif; ?>
+        </div>
+
+        <div class="col-md-4 mt-3 mt-md-0">
+          <div class="section-title">PAYMENT</div>
+          <div><?= esc(ucfirst($order['payment_method'])) ?></div>
+          <div class="small text-muted">Status: <?= esc($order['payment_status']) ?></div>
+          <div class="small text-muted">Order Status: <?= esc($order['order_status']) ?></div>
+        </div>
       </div>
-    </div>
 
-    <table>
-      <thead><tr><th>Product</th><th>Bank</th><th>Qty</th><th>Price</th><th class="right">Total</th></tr></thead>
-      <tbody>
-        <?php if(!empty($items)): foreach($items as $it): ?>
-          <tr>
-            <td><?php echo esc($it['product_name']); ?></td>
-            <td><?php echo esc($it['bank'] ?? ''); ?></td>
-            <td><?php echo (int)$it['quantity']; ?></td>
-            <td>₹<?php echo number_format((float)$it['price'],2); ?></td>
-            <td class="right">₹<?php echo number_format(((int)$it['quantity'])*(float)$it['price'],2); ?></td>
-          </tr>
-        <?php endforeach; else: ?>
-          <tr><td colspan="5">No items found for this order.</td></tr>
-        <?php endif; ?>
-      </tbody>
-    </table>
+      <!-- ITEMS -->
+      <div class="table-responsive mb-4">
+        <table class="table table-bordered align-middle">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Bank</th>
+              <th class="text-center">Qty</th>
+              <th class="text-end">Price</th>
+              <th class="text-end">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+          <?php foreach ($items as $it): ?>
+            <tr>
+              <td><?= esc($it['product_name']) ?></td>
+              <td><?= esc($it['bank']) ?></td>
+              <td class="text-center"><?= (int)$it['quantity'] ?></td>
+              <td class="text-end">₹<?= number_format($it['price'],2) ?></td>
+              <td class="text-end">₹<?= number_format($it['price']*$it['quantity'],2) ?></td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
 
-    <div class="totals">
-      <table>
-        <tr><td class="small">Subtotal</td><td class="right">₹<?php echo number_format($totalAmount,2); ?></td></tr>
-        <tr><td class="small">Shipping</td><td class="right">₹<?php echo number_format($shipping,2); ?></td></tr>
-        <tr><th>Total</th><th class="right">₹<?php echo number_format($grand,2); ?></th></tr>
-      </table>
-    </div>
+      <!-- TOTAL -->
+      <div class="row justify-content-end">
+        <div class="col-md-5">
+          <div class="total-box">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Subtotal</span>
+              <span>₹<?= number_format($totalAmount,2) ?></span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted">Shipping</span>
+              <span>₹<?= number_format($shipping,2) ?></span>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between fw-bold fs-5">
+              <span>Total</span>
+              <span>₹<?= number_format($grand,2) ?></span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <div style="margin-top:12px" class="print-hide">
-      <a class="print-btn" href="javascript:window.print()">Print Invoice</a>
+      <!-- ACTION -->
+      <div class="text-end mt-4 no-print">
+        <button onclick="window.print()" class="btn btn-primary px-4">
+          🖨 Print Invoice
+        </button>
+      </div>
+
     </div>
   </div>
+</div>
 </body>
 </html>

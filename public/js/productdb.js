@@ -1,12 +1,6 @@
-/* /public/js/productdb.js — rewritten
- * - Fetches products from /get_products.php
- * - Normalizes fields (incl. IMAGE → LOGO mapping)
- * - Session cache (load + save) for unfiltered lists
- * - Exposes: ProductDB.getAll(opts), ProductDB.getById(id), ProductDB.search(q), ProductDB.clearCache()
- */
-
+/* /public/js/productdb.js */
 const ProductDB = (function () {
-  const CACHE_KEY = '__productdb_cache';
+  const CACHE_KEY = "__productdb_cache";
   let cache = null;
   let lastFetchedAt = 0;
 
@@ -27,14 +21,14 @@ const ProductDB = (function () {
 
   // Fetch JSON with basic error handling
   async function safeFetchJson(url, opts = {}) {
-    const res = await fetch(url, { credentials: 'include', ...opts });
+    const res = await fetch(url, { credentials: "include", ...opts });
     if (!res.ok) {
-      const text = await res.text().catch(() => '');
+      const text = await res.text().catch(() => "");
       throw new Error(`Network error: ${res.status} ${text}`);
     }
     const json = await res.json();
     if (!json || json.success === false) {
-      throw new Error(json?.message || 'Invalid server response');
+      throw new Error(json?.message || "Invalid server response");
     }
     return json;
   }
@@ -42,43 +36,45 @@ const ProductDB = (function () {
   // Build URL for /config/get_products.php with optional params
   function buildProductsUrl({ bank, category, q, limit } = {}) {
     const params = new URLSearchParams();
-    if (bank) params.append('bank', bank);
-    if (category) params.append('category', category);
-    if (q) params.append('q', q);
-    if (limit) params.append('limit', String(limit));
+    if (bank) params.append("bank", bank);
+    if (category) params.append("category", category);
+    if (q) params.append("q", q);
+    if (limit) params.append("limit", String(limit));
     const qs = params.toString();
-    return '/../config/get_products.php' + (qs ? `?${qs}` : '');
+    return "/../config/get_products.php" + (qs ? `?${qs}` : "");
   }
 
   // Turn any image-ish column into a usable web URL
   function normalizeLogo(row) {
-    const candidate = row.logo || row.image || row.image_url || row.image_path || '';
-    if (!candidate) return '';
+    const candidate =
+      row.logo || row.image || row.image_url || row.image_path || "";
+    if (!candidate) return "";
     // Absolute (http/https or protocol-relative) — leave as-is
-    if (/^https?:\/\//i.test(candidate) || candidate.startsWith('//')) return candidate;
+    if (/^https?:\/\//i.test(candidate) || candidate.startsWith("//"))
+      return candidate;
     // Ensure web-rooted path (leading slash)
-    return candidate.startsWith('/') ? candidate : '/' + candidate;
+    return candidate.startsWith("/") ? candidate : "/" + candidate;
   }
 
   // Normalize product fields and attach `logo`
   function normalizeProducts(rows = []) {
-    return rows.map(r => ({
+    return rows.map((r) => ({
       id: r.id != null ? Number(r.id) : null,
-      name: r.name || '',
-      description: r.description || '',
+      name: r.name || "",
+      description: r.description || "",
       price: r.price != null ? Number(r.price) : 0,
-      bank: r.bank || '',
-      category: r.category || '',
-      product_id: r.product_id || '',
+      bank: r.bank || "",
+      category: r.category || "",
+      product_id: r.product_id || "",
       activation: r.activation != null ? Number(r.activation) : 0,
       balance: r.balance != null ? Number(r.balance) : 0,
       security: r.security != null ? Number(r.security) : 0,
       tagcost: r.tagcost != null ? Number(r.tagcost) : 0,
-      payout: r.payout || '',
+      payout: r.payout || "",
       // keep original fields
       ...r,
       // critical: provide a reliable image src for the frontend
-      logo: normalizeLogo(r)
+      logo: normalizeLogo(r),
     }));
   }
 
@@ -90,7 +86,13 @@ const ProductDB = (function () {
      * opts: { force, bank, category, q, limit }
      */
     async getAll(opts = {}) {
-      const { force = false, bank = null, category = null, q = null, limit = 0 } = opts;
+      const {
+        force = false,
+        bank = null,
+        category = null,
+        q = null,
+        limit = 0,
+      } = opts;
 
       // If unfiltered and we have a hydrated cache, return it unless forced
       const unfiltered = !bank && !category && !q;
@@ -105,7 +107,10 @@ const ProductDB = (function () {
         cache = rows;
         lastFetchedAt = Date.now();
         try {
-          sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: lastFetchedAt, data: cache }));
+          sessionStorage.setItem(
+            CACHE_KEY,
+            JSON.stringify({ ts: lastFetchedAt, data: cache })
+          );
         } catch (_) {}
       }
 
@@ -118,15 +123,21 @@ const ProductDB = (function () {
     async getById(id) {
       const key = String(id);
       if (cache) {
-        const found = cache.find(p => String(p.id) === key || String(p.product_id) === key);
+        const found = cache.find(
+          (p) => String(p.id) === key || String(p.product_id) === key
+        );
         if (found) return found;
       }
       // fallback: search on server
       try {
         const rows = await this.getAll({ force: true, q: key, limit: 50 });
-        return rows.find(p => String(p.id) === key || String(p.product_id) === key) || null;
+        return (
+          rows.find(
+            (p) => String(p.id) === key || String(p.product_id) === key
+          ) || null
+        );
       } catch (err) {
-        console.error('ProductDB.getById error', err);
+        console.error("ProductDB.getById error", err);
         return null;
       }
     },
@@ -145,8 +156,10 @@ const ProductDB = (function () {
     clearCache() {
       cache = null;
       lastFetchedAt = 0;
-      try { sessionStorage.removeItem(CACHE_KEY); } catch (_) {}
-    }
+      try {
+        sessionStorage.removeItem(CACHE_KEY);
+      } catch (_) {}
+    },
   };
 })();
 

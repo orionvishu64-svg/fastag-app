@@ -15,7 +15,6 @@ function dbg($s) {
     @file_put_contents('/tmp/contact_replies_debug.log', date('[Y-m-d H:i:s] ').$s."\n", FILE_APPEND);
 }
 
-// Bootstrap DB - adjust path if your db.php is elsewhere
 $dbPath = __DIR__ . '/db.php';
 if (!file_exists($dbPath)) {
     respond_json(['success' => false, 'message' => 'Server error: DB bootstrap missing'], 500);
@@ -25,28 +24,23 @@ if (!isset($pdo) || !($pdo instanceof PDO)) {
     respond_json(['success' => false, 'message' => 'Server error: DB unavailable'], 500);
 }
 
-// Accept only POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     respond_json(['success' => false, 'message' => 'Invalid method'], 405);
 }
 
-// Read POST (form or fetch)
 $raw = $_POST;
 $ticket_id = isset($raw['ticket_id']) ? trim((string)$raw['ticket_id']) : null;
 $query_id  = isset($raw['query_id'])  ? intval($raw['query_id']) : 0;
 $message   = isset($raw['message']) ? trim((string)$raw['message']) : (isset($raw['reply_text']) ? trim((string)$raw['reply_text']) : '');
 $local_id  = isset($raw['local_id']) ? trim((string)$raw['local_id']) : null;
 
-// Basic validation
 if ($message === '') respond_json(['success' => false, 'message' => 'Empty message'], 400);
 
-// message length cap
 $MAX = 5000;
 if (mb_strlen($message) > $MAX) {
     $message = mb_substr($message, 0, $MAX);
 }
 
-// Resolve contact_query_id
 $contact_query_id = 0;
 try {
     if ($query_id > 0) {
@@ -64,7 +58,6 @@ try {
 
 if ($contact_query_id <= 0) respond_json(['success' => false, 'message' => 'Invalid ticket/query id'], 400);
 
-// Determine sender from session (regular user)
 $is_admin = 0;
 $sender_name = null;
 $sender_email = null;
@@ -72,16 +65,12 @@ $user_id = null;
 
 if (!empty($_SESSION['user_id'])) {
     $user_id = (int)$_SESSION['user_id'];
-    // prefer explicit session values if available
     $sender_name = $_SESSION['user_name'] ?? $_SESSION['name'] ?? null;
     $sender_email = $_SESSION['user_email'] ?? $_SESSION['email'] ?? null;
 } else {
-    // anonymous user allowed? You may reject if you want login enforced
-    // leave sender details null for anonymous
     $user_id = null;
 }
 
-// Idempotency: if local_id is provided, try to find an existing row
 try {
     $pdo->beginTransaction();
 
@@ -96,7 +85,6 @@ try {
         }
     }
 
-    // Short duplicate protection for users: same text within 3 seconds
     if ($existingId === null) {
         $dupStmt = $pdo->prepare("SELECT id FROM contact_replies
             WHERE contact_query_id = :cqid AND user_id = :uid AND reply_text = :msg
@@ -117,7 +105,6 @@ try {
     if ($existingId !== null) {
         $inserted_id = $existingId;
     } else {
-        // Insert - ensure admin_identifier is NULL for user-side writes
         $sql = 'INSERT INTO contact_replies
           (contact_query_id, user_id, is_admin, admin_identifier, sender_name, sender_email, reply_text, replied_at, local_id)
           VALUES (:contact_query_id, :user_id, :is_admin, NULL, :sender_name, :sender_email, :reply_text, :replied_at, :local_id)';
@@ -151,7 +138,6 @@ try {
     respond_json(['success' => false, 'message' => 'Server exception', 'error' => $e->getMessage()], 500);
 }
 
-// Best-effort socket emit with a normalized payload
 try {
     $helper = '/opt/bitnami/apache/htdocs/fastag_website/config/socket_emit.php';
     if (file_exists($helper)) {
@@ -177,7 +163,6 @@ try {
     dbg("socket_emit exception: " . $e->getMessage());
 }
 
-// Return success with id and local_id (for client idempotency)
 respond_json([
     'success' => true,
     'inserted_id' => $inserted_id,

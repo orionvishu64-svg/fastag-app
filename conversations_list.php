@@ -3,7 +3,6 @@
 require_once __DIR__ . '/config/common_start.php';
 require 'config/db.php';
 
-// Ensure user logged-in (your system uses $_SESSION['user']['id'])
 if (empty($_SESSION['user']['id'])) {
     header("Location: /index.html");
     exit;
@@ -26,54 +25,86 @@ try {
     exit;
 }
 ?>
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>My Conversations</title>
-  <link rel="stylesheet" href="/public/css/styles.css">
-  <link rel="stylesheet" href="/public/css/conversation_list.css">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
-  <?php include __DIR__ . '/includes/header.php'; ?>
-<div class="convo-page">
-  <div class="info-card">
-    <h1>My Conversations</h1>
-    <a href="contact.php">Back to Contact</a>
+
+<?php include __DIR__ . '/includes/header.php'; ?>
+
+<div class="container py-5 bg-light">
+
+  <!-- HEADER CARD -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <h1 class="h4 fw-bold mb-0 text-primary">My Conversations</h1>
+      <a href="contact.php" class="btn btn-outline-secondary">
+        ← Back to Contact
+      </a>
+    </div>
   </div>
 
-  <div class="main-card" aria-live="polite">
-    <table>
-      <thead>
-        <tr>
-          <th>Ticket</th>
-          <th>Subject</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="conversations-body">
-      <?php foreach ($tickets as $t): ?>
-        <?php $cls = ($t['status'] === 'open') ? 'open' : 'closed'; ?>
-        <tr class="<?= $cls ?>" data-contact-query-id="<?= htmlspecialchars($t['id'], ENT_QUOTES, 'UTF-8') ?>">
-          <td data-label="Ticket"><?= htmlspecialchars($t['ticket_id'], ENT_QUOTES, 'UTF-8') ?></td>
-          <td data-label="Subject"><?= htmlspecialchars($t['subject'], ENT_QUOTES, 'UTF-8') ?></td>
-          <td data-label="Actions">
-            <div class="actions-wrap">
-            <?php if ($t['status'] === 'open'): ?>
-              <a class="btn btn-open" href="conversation.php?ticket_id=<?= urlencode($t['ticket_id']) ?>" style="white-space:nowrap;">Open</a>
-            <?php else: ?>
-              <a class="btn btn-view" href="conversation.php?ticket_id=<?= urlencode($t['ticket_id']) ?>" style="white-space:nowrap;">View</a>
-            <?php endif; ?>
-            </div>
-          </td>
-        </tr>
-      <?php endforeach; ?>
-      </tbody>
-    </table>
+  <!-- TABLE CARD -->
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Ticket</th>
+              <th>Subject</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+
+          <?php if (empty($tickets)): ?>
+            <tr>
+              <td colspan="3" class="text-center text-muted py-4">
+                No conversations found.
+              </td>
+            </tr>
+          <?php endif; ?>
+
+          <?php foreach ($tickets as $t): ?>
+            <tr>
+              <td>
+                <div class="fw-semibold">
+                  <?= htmlspecialchars($t['ticket_id'], ENT_QUOTES, 'UTF-8') ?>
+                </div>
+                <small class="text-muted">
+                  <?= htmlspecialchars($t['submitted_at'], ENT_QUOTES, 'UTF-8') ?>
+                </small>
+              </td>
+
+              <td>
+                <?= htmlspecialchars($t['subject'], ENT_QUOTES, 'UTF-8') ?>
+                <div>
+                  <?php if ($t['status'] === 'open'): ?>
+                    <span class="badge bg-success">Open</span>
+                  <?php else: ?>
+                    <span class="badge bg-secondary">Closed</span>
+                  <?php endif; ?>
+                </div>
+              </td>
+
+              <td class="text-end">
+                <?php if ($t['status'] === 'open'): ?>
+                  <a href="conversation.php?ticket_id=<?= urlencode($t['ticket_id']) ?>"
+                     class="btn btn-sm btn-primary">
+                    <i class="fa-solid fa-comment-dots me-1"></i>
+                    Open
+                  </a>
+                <?php else: ?>
+                  <a href="conversation.php?ticket_id=<?= urlencode($t['ticket_id']) ?>"
+                     class="btn btn-sm btn-outline-secondary">
+                    <i class="fa-solid fa-eye me-1"></i>
+                    View
+                  </a>
+                <?php endif; ?>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
-<script src="/public/js/script.js"></script>
-</body>
-</html>
