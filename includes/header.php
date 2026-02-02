@@ -17,6 +17,7 @@ $cart_count = isset($_SESSION['cart_count']) ? (int) $_SESSION['cart_count'] : 0
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="/uploads/images/favicon.ico">
 </head>
 <body>
 <nav class="navbar ap-header fixed-top">

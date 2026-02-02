@@ -196,165 +196,191 @@ $csrf_token = $_SESSION['return_csrf_token'];
 
 function money($val) { return '₹ ' . number_format((float)$val, 2); }
 
-?><!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Request Return — Order #<?= e($order['id']) ?></title>
-  <link rel="stylesheet" href="/public/css/styles.css" />
-  <link rel="stylesheet" href="/public/css/order_details.css" />
-  <link rel="stylesheet" href="/public/css/returns.css" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
-  <?php include __DIR__ . '/includes/header.php'; ?>
-  <main class="container">
-    <header class="topbar">
-      <div class="brand">
-        <div>
-          <h1>Request Return</h1>
-          <p class="lead">Order- <?= e($order['order_code']) ?> — <?= e($order['status'] ?? '') ?></p>
+?>
+<?php include __DIR__ . '/includes/header.php'; ?>
+
+<div class="container py-4">
+
+  <!-- HEADER -->
+  <div class="mb-4">
+    <h2 class="fw-bold mb-1">Request Return</h2>
+    <p class="text-muted">
+      Order <strong>#<?= e($order['order_code']) ?></strong> ·
+      Status: <strong><?= e(ucfirst($order['status'])) ?></strong>
+    </p>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- LEFT -->
+    <div class="col-lg-8">
+
+      <!-- ORDER SUMMARY -->
+      <div class="card mb-4">
+        <div class="card-header fw-semibold">Order Summary</div>
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between mb-3">
+            <div>
+              <div class="text-muted small">Placed on</div>
+              <div><?= e(date('d M Y, h:i A', strtotime($order['created_at']))) ?></div>
+            </div>
+            <div class="text-end">
+              <div class="text-muted small">Order Total</div>
+              <div class="fs-5 fw-bold text-primary">
+                <?= money($order['amount']) ?>
+              </div>
+            </div>
+          </div>
+
+          <hr>
+
+          <!-- ITEMS -->
+          <h6 class="fw-semibold mb-3">Items</h6>
+
+          <?php foreach ($items as $it): ?>
+            <div class="d-flex align-items-center border-bottom py-2">
+              <div class="rounded bg-light d-flex align-items-center justify-content-center me-3"
+                   style="width:48px;height:48px;">
+                <strong><?= e(substr($it['product_name'], 0, 2)) ?></strong>
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-semibold"><?= e($it['product_name']) ?></div>
+                <div class="small text-muted">
+                  Bank: <?= e($it['bank']) ?> · Qty: <?= (int)$it['quantity'] ?>
+                </div>
+              </div>
+              <div class="fw-semibold">
+                ₹<?= number_format($it['price'],2) ?>
+              </div>
+            </div>
+          <?php endforeach; ?>
+
         </div>
       </div>
-      <div>
-        <small class="lead">Signed in as <strong><?= e($_SESSION['user']['email'] ?? $_SESSION['user']['name'] ?? 'User') ?></strong></small>
+
+      <!-- SHIPPING & PAYMENT -->
+      <div class="card mb-4">
+        <div class="card-header fw-semibold">Shipping & Payment</div>
+        <div class="card-body">
+
+          <div class="row mb-2">
+            <div class="col-4 text-muted">Address</div>
+            <div class="col">
+              <?= e(($address['house_no'] ?? '') . ', ' . ($address['city'] ?? '') . ' - ' . ($address['pincode'] ?? '')) ?>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-4 text-muted">Payment</div>
+            <div class="col">
+              <?= e($order['payment_method']) ?> (<?= e($order['payment_status']) ?>)
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-4 text-muted">Transaction ID</div>
+            <div class="col"><?= e($order['transaction_id']) ?></div>
+          </div>
+
+        </div>
       </div>
-    </header>
 
-    <div class="layout">
-      <section class="left">
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start">
-            <div>
-              <h2>Order summary</h2>
-              <div class="label">Placed on <?= e(date('d M, Y H:i', strtotime($order['created_at'] ?? 'now'))) ?></div>
-            </div>
-            <div style="text-align:right">
-              <div class="label">Order total</div>
-              <div class="big"><?= money($order['amount'] ?? $order['total'] ?? 0) ?></div>
-            </div>
-          </div>
+      <!-- TRACKING PREVIEW -->
+      <div class="card mb-4">
+        <div class="card-header fw-semibold">Tracking Preview</div>
+        <div class="card-body">
 
-          <hr style="margin:12px 0;border:none;height:1px;background:rgba(0,0,0,0.06)">
-
-          <div class="order-summary">
-            <div class="mini">
-              <h4>Items</h4>
-              <?php if (empty($items)): ?>
-                <div class="label">No items found.</div>
-              <?php else: foreach ($items as $it): ?>
-                <div class="item">
-                  <div class="thumb"><?= e(substr($it['product_name'] ?? '', 0, 2)) ?></div>
-                  <div class="meta">
-                    <div class="title"><?= e($it['product_name'] ?? '') ?></div>
-                    <div class="small label">Bank <?= ($it['bank']) ?> - Qty: <?= (int)($it['quantity'] ?? 0) ?> • <?= '₹ '.number_format($it['price'] ?? 0,2) ?></div>
-                  </div>
+          <?php if (empty($tracking)): ?>
+            <div class="text-muted">No tracking updates available.</div>
+          <?php else: ?>
+            <?php foreach ($tracking as $t): ?>
+              <div class="border-start ps-3 mb-3">
+                <div class="fw-semibold"><?= e($t['event_status'] ?? 'Update') ?></div>
+                <div class="small text-muted">
+                  <?= e($t['location'] ?? '') ?> ·
+                  <?= e($t['occurred_at'] ?? $t['updated_at']) ?>
                 </div>
-              <?php endforeach; endif; ?>
-            </div>
-
-            <div class="mini">
-              <h4>Shipping & Payment</h4>
-              <div class="label">
-                <strong>Address:</strong>
-                <?= e(trim(($address['house_no'] ?? '—') . ' ' . ($address['landmark'] ?? '') . ', ' . ($address['city'] ?? '') . ' - ' . ($address['pincode'] ?? ''))) ?>
-              </div>
-
-              <div style="margin-top:8px" class="label">
-                <strong>Payment:</strong>
-                <?= e($order['payment_method'] ?? '') ?> • <?= e($order['payment_status'] ?? '') ?> • TXN: <?= e($order['transaction_id'] ?? '') ?>
-              </div>
-
-              <div style="margin-top:8px" class="label">
-                <strong>Shipping:</strong> <?= money($order['shipping_amount'] ?? 0) ?>
-              </div>
-
-              <div style="margin-top:12px">
-                <h4>Shipping reference</h4>
-                <div class="label">AWB: <strong id="awb"><?= e($order['awb'] ?? '—') ?></strong></div>
-                <div class="label">Shipment status: <strong><?= e($order['shipment_status'] ?? $order['delhivery_status'] ?? '—') ?></strong></div>
-                <div class="actions" style="margin-top:10px">
-                  <?php if (!empty($order['awb'])): ?>
-                    <button class="btn" onclick="alert('External tracking links have been removed. Use the tracking timeline or contact support for updates.')">Shipment info</button>
-                    <button class="btn" onclick="navigator.clipboard && navigator.clipboard.writeText('<?= e($order['awb']) ?>').then(()=>alert('AWB copied'))">Copy AWB</button>
-                  <?php endif; ?>
-                  <a class="btn secondary" href="invoice.php?order_id=<?= (int)$order['id'] ?>">Download invoice</a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div style="margin-top:16px">
-            <h3>Tracking timeline</h3>
-            <div id="tracking-area" class="timeline">
-              <?php if (empty($tracking)): ?>
-                <div class="label">No tracking updates found.</div>
-              <?php else: foreach ($tracking as $t): ?>
-                <div class="tl-item">
-                  <strong><?= e($t['location'] ?? ($t['event'] ?? '')) ?></strong>
-                  <small class="label"><?= e($t['occurred_at'] ?? $t['updated_at'] ?? '') ?></small>
-                </div>
-              <?php endforeach; endif; ?>
-            </div>
-          </div>
-
-          <div style="margin-top:16px" class="return-form">
-            <?php if ($return_exists): ?>
-              <div class="msg success">
-                A return request already exists for this order.
-                <?php if (!empty($existing_return['id'])): ?>
-                  <div>Return ID: <?= e($existing_return['id']) ?> • Status: <?= e($existing_return['status'] ?? 'requested') ?></div>
-                  <div class="small">Requested at: <?= e($existing_return['created_at'] ?? '') ?></div>
-                  <?php if (!empty($existing_return['reason'])): ?>
-                    <div class="small">Reason: <?= e($existing_return['reason']) ?></div>
-                  <?php endif; ?>
+                <?php if (!empty($t['note'])): ?>
+                  <div class="small text-muted"><?= e($t['note']) ?></div>
                 <?php endif; ?>
               </div>
+            <?php endforeach; ?>
+          <?php endif; ?>
 
-              <div style="margin-top:8px">
-                <a class="btn" href="track_orders.php">Back to orders</a>
-                <a class="btn secondary" href="order_details.php?order_id=<?= (int)$order['id'] ?>">Go to order</a>
+        </div>
+      </div>
+
+      <!-- RETURN FORM -->
+      <div class="card">
+        <div class="card-header fw-semibold">Return Request</div>
+        <div class="card-body">
+
+          <?php if ($return_exists): ?>
+            <div class="alert alert-success">
+              Return already requested.<br>
+              <strong>Status:</strong> <?= e($existing_return['status']) ?>
+            </div>
+
+            <a href="track_orders.php" class="btn btn-primary">
+              Back to Orders
+            </a>
+
+          <?php else: ?>
+            <form id="returnForm">
+
+              <input type="hidden" name="order_id" value="<?= (int)$order['id'] ?>">
+              <input type="hidden" name="csrf_token" value="<?= e($csrf_token) ?>">
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  Reason for return
+                </label>
+                <textarea class="form-control"
+                          name="reason"
+                          rows="4"
+                          required
+                          placeholder="Explain why you want to return this order"></textarea>
               </div>
 
-            <?php else: ?>
-              <form id="returnForm">
-                <input type="hidden" name="order_id" value="<?= (int)$order['id'] ?>">
-                <input type="hidden" name="csrf_token" value="<?= e($csrf_token) ?>">
+              <div class="d-flex gap-2">
+                <button class="btn btn-danger" id="submitBtn">
+                  Submit Return
+                </button>
+                <a href="order_details.php?order_id=<?= (int)$order['id'] ?>"
+                   class="btn btn-outline-secondary">
+                  Cancel
+                </a>
+              </div>
 
-                <div class="field">
-                  <label for="reason">Reason for return <span class="small muted">(required)</span></label>
-                  <textarea id="reason" name="reason" required maxlength="1000" placeholder="Describe why you want to return this order"></textarea>
-                </div>
-
-                <div class="actions">
-                  <button type="submit" class="btn" id="submitBtn">Submit return request</button>
-                  <a href="order_details.php?order_id=<?= (int)$order['id'] ?>" class="btn secondary">Cancel</a>
-                </div>
-
-                <div id="result" style="margin-top:12px"></div>
-              </form>
-            <?php endif; ?>
-          </div>
+              <div id="result" class="mt-3"></div>
+            </form>
+          <?php endif; ?>
 
         </div>
-      </section>
+      </div>
 
-      <aside class="right">
-        <div class="card">
-          <h4>Order info</h4>
-          <div class="label">Order #: <strong><?= e($order['id']) ?></strong></div>
-          <div class="label">Placed: <?= e(date('d M, Y', strtotime($order['created_at'] ?? 'now'))) ?></div>
-          <div class="label">Status: <strong><?= e($order['status'] ?? '') ?></strong></div>
-          <div style="margin-top:10px" class="actions">
-            <a class="btn" href="contact.php?order_id=<?= (int)$order['id'] ?>">Contact support</a>
-          </div>
-        </div>
-      </aside>
     </div>
-  </main>
 
-<script src="/public/js/script.js"></script>
+    <!-- RIGHT -->
+    <div class="col-lg-4">
+      <div class="card sticky-top" style="top:90px">
+        <div class="card-header fw-semibold">Order Info</div>
+        <div class="card-body">
+          <p class="mb-1"><strong>Order #</strong> <?= e($order['id']) ?></p>
+          <p class="mb-1"><strong>Status:</strong> <?= e($order['status']) ?></p>
+          <p class="mb-3"><strong>Placed:</strong> <?= e(date('d M Y', strtotime($order['created_at']))) ?></p>
+
+          <a href="contact.php?order_id=<?= (int)$order['id'] ?>"
+             class="btn btn-outline-primary w-100">
+            Contact Support
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
 <script>
 (function(){
   const form = document.getElementById('returnForm');
@@ -421,5 +447,3 @@ function money($val) { return '₹ ' . number_format((float)$val, 2); }
   });
 })();
 </script>
-</body>
-</html>

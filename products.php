@@ -1,130 +1,122 @@
-<?php
-// products.php
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FASTag Products - Apna Payment Services</title>
-  <link rel="stylesheet" href="/public/css/styles.css" />
-  <link rel="stylesheet" href="/public/css/products.css" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
-  <noscript>
-    <style>
-      .products-section { display:none; }
-      .no-js-warning { margin: 16px 0; padding: 12px; background:#fff3cd; color:#664d03; border-radius:8px; }
-    </style>
-  </noscript>
-</head>
-<body data-page="products">
+<body data-page="products" class="bg-light">
+
 <?php include __DIR__ . '/includes/header.php'; ?>
 
-<main class="container page-products">
+<main class="container py-4">
 
-  <section class="page-header">
-    <h1>FASTag Products</h1>
-    <p><b>Choose from our FASTag products across banks & vehicle categories</b></p>
-    <noscript><div class="no-js-warning">Please enable JavaScript to view products.</div></noscript>
+  <!-- Header -->
+  <section class="text-center mb-4">
+    <h1 class="fw-bold text-primary">FASTag Products</h1>
+    <p class="text-muted fw-semibold">
+      Choose from our FASTag products across banks & vehicle categories
+    </p>
   </section>
 
-  <section class="filters-section">
-    <div class="container">
-      <div class="filters-card">
-        <div class="filters-grid">
-          <!-- Search -->
-          <div class="search-filter">
-            <i class="fas fa-search" aria-hidden="true"></i>
-            <label class="sr-only" for="searchInput">Search products</label>
-            <input type="text" id="searchInput" placeholder="Search products..." />
+  <!-- Filters -->
+  <section class="mb-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="row g-3 align-items-center">
+
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-text bg-white">
+                <i class="fas fa-search text-muted"></i>
+              </span>
+              <input id="searchInput" class="form-control" placeholder="Search products...">
+            </div>
           </div>
 
-          <!-- Bank filter -->
-          <div class="bank-filter">
-            <label class="sr-only" for="bankFilter">Filter by bank</label>
-            <select id="bankFilter" aria-label="Filter by bank">
+          <div class="col-md-3">
+            <select id="bankFilter" class="form-select">
               <option value="all">All Banks</option>
-              <option value="Kotak">Kotak</option>
               <option value="SBI">SBI</option>
               <option value="Bajaj">Bajaj</option>
               <option value="IDFC">IDFC</option>
+              <option value="Kotak">Kotak</option>
             </select>
           </div>
 
-          <!-- Category filter -->
-          <div class="category-filter">
-            <label class="sr-only" for="categoryFilter">Filter by category</label>
-            <select id="categoryFilter" aria-label="Filter by category">
+          <div class="col-md-3">
+            <select id="categoryFilter" class="form-select">
               <option value="all">All Categories</option>
-              <option value="VC4">VC4 - Car/Jeep/Van</option>
-              <option value="VC4max">VC4max - luxury Car/Jeep/Van</option>
+              <option value="VC4">VC4 - Car</option>
               <option value="VC5">VC5 - LCV</option>
               <option value="VC6">VC6 - Bus/Truck</option>
-              <option value="VC7">VC7 - Heavy Vehicle</option>
-              <option value="VC8">VC8 - Construction Vehicle</option>
-              <option value="VC12">VC12 - Mini Bus</option>
-              <option value="VC16">VC16 - Heavy Construction Vehicle</option>
             </select>
           </div>
 
-          <!-- Clear filters button (JS binds to .clear-filters) -->
-          <div class="filters-actions">
-            <button type="button" class="btn clear-filters" aria-label="Clear all filters">
+          <div class="col-12 text-end">
+            <button class="btn btn-outline-secondary clear-filters">
               Clear All Filters
             </button>
           </div>
+
         </div>
       </div>
     </div>
   </section>
 
-  <section class="products-section">
-    <div class="container">
-      <div class="products-header-info">
-        <h2>Available Products</h2>
-        <div class="results-count">
-          <span id="resultsCount">0</span> products found
-        </div>
-      </div>
-
-      <!-- Renderer inserts cards here -->
-      <div id="products-container" class="products-grid" aria-live="polite"></div>
-
-      <!-- Optional legacy modal (kept hidden) -->
-      <div id="productDetailModal" class="product-detail-modal" style="display:none;">
-        <div class="product-detail-content">
-          <div class="product-detail-body"></div>
-        </div>
-      </div>
-
-      <div class="no-results" id="noResults" style="display:none;">
-        <i class="fas fa-search" aria-hidden="true"></i>
-        <h3>No products found</h3>
-        <p>No products match your current filters. Try adjusting your search criteria.</p>
-        <button type="button" class="btn btn-primary clear-filters">Clear All Filters</button>
-      </div>
-    </div>
+  <!-- Products -->
+  <section class="d-flex justify-content-between mb-3">
+    <h4 class="fw-bold">Available Products</h4>
+    <span class="text-muted"><span id="resultsCount">0</span> products found</span>
   </section>
 
-  <!-- Special Notice about Kotak VC4 FASTag -->
-  <section class="special-notice">
-    <div class="container">
-      <div class="notice-card warning">
-        <h3><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Important Notice:</h3>
-        <p><strong>Kotak Bank FASTag</strong> is currently not available for VC4 (Car/Jeep/Van) category.
-        For VC4 vehicles, please choose from SBI, Bajaj, or IDFC banks.
-        Kotak FASTag is available for VC5, VC6, VC7, VC8, and VC12 categories.</p>
-      </div>
-    </div>
-  </section>
+  <!-- 2 per row on mobile -->
+  <div id="products-container" class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4"></div>
+
+  <div id="noResults" class="text-center py-5 d-none">
+    <h5>No products found</h5>
+    <button class="btn btn-primary clear-filters">Clear Filters</button>
+  </div>
 
 </main>
 
-<!-- Defer scripts to ensure DOM is ready -->
-<script src="/public/js/script.js" defer></script>
+<!-- PRODUCT MODAL (BOTTOM SLIDE) -->
+<div class="modal fade" id="productModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg">
+
+      <div class="modal-header modal-gradient">
+        <h5 class="modal-title text-white">Product Details</h5>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row g-4">
+
+          <div class="col-md-5 text-center">
+            <img class="img-fluid rounded bg-light p-3 product-img" style="max-height:260px">
+          </div>
+
+          <div class="col-md-7">
+            <h4 class="fw-bold product-title"></h4>
+            <div class="mb-2 product-bank-cat"></div>
+
+            <div class="border rounded p-3 bg-light mb-3 small">
+              <div>Activation: <strong class="p-activation"></strong></div>
+              <div>Balance: <strong class="p-balance"></strong></div>
+              <div>Security: <strong class="p-security"></strong></div>
+              <div>Tag Cost: <strong class="p-tagcost"></strong></div>
+              <div>Payout: <strong class="p-payout"></strong></div>
+            </div>
+
+            <div class="fs-3 fw-bold text-primary p-price"></div>
+            <p class="text-muted p-desc"></p>
+
+            <div class="d-flex gap-2">
+              <input type="number" class="form-control qty-input" value="1" min="1" style="max-width:80px">
+              <button class="btn btn-primary add-btn w-100">Add to Cart</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
 <script src="/public/js/productdb.js" defer></script>
 <script src="/public/js/products.js" defer></script>
-
 <?php include __DIR__ . '/includes/footer.php'; ?>
-</body>
-</html>

@@ -154,230 +154,299 @@ try {
 $ok  = function_exists('flash_get') ? flash_get('ok') : null;
 $err = function_exists('flash_get') ? flash_get('error') : null;
 ?>
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Your Profile</title>
-  <link rel="stylesheet" href="public/css/styles.css">
-  <link rel="stylesheet" href="public/css/profile.css">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body class="profile-page">
 <?php include __DIR__ . '/includes/header.php'; ?>
+<style>
+  /* ===============================
+   PROFILE INLINE EDITOR STYLES
+================================ */
 
-<main class="container">
-  <section class="profile-section profile-shell">
+/* Editor container */
+.partner-editor,
+.address-editor,
+.partner-editor-inline,
+.address-editor-inline {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
 
-    <?php if ($ok): ?>
-      <div class="flash flash-ok"><?= h($ok) ?></div>
-    <?php endif; ?>
+/* Editor header */
+.editor-head h5 {
+  font-weight: 600;
+  font-size: 1rem;
+}
 
-    <?php if ($err): ?>
-      <div class="flash flash-error"><?= h($err) ?></div>
-    <?php endif; ?>
+/* Form labels */
+.inline-edit-form .form-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #374151;
+}
 
-    <div class="profile-header-row">
-      <div class="card profile-hero-card">
-        <div class="profile-avatar">
-          <?php
-          $initial = '';
-          if (!empty($user['name'])) {
-              $initial = mb_strtoupper(mb_substr($user['name'], 0, 1));
-          } elseif (!empty($user['email'])) {
-              $initial = mb_strtoupper(mb_substr($user['email'], 0, 1));
-          }
-          echo h($initial ?: 'U');
-          ?>
-        </div>
-        <div class="profile-hero-meta">
-          <div class="profile-name-line">
-            <span><?= h($user['name'] ?? 'Your Name') ?></span>
+/* Inputs */
+.inline-edit-form .form-control {
+  border-radius: 8px;
+  font-size: 0.9rem;
+  padding: 8px 10px;
+}
+
+/* Action buttons container */
+.editor-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+/* SAVE button */
+.btn-save {
+  background: linear-gradient(135deg, #0d6efd, #0a58ca);
+  border: none;
+  color: #fff;
+  padding: 8px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-save:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(13, 110, 253, 0.25);
+}
+
+/* CANCEL button */
+.btn-cancel {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background: #e5e7eb;
+}
+
+/* Add buttons (+ Add Partner / Address) */
+#add-partner-btn,
+#add-address-btn {
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 6px 14px;
+}
+
+/* Partner / Address cards actions */
+.card-actions .btn {
+  font-size: 0.75rem;
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+
+/* Partner title */
+.partner-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Sub text */
+.partner-meta,
+.address-card .text-muted {
+  font-size: 0.75rem;
+}
+
+</style>
+<main class="container py-4">
+
+  <?php if ($ok): ?>
+    <div class="alert alert-success fw-semibold"><?= h($ok) ?></div>
+  <?php endif; ?>
+
+  <?php if ($err): ?>
+    <div class="alert alert-danger fw-semibold"><?= h($err) ?></div>
+  <?php endif; ?>
+
+  <!-- ================= PROFILE HEADER ================= -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body d-flex align-items-center gap-4">
+          <div class="rounded-circle bg-warning text-dark fw-bold d-flex align-items-center justify-content-center"
+               style="width:72px;height:72px;font-size:1.6rem;">
+            <?php
+              $initial = '';
+              if (!empty($user['name'])) {
+                  $initial = mb_strtoupper(mb_substr($user['name'], 0, 1));
+              } elseif (!empty($user['email'])) {
+                  $initial = mb_strtoupper(mb_substr($user['email'], 0, 1));
+              }
+              echo h($initial ?: 'U');
+            ?>
           </div>
-          <div class="profile-email-line">
-            <?= h($user['email'] ?? '') ?>
-          </div>
-          <div class="profile-pill-row">
-            <?php if (!empty($user['phone'])): ?>
-              <span class="pill">
-                <span class="icon-dot"></span>
-                Phone: <?= h($user['phone']) ?>
-              </span>
-            <?php endif; ?>
-            <?php if (!empty($user['login_type'])): ?>
-              <span class="pill login-pill">
-                <span class="icon-dot"></span>
-                Login: <?= h(strtoupper($user['login_type'])) ?>
-              </span>
-            <?php endif; ?>
-          </div>
-        </div>
-      </div>
 
-      <div class="card profile-badge-right">
-        <div>
-          <h2>Account Snapshot</h2>
-          <p class="small" style="color:var(--muted);margin-bottom:10px;">
-            Quick overview of your account and profile details.
-          </p>
-        </div>
-        <div class="profile-badge-grid">
           <div>
-            <div class="profile-badge-label">User ID</div>
-            <div class="profile-badge-value">
-              #<?= h($user['id'] ?? $currentUserId ?: '-') ?>
-            </div>
-          </div>
-          <div>
-            <div class="profile-badge-label">Joined</div>
-            <div class="profile-badge-value">
-              <?= !empty($user['created_at']) ? h($user['created_at']) : '—' ?>
-            </div>
-          </div>
-          <div>
-            <div class="profile-badge-label">Partners Linked</div>
-            <div class="profile-badge-value">
-              <?= (int)(count($partners) + count($gv_partners)) ?>
-            </div>
-          </div>
-          <div>
-            <div class="profile-badge-label">Addresses Saved</div>
-            <div class="profile-badge-value">
-              <?= (int)count($addresses) ?>
+            <h5 class="mb-1 fw-bold"><?= h($user['name'] ?? 'Your Name') ?></h5>
+            <div class="text-muted"><?= h($user['email'] ?? '') ?></div>
+
+            <div class="mt-2 d-flex gap-2 flex-wrap">
+              <?php if (!empty($user['phone'])): ?>
+                <span class="badge bg-light text-dark border">📞 <?= h($user['phone']) ?></span>
+              <?php endif; ?>
+              <?php if (!empty($user['login_type'])): ?>
+                <span class="badge bg-primary-subtle text-primary">
+                  🔐 <?= h(strtoupper($user['login_type'])) ?>
+                </span>
+              <?php endif; ?>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="profile-main-grid">
-      <div class="profile-stack">
-        <div class="card addresses-block">
-          <div class="addresses-header">
-            <h3>Saved Addresses</h3>
-            <button id="add-address-btn" class="btn btn-primary btn-sm" type="button">
-              + Add Address
-            </button>
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h6 class="fw-bold mb-3">Account Snapshot</h6>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">User ID</span>
+            <strong>#<?= h($user['id'] ?? '-') ?></strong>
           </div>
-          <p class="small" style="color:var(--muted);margin-bottom:8px;">
-            Manage your saved shipping addresses. Use Edit to update an address
-            or Add Address to save a new one.
-          </p>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Joined</span>
+            <strong><?= h($user['created_at'] ?? '—') ?></strong>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Partners</span>
+            <strong><?= count($partners) + count($gv_partners) ?></strong>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Addresses</span>
+            <strong><?= count($addresses) ?></strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-          <!-- Add-address inline editor host -->
+  <!-- ================= MAIN CONTENT ================= -->
+  <div class="row g-4">
+    <!-- ADDRESSES -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold mb-0">Saved Addresses</h6>
+            <button id="add-address-btn" class="btn btn-sm btn-primary">+ Add</button>
+          </div>
+          <p class="text-muted small mb-3">Manage your shipping addresses.</p>
           <div id="add-address-editor"></div>
-
           <div class="addresses-grid">
-            <?php if (!empty($addresses)): ?>
-              <?php foreach ($addresses as $addr): ?>
-                <div class="address-card"
-                     data-row-id="<?= (int)$addr['id'] ?>"
-                     data-house_no="<?= h($addr['house_no']) ?>"
-                     data-landmark="<?= h($addr['landmark']) ?>"
-                     data-city="<?= h($addr['city']) ?>"
-                     data-pincode="<?= h($addr['pincode']) ?>">
+            <?php if ($addresses): foreach ($addresses as $addr): ?>
+              <div class="address-card border rounded p-3 mb-3"
+                   data-row-id="<?= (int)$addr['id'] ?>">
 
-                  <div class="addr-line">
-                    <strong><?= h($addr['house_no']) ?></strong>
-                  </div>
-
-                  <?php if (!empty($addr['landmark'])): ?>
-                    <div class="addr-line"><?= h($addr['landmark']) ?></div>
-                  <?php endif; ?>
-
-                  <div class="addr-line small">
-                    <?= h($addr['city']) ?>
-                    <?= (!empty($addr['city']) && !empty($addr['pincode'])) ? ' / ' : '' ?>
-                    <?= h($addr['pincode']) ?>
-                  </div>
-
-                  <div class="addr-meta-small">
-                    Added: <?= h($addr['created_at']) ?>
-                  </div>
-
-                  <div class="card-actions" style="margin-top:6px;">
-                    <button class="btn btn-secondary btn-sm edit-address-btn"
-                            type="button"
-                            data-id="<?= (int)$addr['id'] ?>"
-                            data-house_no="<?= h($addr['house_no']) ?>"
-                            data-landmark="<?= h($addr['landmark']) ?>"
-                            data-city="<?= h($addr['city']) ?>"
-                            data-pincode="<?= h($addr['pincode']) ?>">
-                      Edit
-                    </button>
-
-                    <form method="post" onsubmit="return confirm('Delete this address?');">
-                      <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
-                      <input type="hidden" name="action" value="delete_address">
-                      <input type="hidden" name="id" value="<?= (int)$addr['id'] ?>">
-                      <button class="btn btn-danger btn-sm" type="submit">Delete</button>
-                    </form>
-                  </div>
+                <strong><?= h($addr['house_no']) ?></strong>
+                <?php if ($addr['landmark']): ?>
+                  <div><?= h($addr['landmark']) ?></div>
+                <?php endif; ?>
+                <div class="text-muted small">
+                  <?= h($addr['city']) ?> / <?= h($addr['pincode']) ?>
                 </div>
-              <?php endforeach; ?>
-            <?php else: ?>
-              <p class="muted">You have no saved addresses yet.</p>
+                <div class="text-muted small mb-2">
+                  Added: <?= h($addr['created_at']) ?>
+                </div>
+
+                <div class="card-actions d-flex gap-2">
+                  <button class="btn btn-outline-primary btn-sm edit-address-btn"
+                          data-id="<?= (int)$addr['id'] ?>"
+                          data-house_no="<?= h($addr['house_no']) ?>"
+                          data-landmark="<?= h($addr['landmark']) ?>"
+                          data-city="<?= h($addr['city']) ?>"
+                          data-pincode="<?= h($addr['pincode']) ?>">
+                    Edit
+                  </button>
+
+                  <form method="post" onsubmit="return confirm('Delete this address?');">
+                    <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
+                    <input type="hidden" name="action" value="delete_address">
+                    <input type="hidden" name="id" value="<?= (int)$addr['id'] ?>">
+                    <button class="btn btn-outline-danger btn-sm">Delete</button>
+                  </form>
+                </div>
+              </div>
+            <?php endforeach; else: ?>
+              <p class="text-muted">No addresses saved.</p>
             <?php endif; ?>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="profile-stack">
-        <div class="card partners-block">
-          <div class="partners-header">
-            <h3>Saved Partners</h3>
-            <button id="add-partner-btn" class="btn btn-primary btn-sm" type="button">
-              Add Partner
-            </button>
+    <!-- PARTNERS -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold mb-0">Saved Partners</h6>
+            <button id="add-partner-btn" class="btn btn-sm btn-primary">+ Add</button>
           </div>
-          <p class="small" style="color:var(--muted);margin-bottom:8px;">
-            Manage your FASTag partner IDs and GV partner IDs linked to this account.
-          </p>
-
+          <p class="text-muted small mb-3">FASTag & GV Partner IDs.</p>
           <div id="add-partner-editor"></div>
-
           <div class="partners-grid">
             <?php foreach ($gv_partners as $gp): ?>
-              <div class="partner-card"
+              <div class="partner-card border rounded p-3 mb-3"
                    data-row-id="<?= (int)$gp['id'] ?>"
                    data-table="gv_partners">
-                <div class="partner-title">
-                  GV - <?= h($gp['gv_partner_id']) ?>
-                  <?= !empty($gp['name']) ? ' — ' . h($gp['name']) : '' ?>
+
+                <div class="partner-title fw-semibold">
+                  GV – <?= h($gp['gv_partner_id']) ?>
+                  <?= $gp['name'] ? ' — ' . h($gp['name']) : '' ?>
                 </div>
-                <div class="partner-meta">Saved: <?= h($gp['created_at']) ?></div>
-                <div class="card-actions">
-                  <button class="btn btn-secondary edit-partner-btn"
+                <div class="partner-meta text-muted small mb-2">
+                  Saved: <?= h($gp['created_at']) ?>
+                </div>
+
+                <div class="card-actions d-flex gap-2">
+                  <button class="btn btn-outline-primary btn-sm edit-partner-btn"
                           data-id="<?= (int)$gp['id'] ?>"
                           data-table="gv_partners"
                           data-gv_partner_id="<?= h($gp['gv_partner_id']) ?>"
                           data-name="<?= h($gp['name']) ?>">
                     Edit
                   </button>
-
                   <form method="post" onsubmit="return confirm('Delete partner?');">
                     <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
                     <input type="hidden" name="action" value="delete_partner">
                     <input type="hidden" name="id" value="<?= (int)$gp['id'] ?>">
                     <input type="hidden" name="table" value="gv_partners">
-                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                    <button class="btn btn-outline-danger btn-sm">Delete</button>
                   </form>
                 </div>
               </div>
             <?php endforeach; ?>
 
             <?php foreach ($partners as $p): ?>
-              <div class="partner-card"
+              <div class="partner-card border rounded p-3 mb-3"
                    data-row-id="<?= (int)$p['id'] ?>"
                    data-table="partners">
-                <div class="partner-title">
+
+                <div class="partner-title fw-semibold">
                   <?= h($p['name']) ?> — <?= h($p['partner_id']) ?>
-                  <?= !empty($p['bank_name']) ? ' (' . h($p['bank_name']) . ')' : '' ?>
+                  <?= $p['bank_name'] ? ' (' . h($p['bank_name']) . ')' : '' ?>
                 </div>
-                <div class="partner-meta">Saved: <?= h($p['created_at']) ?></div>
-                <div class="card-actions">
-                  <button class="btn btn-secondary edit-partner-btn"
+                <div class="partner-meta text-muted small mb-2">
+                  Saved: <?= h($p['created_at']) ?>
+                </div>
+
+                <div class="card-actions d-flex gap-2">
+                  <button class="btn btn-outline-primary btn-sm edit-partner-btn"
                           data-id="<?= (int)$p['id'] ?>"
                           data-table="partners"
                           data-bank_name="<?= h($p['bank_name']) ?>"
@@ -385,30 +454,23 @@ $err = function_exists('flash_get') ? flash_get('error') : null;
                           data-name="<?= h($p['name']) ?>">
                     Edit
                   </button>
-
                   <form method="post" onsubmit="return confirm('Delete partner?');">
                     <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
                     <input type="hidden" name="action" value="delete_partner">
                     <input type="hidden" name="id" value="<?= (int)$p['id'] ?>">
                     <input type="hidden" name="table" value="partners">
-                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                    <button class="btn btn-outline-danger btn-sm">Delete</button>
                   </form>
                 </div>
               </div>
             <?php endforeach; ?>
-
-            <?php if (empty($partners) && empty($gv_partners)): ?>
-              <p class="muted">No partner IDs saved yet.</p>
-            <?php endif; ?>
           </div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
 </main>
 <script src="public/js/auth-sync.js"></script>
 <script src="public/js/script.js"></script>
 <script src="public/js/profile.js" defer></script>
 <?php include __DIR__ . '/includes/footer.php'; ?>
-</body>
-</html>

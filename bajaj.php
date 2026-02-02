@@ -1,95 +1,172 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bajaj FASTag - Vehicle Categories | Apna Payment Services</title>
-    <link rel="stylesheet" href="/public/css/styles.css">
-    <link rel="stylesheet" href="/public/css/bank-pages.css">
-    <link rel="stylesheet" href="/public/css/products.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body class="bajaj-theme" data-bank="Bajaj">
+<body data-page="products" data-bank="Bajaj" class="bg-light">
+
 <?php include __DIR__ . '/includes/header.php'; ?>
-    <!-- Bank Header -->
-    <section class="bank-header bajaj-theme">
-        <div class="container">
-            <div class="bank-header-content">
-                <div class="bank-logo-large">
-                    <img loading="lazy" src="https://www.easemydeal.com/assets/image/recharge/fastag-recharge-inditab-min.jpg" alt="Bajaj Finserv">
-                </div>
-                <div class="bank-info">
-                    <h1>Bajaj FASTag</h1>
-                    <p>Choose your vehicle category for Bajaj Finserv FASTag. Quick processing and instant digital delivery.</p>
-                    <div class="bank-features">
-                        <div class="feature-item">
-                            <i class="fas fa-clock"></i>
-                            <span>Instant activation</span>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>Digital first</span>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-mobile-alt"></i>
-                            <span>Bajaj Finserv app</span>
-                        </div>
-                    </div>
-                </div>
+
+<main class="container py-4">
+
+  <!-- BANK HEADER -->
+  <section class="mb-5">
+    <div class="card border-0 shadow-sm overflow-hidden">
+      <div class="row g-0 align-items-center">
+
+        <div class="col-md-4 text-center bg-light p-4">
+          <img
+            src="https://www.easemydeal.com/assets/image/recharge/fastag-recharge-inditab-min.jpg"
+            alt="Bajaj FASTag"
+            class="img-fluid"
+            style="max-height:140px"
+            loading="lazy"
+          />
+        </div>
+
+        <div class="col-md-8 p-4">
+          <h1 class="fw-bold text-primary mb-2">Bajaj FASTag</h1>
+          <p class="text-muted mb-3">
+            Choose your vehicle category for Bajaj Finserv FASTag.
+            Quick processing and instant digital delivery.
+          </p>
+
+          <div class="d-flex flex-wrap gap-3 small">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-clock text-primary"></i>
+              <span>Instant activation</span>
             </div>
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-shield-alt text-primary"></i>
+              <span>Digital first</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-mobile-alt text-primary"></i>
+              <span>Bajaj Finserv App</span>
+            </div>
+          </div>
         </div>
-    </section>
 
-    <section class="categories-section bajaj-theme">
-      <div class="container">
-        <div class="products-header-info">
-          <h2>Select Your Vehicle Category</h2>
-        </div>
+      </div>
+    </div>
+  </section>
 
-        <!-- renderer inserts cards here -->
-        <div id="products-container" class="products-grid" aria-live="polite"></div>
+  <!-- PRODUCTS HEADER -->
+  <section class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold mb-0">Select Your Vehicle Category</h4>
+    <span class="text-muted">
+      <span id="resultsCount">0</span> products found
+    </span>
+  </section>
 
-        <div class="no-results" id="noResults" style="display:none;">
-          <i class="fas fa-search"></i>
-          <h3>No products found</h3>
-          <p>No products match your current filters. Try adjusting your search criteria.</p>
-          <button class="btn btn-primary" onclick="clearAllFilters()">Clear All Filters</button>
+  <!-- PRODUCTS GRID (2 per row on mobile) -->
+  <div
+    id="products-container"
+    class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4"
+    aria-live="polite"
+  ></div>
+
+  <!-- NO RESULTS -->
+  <div id="noResults" class="text-center py-5 d-none">
+    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+    <h5>No products found</h5>
+    <p class="text-muted">No Bajaj FASTag products available.</p>
+  </div>
+
+  <!-- BANK BENEFITS -->
+  <section class="mt-5">
+    <h3 class="fw-bold mb-4">Why Choose Bajaj FASTag?</h3>
+
+    <div class="row g-4">
+      <div class="col-md-3 col-6">
+        <div class="card h-100 text-center shadow-sm border-0">
+          <div class="card-body">
+            <i class="fas fa-rocket fa-2x text-primary mb-2"></i>
+            <h6 class="fw-bold">Digital First</h6>
+            <p class="text-muted small mb-0">
+              Fully online FASTag process
+            </p>
+          </div>
         </div>
       </div>
-    </section>
 
-    <!-- Bank Benefits -->
-    <section class="benefits-section bajaj-theme">
-        <div class="container">
-            <h2>Why Choose Bajaj FASTag?</h2>
-            <div class="benefits-grid">
-                <div class="benefit-card">
-                    <i class="fas fa-rocket"></i>
-                    <h3>Digital First</h3>
-                    <p>Completely digital process from application to delivery</p>
-                </div>
-                <div class="benefit-card">
-                    <i class="fas fa-mobile-alt"></i>
-                    <h3>Bajaj Finserv App</h3>
-                    <p>Manage your FASTag through the comprehensive Bajaj Finserv app</p>
-                </div>
-                <div class="benefit-card">
-                    <i class="fas fa-bolt"></i>
-                    <h3>Quick Processing</h3>
-                    <p>Fastest processing time with instant digital delivery</p>
-                </div>
-                <div class="benefit-card">
-                    <i class="fas fa-star"></i>
-                    <h3>Premium Service</h3>
-                    <p>Premium customer service with dedicated support team</p>
-                </div>
-            </div>
+      <div class="col-md-3 col-6">
+        <div class="card h-100 text-center shadow-sm border-0">
+          <div class="card-body">
+            <i class="fas fa-mobile-alt fa-2x text-primary mb-2"></i>
+            <h6 class="fw-bold">Bajaj App</h6>
+            <p class="text-muted small mb-0">
+              Manage FASTag easily
+            </p>
+          </div>
         </div>
-    </section>
-    <script src="/public/js/productdb.js"></script>
-    <script src="/public/js/products.js"></script>
-    <script src="/public/js/bank-pages.js"></script>   <!-- if bank page needs it -->
-    <script src="/public/js/script.js"></script>       <!-- global utilities -->
-    <?php include __DIR__ . '/includes/footer.php'; ?>
-</body>
-</html>
+      </div>
+
+      <div class="col-md-3 col-6">
+        <div class="card h-100 text-center shadow-sm border-0">
+          <div class="card-body">
+            <i class="fas fa-bolt fa-2x text-primary mb-2"></i>
+            <h6 class="fw-bold">Quick Processing</h6>
+            <p class="text-muted small mb-0">
+              Instant digital delivery
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-6">
+        <div class="card h-100 text-center shadow-sm border-0">
+          <div class="card-body">
+            <i class="fas fa-star fa-2x text-primary mb-2"></i>
+            <h6 class="fw-bold">Premium Support</h6>
+            <p class="text-muted small mb-0">
+              Dedicated assistance
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<!-- PRODUCT MODAL (BOTTOM SLIDE) -->
+<div class="modal fade" id="productModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg">
+
+      <div class="modal-header modal-gradient">
+        <h5 class="modal-title text-white">Product Details</h5>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row g-4">
+
+          <div class="col-md-5 text-center">
+            <img class="img-fluid rounded bg-light p-3 product-img" style="max-height:260px">
+          </div>
+
+          <div class="col-md-7">
+            <h4 class="fw-bold product-title"></h4>
+            <div class="mb-2 product-bank-cat"></div>
+
+            <div class="border rounded p-3 bg-light mb-3 small">
+              <div>Activation: <strong class="p-activation"></strong></div>
+              <div>Balance: <strong class="p-balance"></strong></div>
+              <div>Security: <strong class="p-security"></strong></div>
+              <div>Tag Cost: <strong class="p-tagcost"></strong></div>
+              <div>Payout: <strong class="p-payout"></strong></div>
+            </div>
+
+            <div class="fs-3 fw-bold text-primary p-price"></div>
+            <p class="text-muted p-desc"></p>
+
+            <div class="d-flex gap-2">
+              <input type="number" class="form-control qty-input" value="1" min="1" style="max-width:80px">
+              <button class="btn btn-primary add-btn w-100">Add to Cart</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script src="/public/js/productdb.js" defer></script>
+<script src="/public/js/products.js" defer></script>
+<?php include __DIR__ . '/includes/footer.php'; ?>

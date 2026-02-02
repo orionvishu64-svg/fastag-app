@@ -1,96 +1,172 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KOTAK FASTag - Vehicle Categories | Apna Payment Services</title>
-    <link rel="stylesheet" href="/public/css/styles.css">
-    <link rel="stylesheet" href="/public/css/bank-pages.css">
-    <link rel="stylesheet" href="/public/css/products.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body class="kotak-theme" data-bank="Kotak">
+<body data-page="products" data-bank="Kotak" class="bg-light">
+
 <?php include __DIR__ . '/includes/header.php'; ?>
-    <section class="bank-header kotak-theme">
-        <div class="container">
-            <div class="bank-header-content">
-                <div class="bank-logo-large">
-                    <img src="https://images.goodreturns.in/webp/common_dynamic/images/social_share/fastag_18.jpg" alt="Kotak Bank">
-                </div>
-                <div class="bank-info">
-                    <h1>KOTAK FASTag</h1>
-                    <p>Choose your vehicle category for KOTAK FIRST Bank FASTag. Modern banking with customer-first approach.</p>
-                    <div class="bank-features">
-                        <div class="feature-item">
-                            <i class="fas fa-clock"></i>
-                            <span>24-hour activation</span>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>Advanced security</span>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-mobile-alt"></i>
-                            <span>FIRST Mobile app</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
+<main class="container py-4">
+
+  <!-- BANK HEADER -->
+  <section class="mb-5">
+    <div class="card border-0 shadow-sm overflow-hidden">
+      <div class="row g-0 align-items-center">
+
+        <div class="col-md-4 text-center bg-light p-4">
+          <img
+            src="https://images.goodreturns.in/webp/common_dynamic/images/social_share/fastag_18.jpg"
+            alt="Kotak FASTag"
+            class="img-fluid rounded"
+            style="max-height:140px"
+            loading="lazy"
+          />
         </div>
-    </section>
 
-    <!-- Vehicle Categories -->
-    <section class="categories-section kotak-theme">
-      <div class="container">
-        <div class="products-header-info">
-          <h2>Select Your Vehicle Category</h2>
+        <div class="col-md-8 p-4">
+          <h1 class="fw-bold text-danger mb-2">Kotak FASTag</h1>
+          <p class="text-muted mb-3">
+            Choose your vehicle category for Kotak FIRST Bank FASTag.
+            Modern banking with a customer-first approach.
+          </p>
+
+          <div class="d-flex flex-wrap gap-3 small">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-clock text-danger"></i>
+              <span>24-hour activation</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-shield-alt text-danger"></i>
+              <span>Advanced security</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-mobile-alt text-danger"></i>
+              <span>FIRST Mobile app</span>
+            </div>
           </div>
+        </div>
 
-        <!-- renderer inserts cards here -->
-        <div id="products-container" class="products-grid" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
 
-        <div class="no-results" id="noResults" style="display:none;">
-          <i class="fas fa-search"></i>
-          <h3>No products found</h3>
-          <p>No products match your current filters. Try adjusting your search criteria.</p>
-          <button class="btn btn-primary" onclick="clearAllFilters()">Clear All Filters</button>
+  <!-- PRODUCTS HEADER -->
+  <section class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold mb-0">Select Your Vehicle Category</h4>
+    <span class="text-muted">
+      <span id="resultsCount">0</span> products found
+    </span>
+  </section>
+
+  <!-- PRODUCTS GRID -->
+  <div
+    id="products-container"
+    class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4"
+    aria-live="polite"
+  ></div>
+
+  <!-- NO RESULTS -->
+  <div id="noResults" class="text-center py-5 d-none">
+    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+    <h5>No products found</h5>
+    <p class="text-muted">No Kotak FASTag products available.</p>
+  </div>
+
+  <!-- BANK BENEFITS -->
+  <section class="mt-5">
+    <h3 class="fw-bold mb-4">Why Choose Kotak FASTag?</h3>
+
+    <div class="row g-4">
+      <div class="col-md-3 col-6">
+        <div class="card h-100 text-center shadow-sm border-0">
+          <div class="card-body">
+            <i class="fas fa-users fa-2x text-danger mb-2"></i>
+            <h6 class="fw-bold">Customer First</h6>
+            <p class="text-muted small mb-0">
+              Personalized banking experience
+            </p>
+          </div>
         </div>
       </div>
-    </section>
 
-    <!-- Bank Benefits -->
-    <section class="benefits-section kotak-theme">
-        <div class="container">
-            <h2>Why Choose KOTAK FIRST FASTag?</h2>
-            <div class="benefits-grid">
-                <div class="benefit-card">
-                    <i class="fas fa-users"></i>
-                    <h3>Customer First</h3>
-                    <p>Customer-first approach with personalized banking solutions</p>
-                </div>
-                <div class="benefit-card">
-                    <i class="fas fa-mobile-alt"></i>
-                    <h3>FIRST Mobile</h3>
-                    <p>Advanced mobile banking app with comprehensive FASTag management</p>
-                </div>
-                <div class="benefit-card">
-                    <i class="fas fa-cog"></i>
-                    <h3>Modern Technology</h3>
-                    <p>Latest technology stack for seamless digital experience</p>
-                </div>
-                <div class="benefit-card">
-                    <i class="fas fa-headset"></i>
-                    <h3>24/7 Support</h3>
-                    <p>Round-the-clock customer support with quick resolution</p>
-                </div>
-            </div>
+      <div class="col-md-3 col-6">
+        <div class="card h-100 text-center shadow-sm border-0">
+          <div class="card-body">
+            <i class="fas fa-mobile-alt fa-2x text-danger mb-2"></i>
+            <h6 class="fw-bold">FIRST Mobile</h6>
+            <p class="text-muted small mb-0">
+              Manage FASTag digitally
+            </p>
+          </div>
         </div>
-    </section>
+      </div>
 
-    <script src="/public/js/productdb.js"></script>
-<script src="/public/js/products.js"></script>
-<script src="/public/js/bank-pages.js"></script>   <!-- if bank page needs it -->
-<script src="/public/js/script.js"></script>       <!-- global utilities -->
+      <div class="col-md-3 col-6">
+        <div class="card h-100 text-center shadow-sm border-0">
+          <div class="card-body">
+            <i class="fas fa-cog fa-2x text-danger mb-2"></i>
+            <h6 class="fw-bold">Modern Tech</h6>
+            <p class="text-muted small mb-0">
+              Secure & fast platform
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-6">
+        <div class="card h-100 text-center shadow-sm border-0">
+          <div class="card-body">
+            <i class="fas fa-headset fa-2x text-danger mb-2"></i>
+            <h6 class="fw-bold">24/7 Support</h6>
+            <p class="text-muted small mb-0">
+              Dedicated assistance
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<!-- PRODUCT MODAL (BOTTOM SLIDE) -->
+<div class="modal fade" id="productModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg">
+
+      <div class="modal-header modal-gradient">
+        <h5 class="modal-title text-white">Product Details</h5>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row g-4">
+
+          <div class="col-md-5 text-center">
+            <img class="img-fluid rounded bg-light p-3 product-img" style="max-height:260px">
+          </div>
+
+          <div class="col-md-7">
+            <h4 class="fw-bold product-title"></h4>
+            <div class="mb-2 product-bank-cat"></div>
+
+            <div class="border rounded p-3 bg-light mb-3 small">
+              <div>Activation: <strong class="p-activation"></strong></div>
+              <div>Balance: <strong class="p-balance"></strong></div>
+              <div>Security: <strong class="p-security"></strong></div>
+              <div>Tag Cost: <strong class="p-tagcost"></strong></div>
+              <div>Payout: <strong class="p-payout"></strong></div>
+            </div>
+
+            <div class="fs-3 fw-bold text-primary p-price"></div>
+            <p class="text-muted p-desc"></p>
+
+            <div class="d-flex gap-2">
+              <input type="number" class="form-control qty-input" value="1" min="1" style="max-width:80px">
+              <button class="btn btn-primary add-btn w-100">Add to Cart</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script src="/public/js/productdb.js" defer></script>
+<script src="/public/js/products.js" defer></script>
 <?php include __DIR__ . '/includes/footer.php'; ?>
-</body>
-</html>

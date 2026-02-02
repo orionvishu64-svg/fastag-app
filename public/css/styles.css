@@ -176,3 +176,40 @@ footer .fa-instagram:hover {
     width: 100%;
   }
 }
+body {
+  background: linear-gradient(180deg, #f8fafc, #eef2f7);
+}
+
+.product-card {
+  border-radius: 14px;
+  transition: 0.2s;
+}
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+.badge-sbi {
+  background: #38bdf8;
+}
+.badge-bajaj {
+  background: #2563eb;
+}
+.badge-idfc {
+  background: linear-gradient(90deg, #9333ea, #dc2626);
+}
+.badge-kotak {
+  background: #dc2626;
+}
+
+.modal.fade .modal-dialog {
+  transform: translateY(100%);
+  transition: 0.35s;
+}
+.modal.fade.show .modal-dialog {
+  transform: translateY(0);
+}
+
+.modal-gradient {
+  background: linear-gradient(90deg, #2563eb, #1e40af);
+}
