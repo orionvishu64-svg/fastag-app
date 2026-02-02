@@ -11,7 +11,7 @@
 
         <div class="col-md-4 text-center bg-light p-4">
           <img
-            src="https://www.easemydeal.com/assets/image/recharge/fastag-recharge-inditab-min.jpg"
+            src="/uploads/images/bajaj-fastag.png"
             alt="Bajaj FASTag"
             class="img-fluid"
             style="max-height:140px"

@@ -11,7 +11,7 @@
 
         <div class="col-md-4 text-center bg-light p-4">
           <img
-            src="https://images.goodreturns.in/webp/common_dynamic/images/social_share/fastag_18.jpg"
+            src="/uploads/images/kotak-fastag.png"
             alt="Kotak FASTag"
             class="img-fluid rounded"
             style="max-height:140px"

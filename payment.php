@@ -1,144 +1,164 @@
 <?php
-// payment.php (minimal checkout page wired to payment.js)
 require_once __DIR__ . '/config/common_start.php';
 
-// ensure session and CSRF
 if (session_status() === PHP_SESSION_NONE) session_start();
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 $csrf_token = $_SESSION['csrf_token'];
 ?>
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Checkout — Payment</title>
-  <link rel="stylesheet" href="/public/css/styles.css">
-  <link rel="stylesheet" href="/public/css/payment.css">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-  <meta name="csrf-token" content="<?php echo htmlspecialchars($csrf_token, ENT_QUOTES); ?>">
-  <style>html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}body{margin:0}</style>
-</head>
-<body class="payment-page">
+<body class="bg-light payment-page">
+
 <?php include __DIR__ . '/includes/header.php'; ?>
 
-<div class="payment-wrap" style="max-width:1200px;margin:28px auto;padding:18px;">
-  <div style="margin-bottom:12px;">
-    <a href="cart.php" class="btn-outline" style="display:inline-block;padding:8px 12px;border-radius:8px;text-decoration:none;">← Back to cart</a>
-  </div>
+<div class="container my-4">
 
-  <div class="payment-container">
-    <div>
-      <div class="card" id="step1-card" role="region" aria-label="Order and delivery address">
-        <h1 class="checkout-title">Checkout</h1>
-        <div class="checkout-sub">Review items and choose delivery address</div>
+  <a href="cart.php" class="btn btn-outline-secondary mb-3">
+    ← Back to Cart
+  </a>
 
-        <section class="order-summary" aria-labelledby="order-summary-heading">
-          <h3 id="order-summary-heading">Order Summary</h3>
-          <div id="order-items" aria-live="polite"></div>
-          <div class="order-total" style="margin-top:8px;">
-            <div><strong>Subtotal</strong></div>
-            <div>₹ <span id="order-total">0.00</span></div>
-          </div>
-        </section>
+  <div class="row g-4">
 
-        <section id="phone-container" style="display:none; margin-top: 16px;">
-          <h3>Add Your Phone Number</h3>
-          <p class="muted">We need your number to contact you about your order.</p>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input type="tel" id="payment-user-phone" placeholder="10-digit mobile number" maxlength="10" pattern="[6-9][0-9]{9}" inputmode="tel" autocomplete="tel" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border-1)" />
-            <button id="save-phone-btn" class="btn">Save</button>
-          </div>
-        </section>
+    <!-- LEFT -->
+    <div class="col-lg-8">
 
-        <section class="address-section" aria-labelledby="address-heading" style="margin-top:20px;">
-          <h3 id="address-heading" class="deliver_address">Select Delivery Address</h3>
-          <div id="saved-addresses" class="address-list" aria-live="polite" role="listbox"></div>
+      <!-- STEP 1 -->
+      <div class="card shadow-sm mb-4" id="step1-card">
+        <div class="card-body">
 
-          <div style="margin-top:12px;">
-            <button id="add-address-btn" class="btn" aria-expanded="false">+ Add New Address</button>
+          <h3 class="fw-bold mb-1">Checkout</h3>
+          <p class="text-muted mb-3">Review items and choose delivery address</p>
+
+          <!-- ORDER SUMMARY -->
+          <h5>Order Summary</h5>
+          <div id="order-items" class="small text-muted"></div>
+
+          <div class="d-flex justify-content-between fw-bold border-top pt-2 mt-2">
+            <span>Subtotal</span>
+            ₹ <span id="order-total">0.00</span>
           </div>
 
-          <div id="new-address-form" style="display:none;margin-top:12px;">
-            <div class="input-row">
-              <input type="text" id="payment-house-no" placeholder="House / Flat No." />
-              <input type="text" id="payment-landmark" placeholder="Area / Locality" />
-            </div>
-            <div class="input-row">
-              <input type="text" id="payment-city" placeholder="City / Place" />
-              <input type="text" id="payment-pincode" placeholder="Pincode" maxlength="6" inputmode="numeric" />
-            </div>
-            <div style="display:flex;gap:8px;margin-top:6px;">
-              <button id="save-address" class="btn">Save Address</button>
-              <button id="cancel-address" type="button" class="btn-outline">Cancel</button>
+          <!-- PHONE -->
+          <div id="phone-container" class="mt-4" style="display:none;">
+            <h6>Add Phone Number</h6>
+            <div class="input-group">
+              <input type="tel" id="payment-user-phone" class="form-control" placeholder="10-digit mobile">
+              <button id="save-phone-btn" class="btn btn-primary">Save</button>
             </div>
           </div>
 
-          <div id="pincode-ui" style="margin-top:12px;">
-            <div id="pincode-status" aria-live="polite" class="muted">Select address to check pincode</div>
-            <div id="expected-tat" style="font-size:0.95rem;color:var(--muted);margin-top:6px;"></div>
-          </div>
-        </section>
+          <!-- ADDRESS -->
+          <h5 class="mt-4">Select Delivery Address</h5>
+          <div id="saved-addresses" class="d-grid gap-2"></div>
 
-        <div style="margin-top:18px;display:flex;gap:12px;">
-          <button id="proceed-btn" class="btn btn-primary" disabled>Proceed to Payment →</button>
+          <button id="add-address-btn" class="btn btn-outline-primary mt-3">
+            + Add New Address
+          </button>
+
+          <!-- NEW ADDRESS -->
+          <div id="new-address-form" class="mt-3" style="display:none;">
+            <div class="row g-2">
+              <div class="col-md-6">
+                <input id="payment-house-no" class="form-control" placeholder="House / Flat No">
+              </div>
+              <div class="col-md-6">
+                <input id="payment-landmark" class="form-control" placeholder="Area / Landmark">
+              </div>
+              <div class="col-md-6">
+                <input id="payment-city" class="form-control" placeholder="City">
+              </div>
+              <div class="col-md-6">
+                <input id="payment-pincode" class="form-control" placeholder="Pincode">
+              </div>
+            </div>
+
+            <div class="mt-2 d-flex gap-2">
+              <button id="save-address" class="btn btn-success">Save Address</button>
+              <button id="cancel-address" class="btn btn-outline-secondary">Cancel</button>
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <small id="pincode-status" class="text-muted"></small>
+            <div id="expected-tat" class="small text-muted"></div>
+          </div>
+
+          <button id="proceed-btn" class="btn btn-primary w-100 mt-4" disabled>
+            Proceed to Payment →
+          </button>
+
         </div>
       </div>
 
-      <div class="card hidden" id="step2-card" role="region" aria-label="Payment method" style="margin-top:16px;">
-        <h2 class="checkout-title" style="margin-top:0;">Payment</h2>
-        <div class="checkout-sub">Choose a payment method and place your order</div>
+      <!-- STEP 2 -->
+      <div class="card shadow-sm d-none" id="step2-card">
+        <div class="card-body">
 
-        <section style="margin-top:12px;">
-          <h3 style="margin:0 0 8px 0;">Payment Method</h3>
+          <h4 class="fw-bold">Payment</h4>
+          <p class="text-muted">Choose a payment method</p>
 
-          <div class="payment-option" style="margin-top:8px;">
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
-              <input type="radio" name="payment_method" value="upi">
-              <div><strong>UPI Payment</strong><div class="muted" style="font-size:0.9rem">Quick & secure</div></div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" name="payment_method" value="upi">
+            <label class="form-check-label">
+              <strong>UPI</strong> <small class="text-muted">(Google Pay / PhonePe)</small>
             </label>
           </div>
 
-          <div class="payment-option" style="margin-top:8px;">
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
-              <input type="radio" name="payment_method" value="agent-id">
-              <div><strong>Agent ID</strong><div class="muted" style="font-size:0.9rem">Use partner/agent ID (if available)</div></div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" name="payment_method" value="agent-id">
+            <label class="form-check-label">
+              <strong>Agent ID</strong> <small class="text-muted">(Zero amount)</small>
             </label>
-            <div id="agent-id-box" style="display:none; margin-top:8px;">
-              <div style="display:flex;gap:8px;align-items:center;">
-                <input type="text" id="agentid" name="agentid" placeholder="Enter your partner ID" pattern="[A-Za-z0-9]+" title="Only letters and numbers allowed" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border-1)" />
-              </div>
-            </div>
           </div>
-        </section>
 
-        <div id="payment-msg" style="margin-top:12px;color:var(--muted);"></div>
+          <div id="agent-id-box" class="mt-2" style="display:none;">
+            <input id="agentid" class="form-control" placeholder="Enter Agent ID">
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm position-sticky" style="top:90px;">
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between">
+            <strong>Order Summary</strong>
+            <span id="items-count" class="text-muted">0 items</span>
+          </div>
+
+          <div id="right-selected-address" class="small text-muted mt-2">
+            No address selected
+          </div>
+
+          <hr>
+
+          <div class="d-flex justify-content-between">
+            <span>Subtotal</span>
+            ₹ <span id="right-subtotal">0.00</span>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <span>Delivery</span>
+            <span id="right-delivery">—</span>
+          </div>
+
+          <div class="d-flex justify-content-between fw-bold mt-2">
+            <span>Total</span>
+            ₹ <span id="right-total">0.00</span>
+          </div>
+
+        </div>
       </div>
     </div>
 
-    <aside class="checkout-summary">
-      <div class="card summary-card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <strong>Order Summary</strong>
-          <span id="items-count" class="muted">0 items</span>
-        </div>
-
-        <div style="margin-top:6px" id="right-selected-address">No address selected</div>
-
-        <div style="margin-top:12px">
-          <div class="summary-line"><span>Subtotal</span><span>₹ <span id="right-subtotal">0.00</span></span></div>
-          <div class="summary-line"><span>Delivery</span><span id="right-delivery">—</span></div>
-          <div class="summary-line summary-total"><span>Total</span><span>₹ <span id="right-total">0.00</span></span></div>
-        </div>
-      </div>
-    </aside>
   </div>
 </div>
-<noscript>
-</noscript>
-<!-- Backdrop -->
+
+<!-- 🔥 UPI BACKDROP & SHEET (UNCHANGED) -->
 <div id="upi-backdrop" class="upi-backdrop hidden"></div>
 <div id="upi-sheet" class="upi-sheet hidden">
   <div id="upi-confirm-view">
@@ -151,6 +171,7 @@ $csrf_token = $_SESSION['csrf_token'];
     <button id="upiPayNow" class="upi-primary">Pay Now</button>
     <button id="upiCancel" class="upi-secondary">Cancel</button>
   </div>
+
   <div id="upi-timer-view" class="hidden">
     <h3>Complete payment in UPI app</h3>
     <div class="timer-ring">
@@ -160,15 +181,8 @@ $csrf_token = $_SESSION['csrf_token'];
       </svg>
       <div id="timer-text">05:00</div>
     </div>
-    <div id="upi-result" class="hidden">
-      <div id="upi-result-icon"></div>
-      <p id="upi-result-text"></p>
-      <button id="upi-retry-btn" class="upi-primary">Retry Payment</button>
-    </div>
     <p class="upi-muted">Do not close this page</p>
   </div>
 </div>
-<script src="/public/js/script.js"></script>
 <script src="/public/js/payment.js" defer></script>
-</body>
-</html>
+<?php include __DIR__ . '/includes/footer.php'; ?>
