@@ -1,138 +1,172 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Verify Phone</title>
-  <link rel="stylesheet" href="/public/css/signup.css">
-  <style>
-    .ok { display:none; color:green; font-weight:600; }
-    .err { color:#b00020; }
-  </style>
-</head>
-<body>
-  <div class="auth-layout">
-    <div class="nav-logo">
-  <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png" alt="ApnaPayment">
-</div>
-    <aside class="info-card" aria-hidden="true">
-      <div class="info-inner">
-        <h2>Verify Your Phone For Further Assistance</h2>
-        <p class="info-desc">
-          We'll send a verification code to your phone so we can verify your identity.<br><br>
-          Quick and secure.
-        </p>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Verify Phone</title>
+    <link rel="stylesheet" href="/public/css/signup.css" />
+    <style>
+      .ok {
+        display: none;
+        color: green;
+        font-weight: 600;
+      }
+      .err {
+        color: #b00020;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="auth-layout">
+      <div class="nav-logo">
+        <img
+          src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png"
+          alt="ApnaPayment"
+        />
       </div>
-    </aside>
-
-    <div class="form-column">
-      <div id="step1">
-        <h2 class="tophead">Verify your phone</h2>
-        <label>Phone</label>
-        <input id="phone" pattern="\d{10}" name="phone" inputmode="numeric" maxlength="10" required />
-        <div class="row">
-          <span class="spacer-label"></span>
-          <button id="sendOtp" class="small" type="button">Send OTP</button>
+      <aside class="info-card" aria-hidden="true">
+        <div class="info-inner">
+          <h2>Verify Your Phone For Further Assistance</h2>
+          <p class="info-desc">
+            We'll send a verification code to your phone so we can verify your
+            identity.<br /><br />
+            Quick and secure.
+          </p>
         </div>
+      </aside>
 
-        <div id="step2" style="display:none; margin-top:12px;">
-          <label>Enter OTP</label>
-          <input id="otp" inputmode="numeric" maxlength="6" pattern="\d{6}" />
-          <button id="verifyOtp" class="small" type="button">Verify</button>
-          <span id="tick" class="ok">✓ Verified</span>
+      <div class="form-column">
+        <div id="step1">
+          <h2 class="tophead">Verify your phone</h2>
+          <label>Phone</label>
+          <input
+            id="phone"
+            pattern="\d{10}"
+            name="phone"
+            inputmode="numeric"
+            placeholder="Enter your number here"
+            maxlength="10"
+            required
+          />
+          <div class="row">
+            <span class="spacer-label"></span>
+            <button id="sendOtp" class="small" type="button">Send OTP</button>
+          </div>
+
+          <div id="step2" style="display: none; margin-top: 12px">
+            <label>Enter OTP</label>
+            <input
+              id="otp"
+              inputmode="numeric"
+              maxlength="6"
+              pattern="\d{6}"
+              placeholder="Enter OTP"
+            />
+            <button id="verifyOtp" class="small" type="button">Verify</button>
+            <span id="tick" class="ok">✓ Verified</span>
+          </div>
+          <p id="msg" style="margin-top: 10px"></p>
         </div>
-        <p id="msg" style="margin-top:10px;"></p>
       </div>
     </div>
-  </div>
 
-  <script>
-(function(){
-  const $ = s => document.querySelector(s);
-  const say = t => { const el = $('#msg'); el.textContent = t; return el; };
+    <script>
+      (function () {
+        const $ = (s) => document.querySelector(s);
+        const say = (t) => {
+          const el = $("#msg");
+          el.textContent = t;
+          return el;
+        };
 
-  // normalize phone to digits only and ensure 10 digits (India)
-  function normalizePhone(raw) {
-    if (!raw) return '';
-    const digits = raw.replace(/\D+/g, '');
-    return digits.length === 10 ? digits : '';
-  }
+        // normalize phone to digits only and ensure 10 digits (India)
+        function normalizePhone(raw) {
+          if (!raw) return "";
+          const digits = raw.replace(/\D+/g, "");
+          return digits.length === 10 ? digits : "";
+        }
 
-  // Send OTP (sms_otp.php expects { action:'send_otp', mobile: '...' })
-  $('#sendOtp').onclick = async () => {
-    say('');
-    const raw = $('#phone').value.trim();
-    const phone = normalizePhone(raw);
-    if (!phone) return say('Enter a valid 10-digit phone.');
+        // Send OTP (sms_otp.php expects { action:'send_otp', mobile: '...' })
+        $("#sendOtp").onclick = async () => {
+          say("");
+          const raw = $("#phone").value.trim();
+          const phone = normalizePhone(raw);
+          if (!phone) return say("Enter a valid 10-digit phone.");
 
-    try {
-      const res = await fetch('/config/sms_otp.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ action: 'send_otp', mobile: phone })
-      });
-      const d = await res.json();
-      if (!d.success) return say(d.error || d.message || 'Failed to send OTP.');
-      say('OTP sent to +91 ' + phone);
-      $('#step2').style.display = 'block';
-      $('#otp').focus();
-    } catch (err) {
-      console.error(err);
-      say('Network error while sending OTP.');
-    }
-  };
+          try {
+            const res = await fetch("/config/sms_otp.php", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ action: "send_otp", mobile: phone }),
+            });
+            const d = await res.json();
+            if (!d.success)
+              return say(d.error || d.message || "Failed to send OTP.");
+            say("OTP sent to +91 " + phone);
+            $("#step2").style.display = "block";
+            $("#otp").focus();
+          } catch (err) {
+            console.error(err);
+            say("Network error while sending OTP.");
+          }
+        };
 
-  // Verify OTP, then call save_phone.php (server expects { phone: 'digits' })
-  $('#verifyOtp').onclick = async () => {
-    say('');
-    const raw = $('#phone').value.trim();
-    const phone = normalizePhone(raw);
-    const otp = $('#otp').value.trim();
-    if (!phone) return say('Enter a valid 10-digit phone.');
-    if (!/^\d{6}$/.test(otp)) return say('Enter a valid 6-digit OTP.');
+        // Verify OTP, then call save_phone.php (server expects { phone: 'digits' })
+        $("#verifyOtp").onclick = async () => {
+          say("");
+          const raw = $("#phone").value.trim();
+          const phone = normalizePhone(raw);
+          const otp = $("#otp").value.trim();
+          if (!phone) return say("Enter a valid 10-digit phone.");
+          if (!/^\d{6}$/.test(otp)) return say("Enter a valid 6-digit OTP.");
 
-    try {
-      // 1) verify with sms_otp (include credentials so session is matched)
-      const v = await fetch('/config/sms_otp.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ action: 'verify_otp', mobile: phone, otp: otp })
-      });
-      const j = await v.json();
-      if (!j.success) return say(j.error || j.message || 'OTP invalid.');
+          try {
+            // 1) verify with sms_otp (include credentials so session is matched)
+            const v = await fetch("/config/sms_otp.php", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({
+                action: "verify_otp",
+                mobile: phone,
+                otp: otp,
+              }),
+            });
+            const j = await v.json();
+            if (!j.success) return say(j.error || j.message || "OTP invalid.");
 
-      // 2) call save_phone.php to persist the number for logged-in user
-      const s = await fetch('/config/save_phone.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ phone: phone })
-      });
-      const res = await s.json();
-      if (!res.success) {
-        // provide the server message if available
-        return say(res.message || res.error || 'Failed to save phone.');
-      }
+            // 2) call save_phone.php to persist the number for logged-in user
+            const s = await fetch("/config/save_phone.php", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ phone: phone }),
+            });
+            const res = await s.json();
+            if (!res.success) {
+              // provide the server message if available
+              return say(res.message || res.error || "Failed to save phone.");
+            }
 
-      // success
-      $('#tick').style.display = 'inline';
-      say('Phone verified and saved. Redirecting...');
-      setTimeout(() => window.location = '/partner_form.php', 900);
+            // success
+            $("#tick").style.display = "inline";
+            say("Phone verified and saved. Redirecting...");
+            setTimeout(() => (window.location = "/partner_form.php"), 900);
+          } catch (err) {
+            console.error(err);
+            say("Network error while verifying OTP or saving phone.");
+          }
+        };
 
-    } catch (err) {
-      console.error(err);
-      say('Network error while verifying OTP or saving phone.');
-    }
-  };
-
-  // optional: allow pressing Enter in OTP field to trigger verify
-  $('#otp').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); $('#verifyOtp').click(); }
-  });
-
-})();
-  </script>
-</body>
+        // optional: allow pressing Enter in OTP field to trigger verify
+        $("#otp").addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            $("#verifyOtp").click();
+          }
+        });
+      })();
+    </script>
+  </body>
 </html>

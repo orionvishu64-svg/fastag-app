@@ -131,7 +131,7 @@
   <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
     <div class="modal-content border-0 shadow-lg">
 
-      <div class="modal-header modal-gradient">
+      <div class="modal-header modal-sbi">
         <h5 class="modal-title text-white">Product Details</h5>
         <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
@@ -160,7 +160,7 @@
 
             <div class="d-flex gap-2">
               <input type="number" class="form-control qty-input" value="1" min="1" style="max-width:80px">
-              <button class="btn btn-primary add-btn w-100">Add to Cart</button>
+              <button class="btn btn-primary add-btn w-100 ">Add to Cart</button>
             </div>
 
           </div>

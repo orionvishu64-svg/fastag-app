@@ -77,6 +77,22 @@ require_once 'config/common_start.php';
 .remove-btn:hover {
   color: #b91c1c;
 }
+
+#emptyCart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+@media (max-width: 768px) {
+  #emptyCart {
+    min-height: auto;
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+}
+
 </style>
 <main class="py-5 bg-light">
   <div class="container">

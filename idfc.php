@@ -131,7 +131,7 @@
   <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
     <div class="modal-content border-0 shadow-lg">
 
-      <div class="modal-header modal-gradient">
+      <div class="modal-header modal-idfc">
         <h5 class="modal-title text-white">Product Details</h5>
         <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>

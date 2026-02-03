@@ -91,8 +91,8 @@ document.getElementById("sidebarToggle")?.addEventListener("click", () => {
     div.innerHTML = `
       <strong>${r.name}</strong><br>
       <span class="text-warning">${"★".repeat(r.stars)}${"☆".repeat(
-      5 - r.stars
-    )}</span>
+        5 - r.stars,
+      )}</span>
       <div class="text-muted small">${r.text}</div>
     `;
     container.appendChild(div);
@@ -177,90 +177,6 @@ if (newsletterForm) {
   });
 }
 
-// Add to cart buttons
-document.querySelectorAll(".btn").forEach((button) => {
-  if (
-    button.textContent.includes("Add to Cart") ||
-    button.textContent.includes("Select")
-  ) {
-    button.addEventListener("click", function (e) {
-      if (!this.textContent.includes("Add to Cart")) return;
-
-      e.preventDefault();
-
-      const productCard =
-        this.closest(".product-card") ||
-        this.closest(".bank-card") ||
-        this.closest(".category-card");
-
-      if (!productCard) {
-        showNotification("Error: Could not identify product", "error");
-        return;
-      }
-
-      const name =
-        productCard.querySelector(".product-name")?.textContent?.trim() ||
-        "Unknown Product";
-
-      const priceText = productCard
-        .querySelector(".product-price, .price")
-        ?.textContent?.replace(/[^\d]/g, "");
-
-      const price = parseInt(priceText, 10) || 0;
-
-      const item = {
-        id: Date.now().toString(),
-        name,
-        price,
-        quantity: 1,
-      };
-
-      if (typeof window.addToCart === "function") {
-        this.disabled = true;
-        window.addToCart(item);
-        setTimeout(() => (this.disabled = false), 600);
-      } else {
-        showNotification("Cart system not ready", "error");
-      }
-    });
-  }
-});
-
-// Show notification function
-function showNotification(message, type = "info") {
-  const notification = document.createElement("div");
-  notification.className = `notification ${type}`;
-  notification.textContent = message;
-  notification.style.cssText = `
-            position: fixed;
-            top: 100px;
-            right: 20px;
-            background: ${type === "success" ? "#10b981" : "#3b82f6"};
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 1000;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        `;
-
-  document.body.appendChild(notification);
-
-  // Animate in
-  setTimeout(() => {
-    notification.style.transform = "translateX(0)";
-  }, 100);
-
-  // Remove after 3 seconds
-  setTimeout(() => {
-    notification.style.transform = "translateX(100%)";
-    setTimeout(() => {
-      document.body.removeChild(notification);
-    }, 300);
-  }, 3000);
-}
-
 // Back to top button
 const backToTopButton = document.createElement("button");
 backToTopButton.innerHTML = '<i class="fas fa-arrow-up"></i>';
@@ -318,7 +234,7 @@ document.querySelectorAll("form").forEach((form) => {
           function () {
             this.style.borderColor = "";
           },
-          { once: true }
+          { once: true },
         );
       }
     });

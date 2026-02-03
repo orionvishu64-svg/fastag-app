@@ -1,12 +1,26 @@
 <?php
+// payment.php (minimal checkout page wired to payment.js)
 require_once __DIR__ . '/config/common_start.php';
 
+// ensure session and CSRF
 if (session_status() === PHP_SESSION_NONE) session_start();
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 $csrf_token = $_SESSION['csrf_token'];
 ?>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Checkout — Payment</title>
+  <link rel="stylesheet" href="/public/css/styles.css">
+  <link rel="stylesheet" href="/public/css/payment.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <meta name="csrf-token" content="<?php echo htmlspecialchars($csrf_token, ENT_QUOTES); ?>">
+  <style>html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}body{margin:0}</style>
+</head>
 <body class="payment-page">
 <?php include __DIR__ . '/includes/header.php'; ?>
 
@@ -154,4 +168,7 @@ $csrf_token = $_SESSION['csrf_token'];
     <p class="upi-muted">Do not close this page</p>
   </div>
 </div>
+<script src="/public/js/script.js"></script>
 <script src="/public/js/payment.js" defer></script>
+</body>
+</html>

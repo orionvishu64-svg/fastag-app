@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -18,14 +18,12 @@
         <div class="overlay">
           <form id="signupForm" class="auth-card" autocomplete="off">
             <h2 class="header">Create an Account</h2>
-
             <div class="row">
               <label>Full Name</label>
               <input name="name" type="text" required placeholder="Your name" />
             </div>
-
             <!-- Email -->
-            <div class="row" style="align-items: center">
+            <div class="row">
               <label>Email</label>
               <input
                 name="email"
@@ -34,40 +32,7 @@
                 required
                 placeholder="you@example.com"
               />
-              <span
-                id="emailTick"
-                class="ok"
-                aria-hidden="true"
-                style="display: none"
-                >✓ Verified</span
-              >
             </div>
-
-            <div class="row">
-              <span class="spacer-label"></span>
-              <button class="small" id="sendEmailOtp" type="button">
-                Send OTP
-              </button>
-            </div>
-
-            <div
-              class="row"
-              id="emailOtpRow"
-              style="display: none; align-items: center"
-            >
-              <label>Email OTP</label>
-              <input
-                id="emailOtp"
-                inputmode="numeric"
-                maxlength="6"
-                pattern="\d{6}"
-                placeholder="6-digit code"
-              />
-              <button class="small" id="verifyEmailOtp" type="button">
-                Verify
-              </button>
-            </div>
-
             <!-- Phone -->
             <div class="row" style="align-items: center">
               <label>Phone</label>
@@ -89,14 +54,12 @@
                 >✓ Verified</span
               >
             </div>
-
             <div class="row">
               <span class="spacer-label"></span>
               <button class="small" id="sendPhoneOtp" type="button">
                 Send OTP
               </button>
             </div>
-
             <div
               class="row"
               id="phoneOtpRow"
@@ -114,7 +77,6 @@
                 Verify
               </button>
             </div>
-
             <!-- mPIN -->
             <div class="row" style="align-items: center">
               <label>mPIN</label>
@@ -134,7 +96,6 @@
                 </button>
               </div>
             </div>
-
             <div class="row" style="align-items: center">
               <label>Confirm mPIN</label>
               <div class="input-wrapper" style="flex: 1">
@@ -157,15 +118,11 @@
                 </button>
               </div>
             </div>
-
             <button type="submit">Sign Up</button>
             <div id="msg" class="err" role="status" aria-live="polite"></div>
-
             <div class="divider">or</div>
-
             <!-- Google button renders here -->
             <div id="google-signup" class="google-btn"></div>
-
             <div class="footer-links">
               Already have an account? <a href="index.html">Sign In</a>
             </div>
@@ -173,7 +130,6 @@
         </div>
       </div>
     </div>
-
     <script
       src="https://accounts.google.com/gsi/client"
       async
@@ -187,19 +143,13 @@
       const say = (t) => {
         $("#msg").textContent = t || "";
       };
-
       function normalizePhone(raw) {
         const d = (raw || "").replace(/\D+/g, "");
         return d.length === 10 ? d : "";
       }
-
-      $("#emailInput").addEventListener("input", () => {
-        $("#emailTick").style.display = "none";
-      });
       $("#phoneInput").addEventListener("input", () => {
         $("#phoneTick").style.display = "none";
       });
-
       document.addEventListener("click", (e) => {
         if (!e.target.classList.contains("toggle-btn")) return;
         const targetId = e.target.dataset.target;
@@ -213,7 +163,6 @@
           e.target.textContent = "Show";
         }
       });
-
       async function safeJson(response) {
         const text = await response.text();
         try {
@@ -222,66 +171,6 @@
           return { ok: response.ok, json: null, text };
         }
       }
-
-      // ---- Email OTP send/verify ----
-      $("#sendEmailOtp").onclick = async () => {
-        say("");
-        const email = $("#emailInput").value.trim();
-        if (!email) return say("Enter your email first");
-        try {
-          const res = await fetch("/config/email_otp.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ action: "send", email }),
-          });
-          const parsed = await safeJson(res);
-          if (!parsed.ok) {
-            return say(
-              parsed.json?.error || parsed.text || "Failed to send email OTP"
-            );
-          }
-          const d = parsed.json;
-          if (!d) return say("Server returned invalid response");
-          if (!d.success) return say(d.error || "Failed to send email OTP");
-          $("#emailOtpRow").style.display = "flex";
-          $("#emailOtp").focus();
-        } catch (err) {
-          console.error(err);
-          say("Network error sending email OTP");
-        }
-      };
-
-      $("#verifyEmailOtp").onclick = async () => {
-        say("");
-        const email = $("#emailInput").value.trim();
-        const code = $("#emailOtp").value.trim();
-        if (!/^\d{6}$/.test(code)) return say("Enter a valid 6-digit OTP");
-        try {
-          const res = await fetch("/config/email_otp.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ action: "verify", email, code }),
-          });
-          const parsed = await safeJson(res);
-          if (!parsed.ok) {
-            return say(
-              parsed.json?.error || parsed.text || "Failed to verify email OTP"
-            );
-          }
-          const d = parsed.json;
-          if (!d) return say("Server returned invalid response");
-          if (!d.success) return say(d.error || "Email OTP invalid");
-          $("#emailTick").style.display = "inline";
-          $("#emailOtpRow").style.display = "none";
-          say("");
-        } catch (err) {
-          console.error(err);
-          say("Network error verifying email OTP");
-        }
-      };
-
       // ---- Phone OTP send/verify ----
       $("#sendPhoneOtp").onclick = async () => {
         say("");
@@ -298,7 +187,7 @@
           const parsed = await safeJson(res);
           if (!parsed.ok)
             return say(
-              parsed.json?.error || parsed.text || "Failed to send phone OTP"
+              parsed.json?.error || parsed.text || "Failed to send phone OTP",
             );
           const d = parsed.json;
           if (!d) return say("Server returned invalid response");
@@ -310,7 +199,6 @@
           say("Network error sending phone OTP");
         }
       };
-
       $("#verifyPhoneOtp").onclick = async () => {
         say("");
         const phoneRaw = $("#phoneInput").value.trim();
@@ -327,7 +215,7 @@
           const parsed = await safeJson(res);
           if (!parsed.ok)
             return say(
-              parsed.json?.error || parsed.text || "Phone OTP verify failed"
+              parsed.json?.error || parsed.text || "Phone OTP verify failed",
             );
           const d = parsed.json;
           if (!d) return say("Server returned invalid response");
@@ -340,7 +228,6 @@
           say("Network error verifying phone OTP");
         }
       };
-
       // ---- Signup submit ----
       $("#signupForm").onsubmit = async (e) => {
         e.preventDefault();
@@ -351,20 +238,14 @@
         const phone = normalizePhone(phoneRaw);
         const mpin = $("#mpin").value.trim();
         const mpin2 = $("#mpin_confirm").value.trim();
-
         // Basic client-side checks
         if (!name) return say("Enter your name");
         if (!email) return say("Enter your email");
         if (!phone) return say("Enter a valid 10-digit phone");
         if (!/^\d{4,6}$/.test(mpin)) return say("mPIN must be 4–6 digits");
         if (mpin !== mpin2) return say("mPINs do not match");
-
-        // Ensure OTPs were verified (client-side UI check)
-        if (window.getComputedStyle($("#emailTick")).display === "none")
-          return say("Please verify your email OTP first");
         if (window.getComputedStyle($("#phoneTick")).display === "none")
           return say("Please verify your phone OTP first");
-
         try {
           const res = await fetch("/config/register.php", {
             method: "POST",

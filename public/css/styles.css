@@ -196,7 +196,7 @@ body {
   background: #2563eb;
 }
 .badge-idfc {
-  background: linear-gradient(90deg, #9333ea, #dc2626);
+  background: linear-gradient(90deg, #9333ea, #aa60ff);
 }
 .badge-kotak {
   background: #dc2626;
@@ -212,4 +212,13 @@ body {
 
 .modal-gradient {
   background: linear-gradient(90deg, #2563eb, #1e40af);
+}
+.modal-idfc {
+  background: linear-gradient(90deg, #9333ea, #aa60ff);
+}
+.modal-kotak {
+  background: linear-gradient(90deg, #dc2626, #b91c1c);
+}
+.modal-sbi {
+  background: linear-gradient(90deg, #38bdf8, #0ea5e9);
 }

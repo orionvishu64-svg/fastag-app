@@ -1,192 +1,231 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Forgot mPIN</title>
-  <link rel="stylesheet" href="/public/css/signup.css">
-  <style>
-    .ok { display:none; color:green; font-weight:600; }
-    .err { color:#b00020; }
-    .toggle-btn {
-      cursor:pointer;
-      font-size:13px;
-      color:#ffb84d;
-      background:none;
-      border:none;
-      position:absolute;
-      right:10px;
-      top:50%;
-      transform:translateY(-50%);
-    }
-    .input-wrapper {
-      position:relative;
-      display:flex;
-      align-items:center;
-    }
-    input[type=password], input[type=text] {
-      width:100%;
-      padding-right:45px;
-    }
-  </style>
-</head>
-<body>
-  <div class="auth-layout">
-    <div class="nav-logo">
-  <img src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png" alt="ApnaPayment">
-</div>
-    <aside class="info-card" aria-hidden="true">
-      <div class="info-inner">
-        <h2>Reset your mPIN</h2>
-        <p class="info-desc">
-          We'll send a verification code to your phone so you can set a new mPIN.<br><br>
-          Quick and secure recovery.
-        </p>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Forgot mPIN</title>
+    <link rel="stylesheet" href="/public/css/signup.css" />
+    <style>
+      .ok {
+        display: none;
+        color: green;
+        font-weight: 600;
+      }
+      .err {
+        color: #b00020;
+      }
+      .toggle-btn {
+        cursor: pointer;
+        font-size: 13px;
+        color: #ffb84d;
+        background: none;
+        border: none;
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+      input[type="password"],
+      input[type="text"] {
+        width: 100%;
+        padding-right: 45px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="auth-layout">
+      <div class="nav-logo">
+        <img
+          src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png"
+          alt="ApnaPayment"
+        />
       </div>
-    </aside>
-
-    <div class="form-column">
-
-      <div id="step1">
-        <h2 class="tophead">Forgot mPIN</h2>
-        <label>Phone</label>
-        <input id="phone" pattern="\d{10}" inputmode="numeric" maxlength="10" required />
-        <div class="row">
-          <span class="spacer-label"></span>
-          <button id="send" class="small" type="button">Send OTP</button>
+      <aside class="info-card" aria-hidden="true">
+        <div class="info-inner">
+          <h2>Reset your mPIN</h2>
+          <p class="info-desc">
+            We'll send a verification code to your phone so you can set a new
+            mPIN.<br /><br />
+            Quick and secure recovery.
+          </p>
         </div>
-        <div id="msg" class="err"></div>
-        <div class="footer-links">
-          Remembered your mPIN? <a href="index.html">Back to Login</a>
-        </div>
-      </div>
+      </aside>
 
-      <div id="step2" style="display:none; margin-top:1rem;">
-        <label>Enter OTP</label>
-        <input id="otp" inputmode="numeric" maxlength="6" pattern="\d{6}" />
-        <button id="verify" class="small" type="button">Verify</button>
-        <span id="tick" class="ok">✓ Verified</span>
-      </div>
-
-      <div id="step3" style="display:none; margin-top:1rem;">
-        <label>New mPIN</label>
-        <div class="input-wrapper">
-          <input id="mpin" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}">
-          <button type="button" class="toggle-btn" data-target="mpin">Show</button>
-        </div>
-
-        <label>Confirm mPIN</label>
-        <div class="input-wrapper">
-          <input id="mpin2" type="password" inputmode="numeric" maxlength="6" pattern="\d{4,6}">
-          <button type="button" class="toggle-btn" data-target="mpin2">Show</button>
+      <div class="form-column">
+        <div id="step1">
+          <h2 class="tophead">Forgot mPIN</h2>
+          <label>Phone</label>
+          <input
+            id="phone"
+            pattern="\d{10}"
+            inputmode="numeric"
+            maxlength="10"
+            required
+          />
+          <div class="row">
+            <span class="spacer-label"></span>
+            <button id="send" class="small" type="button">Send OTP</button>
+          </div>
+          <div id="msg" class="err"></div>
+          <div class="footer-links">
+            Remembered your mPIN? <a href="index.html">Back to Login</a>
+          </div>
         </div>
 
-        <button id="set" type="button">Reset mPIN</button>
-      </div>
+        <div id="step2" style="display: none; margin-top: 1rem">
+          <label>Enter OTP</label>
+          <input id="otp" inputmode="numeric" maxlength="6" pattern="\d{6}" />
+          <button id="verify" class="small" type="button">Verify</button>
+          <span id="tick" class="ok">✓ Verified</span>
+        </div>
 
+        <div id="step3" style="display: none; margin-top: 1rem">
+          <label>New mPIN</label>
+          <div class="input-wrapper">
+            <input
+              id="mpin"
+              type="password"
+              inputmode="numeric"
+              maxlength="6"
+              pattern="\d{4,6}"
+            />
+            <button type="button" class="toggle-btn" data-target="mpin">
+              Show
+            </button>
+          </div>
+
+          <label>Confirm mPIN</label>
+          <div class="input-wrapper">
+            <input
+              id="mpin2"
+              type="password"
+              inputmode="numeric"
+              maxlength="6"
+              pattern="\d{4,6}"
+            />
+            <button type="button" class="toggle-btn" data-target="mpin2">
+              Show
+            </button>
+          </div>
+
+          <button id="set" type="button">Reset mPIN</button>
+        </div>
+      </div>
     </div>
-  </div>
 
-<script>
-const $ = s => document.querySelector(s);
-const say = t => $('#msg').textContent = t;
+    <script>
+      const $ = (s) => document.querySelector(s);
+      const say = (t) => ($("#msg").textContent = t);
 
-// Toggle show/hide for mPIN inputs
-document.addEventListener('click', e => {
-  if (e.target.classList.contains('toggle-btn')) {
-    const targetId = e.target.dataset.target;
-    const input = document.getElementById(targetId);
-    if (!input) return;
-    if (input.type === 'password') {
-      input.type = 'text';
-      e.target.textContent = 'Hide';
-    } else {
-      input.type = 'password';
-      e.target.textContent = 'Show';
-    }
-  }
-});
+      // Toggle show/hide for mPIN inputs
+      document.addEventListener("click", (e) => {
+        if (e.target.classList.contains("toggle-btn")) {
+          const targetId = e.target.dataset.target;
+          const input = document.getElementById(targetId);
+          if (!input) return;
+          if (input.type === "password") {
+            input.type = "text";
+            e.target.textContent = "Hide";
+          } else {
+            input.type = "password";
+            e.target.textContent = "Show";
+          }
+        }
+      });
 
-// --- Step 1: Send OTP ---
-$('#send').onclick = async () => {
-  say('');
-  const phone = $('#phone').value.trim();
-  if (!/^[0-9]{10}$/.test(phone)) return say('Enter a valid 10-digit phone.');
+      // --- Step 1: Send OTP ---
+      $("#send").onclick = async () => {
+        say("");
+        const phone = $("#phone").value.trim();
+        if (!/^[0-9]{10}$/.test(phone))
+          return say("Enter a valid 10-digit phone.");
 
-  try {
-    const r = await fetch('/config/sms_otp.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ action: 'send_otp', mobile: phone })
-    });
-    const d = await r.json();
-    if (!d.success) return say(d.error || d.message || 'Failed to send OTP.');
-    say('OTP sent successfully.');
-    $('#step2').style.display = 'block';
-  } catch (err) {
-    console.error(err);
-    say('Network error while sending OTP.');
-  }
-};
+        try {
+          const r = await fetch("/config/sms_otp.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ action: "send_otp", mobile: phone }),
+          });
+          const d = await r.json();
+          if (!d.success)
+            return say(d.error || d.message || "Failed to send OTP.");
+          say("OTP sent successfully.");
+          $("#step2").style.display = "block";
+        } catch (err) {
+          console.error(err);
+          say("Network error while sending OTP.");
+        }
+      };
 
-// --- Step 2: Verify OTP ---
-$('#verify').onclick = async () => {
-  say('');
-  const phone = $('#phone').value.trim();
-  const otp = $('#otp').value.trim();
-  if (!/^[0-9]{6}$/.test(otp)) return say('Enter a valid 6-digit OTP.');
+      // --- Step 2: Verify OTP ---
+      $("#verify").onclick = async () => {
+        say("");
+        const phone = $("#phone").value.trim();
+        const otp = $("#otp").value.trim();
+        if (!/^[0-9]{6}$/.test(otp)) return say("Enter a valid 6-digit OTP.");
 
-  try {
-    const v = await fetch('/config/sms_otp.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ action: 'verify_otp', mobile: phone, otp, purpose: 'reset' })
-    });
-    const j = await v.json();
-    if (!j.success) return say(j.error || j.message || 'OTP verification failed.');
+        try {
+          const v = await fetch("/config/sms_otp.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              action: "verify_otp",
+              mobile: phone,
+              otp,
+              purpose: "reset",
+            }),
+          });
+          const j = await v.json();
+          if (!j.success)
+            return say(j.error || j.message || "OTP verification failed.");
 
-    $('#tick').style.display = 'inline';
-    say('Phone verified. Now set your new mPIN.');
-    $('#step3').style.display = 'block';
-  } catch (err) {
-    console.error(err);
-    say('Network error during OTP verification.');
-  }
-};
+          $("#tick").style.display = "inline";
+          say("Phone verified. Now set your new mPIN.");
+          $("#step3").style.display = "block";
+        } catch (err) {
+          console.error(err);
+          say("Network error during OTP verification.");
+        }
+      };
 
-// --- Step 3: Reset mPIN ---
-$('#set').onclick = async () => {
-  say('');
-  const phone = $('#phone').value.trim();
-  const mpin = $('#mpin').value.trim();
-  const mpin2 = $('#mpin2').value.trim();
+      // --- Step 3: Reset mPIN ---
+      $("#set").onclick = async () => {
+        say("");
+        const phone = $("#phone").value.trim();
+        const mpin = $("#mpin").value.trim();
+        const mpin2 = $("#mpin2").value.trim();
 
-  if (!/^[0-9]{4,6}$/.test(mpin)) return say('mPIN must be 4–6 digits.');
-  if (mpin !== mpin2) return say('mPINs do not match.');
+        if (!/^[0-9]{4,6}$/.test(mpin)) return say("mPIN must be 4–6 digits.");
+        if (mpin !== mpin2) return say("mPINs do not match.");
 
-  try {
-    const r = await fetch('/config/reset_mpin.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ phone, mpin })
-    });
-    const res = await r.json();
+        try {
+          const r = await fetch("/config/reset_mpin.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ phone, mpin }),
+          });
+          const res = await r.json();
 
-    if (!res.success) {
-      // display custom message from backend
-      return say(res.message || res.error || 'Failed to reset mPIN.');
-    }
+          if (!res.success) {
+            // display custom message from backend
+            return say(res.message || res.error || "Failed to reset mPIN.");
+          }
 
-    say('mPIN reset successful! Redirecting...');
-    setTimeout(() => window.location = 'index.html', 1200);
-  } catch (err) {
-    console.error(err);
-    say('Network error while resetting mPIN.');
-  }
-};
-</script>
-</body>
+          say("mPIN reset successful! Redirecting...");
+          setTimeout(() => (window.location = "index.html"), 1200);
+        } catch (err) {
+          console.error(err);
+          say("Network error while resetting mPIN.");
+        }
+      };
+    </script>
+  </body>
 </html>

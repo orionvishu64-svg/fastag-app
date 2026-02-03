@@ -25,7 +25,7 @@ class CartManager {
       cart = [];
     }
 
-    const sanitizeNumber = v => {
+    const sanitizeNumber = (v) => {
       if (v === null || v === undefined) return NaN;
       if (typeof v === "number") return v;
       // remove anything that's not digit, dot or minus (handles commas, currency symbols)
@@ -33,17 +33,19 @@ class CartManager {
       return cleaned === "" ? NaN : Number(cleaned);
     };
 
-    cart = cart.map(item => {
+    cart = cart.map((item) => {
       // support multiple incoming keys for quantity
       const incomingQty = item.quantity ?? item.qty ?? item.q ?? 1;
-      const price = sanitizeNumber(item.price ?? item.amount ?? item.rupee_price ?? 0);
+      const price = sanitizeNumber(
+        item.price ?? item.amount ?? item.rupee_price ?? 0,
+      );
       const qty = sanitizeNumber(incomingQty);
 
       return {
         ...item,
         // store canonical numeric types
         price: Number.isFinite(price) ? price : 0,
-        quantity: Number.isFinite(qty) && qty > 0 ? Math.floor(qty) : 1
+        quantity: Number.isFinite(qty) && qty > 0 ? Math.floor(qty) : 1,
       };
     });
 
@@ -59,10 +61,10 @@ class CartManager {
 
   // Save cart ensuring numeric price & quantity are stored
   saveCart() {
-    const normalized = this.cart.map(i => ({
+    const normalized = this.cart.map((i) => ({
       ...i,
       price: Number(i.price) || 0,
-      quantity: Math.max(1, parseInt(i.quantity || 1, 10))
+      quantity: Math.max(1, parseInt(i.quantity || 1, 10)),
     }));
 
     localStorage.setItem("cart", JSON.stringify(normalized));
@@ -130,13 +132,15 @@ class CartManager {
     const standardQuantities = [1, 5, 10, 20, 25, 50, 100];
 
     // Build options: value should be the quantity number, label the same
-    const optionsHtml = standardQuantities.map(qty => {
-      const selected = Number(item.quantity) === qty ? 'selected' : '';
-      return `<option value="${qty}" ${selected}>${qty}</option>`;
-    }).join('');
+    const optionsHtml = standardQuantities
+      .map((qty) => {
+        const selected = Number(item.quantity) === qty ? "selected" : "";
+        return `<option value="${qty}" ${selected}>${qty}</option>`;
+      })
+      .join("");
 
     // Unique ID for the datalist (if you prefer datalist; kept for compatibility)
-    const datalistId = `quantity-options-${item.id ?? 'noid'}-${index}`;
+    const datalistId = `quantity-options-${item.id ?? "noid"}-${index}`;
     const itemDiv = document.createElement("div");
     itemDiv.className = "cart-item";
     // Coerce price & quantity for display
@@ -145,13 +149,13 @@ class CartManager {
 
     itemDiv.innerHTML = `
             <div class="item-image">
-                ${item.bank ?? ''}
+                ${item.bank ?? ""}
             </div>
             <div class="item-details">
                 <div class="item-name">${item.name ?? item.title ?? "Unnamed item"}</div>
                 <div class="item-badges">
-                    <span class="item-badge bank">${item.bank ?? ''}</span>
-                    <span class="item-badge category">${item.category ?? ''}</span>
+                    <span class="item-badge bank">${item.bank ?? ""}</span>
+                    <span class="item-badge category">${item.category ?? ""}</span>
                 </div>
                 <div class="item-price">₹${displayPrice.toLocaleString()} </div>
             </div> 
@@ -184,35 +188,35 @@ class CartManager {
   }
 
   attachItemEventListeners(itemDiv, index) {
-    const quantityInput = itemDiv.querySelector('.quantity-input');
-    const saveQuantityBtn = itemDiv.querySelector('.save-quantity-btn');
-    const removeBtn = itemDiv.querySelector('.remove-btn');
+    const quantityInput = itemDiv.querySelector(".quantity-input");
+    const saveQuantityBtn = itemDiv.querySelector(".save-quantity-btn");
+    const removeBtn = itemDiv.querySelector(".remove-btn");
 
     // Add event listener for quantity input change (for immediate visual feedback, not saving)
     if (quantityInput) {
-      quantityInput.addEventListener('input', (e) => {
+      quantityInput.addEventListener("input", (e) => {
         // Add simple validation visual feedback
         const val = parseInt(e.target.value, 10);
         if (isNaN(val) || val < 1) {
-          e.target.style.borderColor = 'red';
+          e.target.style.borderColor = "red";
         } else {
-          e.target.style.borderColor = '#ccc'; // Reset to default
+          e.target.style.borderColor = "#ccc"; // Reset to default
         }
       });
     }
 
     // Add event listener for save button click
     if (saveQuantityBtn) {
-      saveQuantityBtn.addEventListener('click', (e) => {
+      saveQuantityBtn.addEventListener("click", (e) => {
         e.preventDefault();
-        const input = itemDiv.querySelector('.quantity-input');
+        const input = itemDiv.querySelector(".quantity-input");
         let newQuantity = parseInt(input.value, 10);
 
         if (isNaN(newQuantity) || newQuantity < 1) {
           this.showCustomAlert("Please enter a valid quantity (minimum 1).");
           // Revert displayed value to stored value
           input.value = this.cart[index] ? this.cart[index].quantity : 1;
-          input.style.borderColor = '';
+          input.style.borderColor = "";
           return;
         }
 
@@ -222,7 +226,7 @@ class CartManager {
     }
 
     if (removeBtn) {
-      removeBtn.addEventListener('click', (e) => {
+      removeBtn.addEventListener("click", (e) => {
         e.preventDefault();
         this.removeItem(index);
       });
@@ -231,7 +235,7 @@ class CartManager {
 
   updateQuantity(index, newQuantity) {
     if (index < 0 || index >= this.cart.length) {
-      console.error('Invalid cart index:', index);
+      console.error("Invalid cart index:", index);
       return;
     }
 
@@ -253,107 +257,156 @@ class CartManager {
     this.saveCart();
     this.renderCart();
 
-    this.showNotification(`${item.bank ?? ''} FASTag - ${item.name ?? ''} removed from cart`, "info");
+    this.showNotification(
+      `${item.bank ?? ""} FASTag - ${item.name ?? ""} removed from cart`,
+      "info",
+    );
   }
 
   clearCart() {
     if (this.cart.length === 0) return;
 
-    this.showCustomConfirmation("Are you sure you want to clear your cart?", () => {
-      this.cart = [];
-      this.saveCart();
-      this.renderCart();
+    this.showCustomConfirmation(
+      "Are you sure you want to clear your cart?",
+      () => {
+        this.cart = [];
+        this.saveCart();
+        this.renderCart();
 
-      this.showNotification("Cart cleared successfully", "info");
-    });
+        this.showNotification("Cart cleared successfully", "info");
+      },
+    );
   }
 
   // Custom confirmation modal (replaces alert/confirm)
   showCustomConfirmation(message, onConfirm) {
-    const modalId = 'customConfirmationModal';
+    const modalId = "customConfirmationModal";
     let modal = document.getElementById(modalId);
 
     if (!modal) {
-      modal = document.createElement('div');
+      modal = document.createElement("div");
       modal.id = modalId;
       modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-        `;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    `;
+
       modal.innerHTML = `
-            <div style="
-                background: var(--panel-1);
-                padding: 30px;
-                border-radius: 12px;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-                text-align: center;
-                max-width: 400px;
-                width: 90%;
-            ">
-                <p style="font-size: 1.1em; margin-bottom: 25px;">${message}</p>
-                <div style="display: flex; justify-content: center; gap: 15px;">
-                    <button id="confirmYes" style="
-                        background: #10b981;
-                        color: var(--text);
-                        padding: 12px 25px;
-                        border: none;
-                        border-radius: 8px;
-                        cursor: pointer;
-                        font-size: 1em;
-                        transition: background 0.3s ease;
-                    ">Yes</button>
-                    <button id="confirmNo" style="
-                        background: #ef4444;
-                        color: var(--text);
-                        padding: 12px 25px;
-                        border: none;
-                        border-radius: 8px;
-                        cursor: pointer;
-                        font-size: 1em;
-                        transition: background 0.3s ease;
-                    ">No</button>
-                </div>
-            </div>
-        `;
+      <div style="
+        background: #ffffff;
+        padding: 28px 30px;
+        border-radius: 14px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+        text-align: center;
+        max-width: 420px;
+        width: 90%;
+        animation: scaleIn 0.2s ease-out;
+      ">
+        <div style="
+          width: 64px;
+          height: 64px;
+          background: #fee2e2;
+          color: #dc2626;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 28px;
+          margin: 0 auto 16px;
+        ">
+          🗑️
+        </div>
+
+        <h3 style="
+          margin: 0 0 8px;
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: #111827;
+        ">
+          Clear Cart
+        </h3>
+
+        <p style="
+          font-size: 0.95rem;
+          color: #6b7280;
+          margin-bottom: 24px;
+        ">
+          ${message}
+        </p>
+
+        <div style="
+          display: flex;
+          justify-content: center;
+          gap: 12px;
+        ">
+          <button id="confirmNo" style="
+            background: #f3f4f6;
+            color: #111827;
+            padding: 10px 22px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+          ">
+            Cancel
+          </button>
+
+          <button id="confirmYes" style="
+            background: #dc2626;
+            color: #ffffff;
+            padding: 10px 22px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+          ">
+            Yes, Clear
+          </button>
+        </div>
+      </div>
+    `;
+
       document.body.appendChild(modal);
+
+      // small animation
+      const style = document.createElement("style");
+      style.innerHTML = `
+      @keyframes scaleIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+      }
+    `;
+      document.head.appendChild(style);
     } else {
-      modal.querySelector('p').textContent = message;
-      modal.style.display = 'flex';
+      modal.querySelector("p").textContent = message;
+      modal.style.display = "flex";
     }
 
-    const confirmYes = modal.querySelector('#confirmYes');
-    const confirmNo = modal.querySelector('#confirmNo');
+    const confirmYes = modal.querySelector("#confirmYes");
+    const confirmNo = modal.querySelector("#confirmNo");
 
-    // Remove existing listeners to prevent duplicates
-    const newConfirmYes = confirmYes.cloneNode(true);
-    confirmYes.parentNode.replaceChild(newConfirmYes, confirmYes);
-    const newConfirmNo = confirmNo.cloneNode(true);
-    confirmNo.parentNode.replaceChild(newConfirmNo, confirmNo);
-
-    newConfirmYes.addEventListener('click', () => {
+    confirmYes.onclick = () => {
       onConfirm();
-      modal.style.display = 'none';
-    });
-    newConfirmNo.addEventListener('click', () => {
-      modal.style.display = 'none';
-    });
+      modal.style.display = "none";
+    };
+
+    confirmNo.onclick = () => {
+      modal.style.display = "none";
+    };
   }
 
   // Custom alert modal (replaces alert)
   showCustomAlert(message) {
-    const modalId = 'customAlertModal';
+    const modalId = "customAlertModal";
     let modal = document.getElementById(modalId);
 
     if (!modal) {
-      modal = document.createElement('div');
+      modal = document.createElement("div");
       modal.id = modalId;
       modal.style.cssText = `
             position: fixed;
@@ -392,50 +445,50 @@ class CartManager {
         `;
       document.body.appendChild(modal);
     } else {
-      modal.querySelector('p').textContent = message;
-      modal.style.display = 'flex';
+      modal.querySelector("p").textContent = message;
+      modal.style.display = "flex";
     }
 
-    const alertOk = modal.querySelector('#alertOk');
+    const alertOk = modal.querySelector("#alertOk");
     const newAlertOk = alertOk.cloneNode(true);
     alertOk.parentNode.replaceChild(newAlertOk, alertOk);
 
-    newAlertOk.addEventListener('click', () => {
-      modal.style.display = 'none';
+    newAlertOk.addEventListener("click", () => {
+      modal.style.display = "none";
     });
   }
 
   updateOrderSummary() {
-  const subtotal = this.cart.reduce((sum, item) => {
-    const price = Number(item.price) || 0;
-    const qty = Number(item.quantity) || 0;
-    return sum + price * qty;
-  }, 0);
+    const subtotal = this.cart.reduce((sum, item) => {
+      const price = Number(item.price) || 0;
+      const qty = Number(item.quantity) || 0;
+      return sum + price * qty;
+    }, 0);
 
-  const total = subtotal;
+    const total = subtotal;
 
-  const subtotalEl = document.getElementById("subtotal");
-  const totalEl = document.getElementById("total");
+    const subtotalEl = document.getElementById("subtotal");
+    const totalEl = document.getElementById("total");
 
-  if (subtotalEl) {
-    subtotalEl.textContent = `₹${(Number.isFinite(subtotal) ? subtotal : 0).toLocaleString()}`;
+    if (subtotalEl) {
+      subtotalEl.textContent = `₹${(Number.isFinite(subtotal) ? subtotal : 0).toLocaleString()}`;
+    }
+
+    if (totalEl) {
+      totalEl.textContent = `₹${(Number.isFinite(total) ? total : 0).toLocaleString()}`;
+    }
+
+    const shippingEl = document.getElementById("shipping");
+    const shippingInfo = document.getElementById("shippingInfo");
+
+    if (shippingEl) shippingEl.style.display = "none";
+    if (shippingInfo) shippingInfo.style.display = "none";
+
+    const checkoutBtn = document.getElementById("checkoutBtn");
+    if (checkoutBtn) {
+      checkoutBtn.disabled = this.cart.length === 0;
+    }
   }
-
-  if (totalEl) {
-    totalEl.textContent = `₹${(Number.isFinite(total) ? total : 0).toLocaleString()}`;
-  }
-
-  const shippingEl = document.getElementById("shipping");
-  const shippingInfo = document.getElementById("shippingInfo");
-
-  if (shippingEl) shippingEl.style.display = "none";
-  if (shippingInfo) shippingInfo.style.display = "none";
-
-  const checkoutBtn = document.getElementById("checkoutBtn");
-  if (checkoutBtn) {
-    checkoutBtn.disabled = this.cart.length === 0;
-  }
-}
 
   proceedToCheckout() {
     if (this.cart.length === 0) {
@@ -446,16 +499,17 @@ class CartManager {
     const checkoutBtn = document.getElementById("checkoutBtn");
     if (checkoutBtn) {
       checkoutBtn.disabled = true;
-      checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+      checkoutBtn.innerHTML =
+        '<i class="fas fa-spinner fa-spin"></i> Checking...';
     }
 
     // Check server-side session to verify login (more reliable than localStorage)
-    fetch('/config/get_user.php', { credentials: 'same-origin' })
-      .then(r => r.json())
-      .then(data => {
+    fetch("/config/get_user.php", { credentials: "same-origin" })
+      .then((r) => r.json())
+      .then((data) => {
         if (checkoutBtn) {
           checkoutBtn.disabled = false;
-          checkoutBtn.innerHTML = 'Proceed to Checkout';
+          checkoutBtn.innerHTML = "Proceed to Checkout";
         }
 
         if (data && data.success) {
@@ -463,18 +517,22 @@ class CartManager {
           window.location.href = "payment.php";
         } else {
           // Not logged in → redirect to login, preserve return path
-          const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+          const returnUrl = encodeURIComponent(
+            window.location.pathname + window.location.search,
+          );
           window.location.href = `index.html?return=${returnUrl}`;
         }
       })
-      .catch(err => {
-        console.error('Session check failed', err);
+      .catch((err) => {
+        console.error("Session check failed", err);
         if (checkoutBtn) {
           checkoutBtn.disabled = false;
-          checkoutBtn.innerHTML = 'Proceed to Checkout';
+          checkoutBtn.innerHTML = "Proceed to Checkout";
         }
         // Safe fallback: send user to login page
-        const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+        const returnUrl = encodeURIComponent(
+          window.location.pathname + window.location.search,
+        );
         window.location.href = `index.html?return=${returnUrl}`;
       });
   }
