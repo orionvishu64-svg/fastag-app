@@ -1,58 +1,74 @@
-<!--index.html-->
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Login</title>
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
     <style>
       html[data-auth-checked="false"] body {
         visibility: hidden;
       }
-      .input-wrapper {
-        position: relative;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+
+      body {
+        min-height: 100vh;
+        background-color: #f4f6f8;
       }
+
+      .auth-card {
+        background: #ffffff;
+        border-radius: 14px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      }
+
+      .form-label {
+        font-weight: 500;
+        color: #555;
+      }
+
+      .form-control {
+        border-radius: 10px;
+      }
+
+      .form-control:focus {
+        border-color: #ffb84d;
+        box-shadow: 0 0 0 0.2rem rgba(255, 184, 77, 0.25);
+      }
+
+      .btn-primary {
+        background: linear-gradient(90deg, #ffb84d, #e85c41);
+        border: none;
+        color: #111;
+        font-weight: 700;
+      }
+
+      .btn-primary:hover {
+        filter: brightness(1.05);
+      }
+
       .toggle-btn {
-        cursor: pointer;
         font-size: 13px;
-        color: #ffb84d;
+        color: #e85c41;
         background: none;
         border: none;
-        padding: 6px;
-        margin-left: -48px;
-        z-index: 2;
+        padding: 6px 10px;
+        cursor: pointer;
       }
-      input[type="password"],
-      input[type="text"],
-      input[type="tel"] {
-        width: 100%;
-        padding: 10px 56px 10px 10px;
-        box-sizing: border-box;
-      }
-      form {
-        max-width: 420px;
-        margin: 24px;
-      }
-      label {
-        display: block;
-        margin-top: 12px;
-        margin-bottom: 6px;
-        font-weight: 600;
-      }
-      #loginBtn {
-        margin-top: 14px;
-        padding: 10px 12px;
-        width: 100%;
-      }
+
       #msg {
         color: #b00020;
-        margin-top: 8px;
+        font-size: 0.9rem;
         min-height: 18px;
       }
     </style>
+
+    <!-- Auth check (UNCHANGED) -->
     <script>
       (function () {
         document.documentElement.setAttribute("data-auth-checked", "false");
@@ -87,75 +103,102 @@
         })();
       })();
     </script>
-    <link rel="stylesheet" href="/public/css/signup.css" />
   </head>
-  <body>
-    <div class="auth-layout">
-      <div class="nav-logo">
+
+  <body class="d-flex align-items-center justify-content-center p-3">
+    <div class="container" style="max-width: 420px">
+      <div class="text-center mb-4">
         <img
-          src="https://www.apnapayment.com/website/img/logo/ApnaPayment200White.png"
+          src="https://www.apnapayment.com/website/img/logo/ApnaPayment200Black.png"
           alt="ApnaPayment"
+          class="img-fluid"
+          style="max-width: 180px"
         />
       </div>
-      <aside class="info-card" aria-hidden="true">
-        <div class="info-inner">
-          <h2>Welcome back</h2>
-          <p class="info-desc">
-            Sign in to continue to your account and access secure services.
-          </p>
-        </div>
-      </aside>
-      <div class="form-column">
+
+      <div class="auth-card p-4 p-md-5">
+        <h4 class="text-center fw-bold mb-4 text-dark">Welcome Back</h4>
+
         <form id="loginForm" autocomplete="off" novalidate>
-          <label for="phone">Phone</label>
-          <input
-            id="phone"
-            name="phone"
-            inputmode="numeric"
-            pattern="\d{10}"
-            maxlength="10"
-            required
-            placeholder="10-digit phone"
-          />
-          <label for="mpin">M-PIN</label>
-          <div class="input-wrapper">
+          <!-- Phone -->
+          <div class="mb-3">
+            <label for="phone" class="form-label">Phone</label>
             <input
-              id="mpin"
-              name="mpin"
-              placeholder="xxx-xxx"
-              type="password"
+              id="phone"
+              name="phone"
+              class="form-control"
               inputmode="numeric"
-              maxlength="6"
-              pattern="\d{6}"
+              pattern="\d{10}"
+              maxlength="10"
+              placeholder="10-digit phone"
               required
             />
-            <button
-              type="button"
-              class="toggle-btn"
-              data-target="mpin"
-              aria-label="Show mPIN"
+          </div>
+
+          <!-- mPIN -->
+          <div class="mb-3">
+            <label for="mpin" class="form-label">mPIN</label>
+            <div class="input-group">
+              <input
+                id="mpin"
+                name="mpin"
+                class="form-control"
+                type="password"
+                inputmode="numeric"
+                maxlength="6"
+                pattern="\d{6}"
+                placeholder="xxxxxx"
+                required
+              />
+              <button
+                type="button"
+                class="toggle-btn input-group-text"
+                data-target="mpin"
+                aria-label="Show mPIN"
+              >
+                Show
+              </button>
+            </div>
+          </div>
+
+          <button
+            id="loginBtn"
+            type="submit"
+            class="btn btn-primary w-100 py-2"
+          >
+            Login
+          </button>
+
+          <div class="text-end mt-2">
+            <a href="forgot-mpin.html" class="small text-decoration-none">
+              Forgot your mPIN?
+            </a>
+          </div>
+
+          <div id="msg" class="mt-2 text-center"></div>
+
+          <div class="text-center mt-3">
+            <span class="text-muted">Don’t have an account?</span>
+            <a
+              href="signup.html"
+              class="fw-semibold text-decoration-none"
+              style="color: #e85c41"
             >
-              Show
-            </button>
-          </div>
-          <button id="loginBtn" type="submit">Login</button>
-          <div class="footer-links" style="margin-top: 8px">
-            <a href="forgot-mpin.html">Forgot your mPIN?</a>
-          </div>
-          <div id="msg" role="status" aria-live="polite"></div>
-          <div class="footer-links" style="margin-top: 10px">
-            Don't have an account? <a href="signup.html">Sign Up</a>
+              Sign Up
+            </a>
           </div>
         </form>
       </div>
     </div>
+
+    <!-- JS (UNCHANGED LOGIC) -->
     <script>
       const $ = (s) => document.querySelector(s);
+
       document.addEventListener("click", (e) => {
         if (!e.target.classList.contains("toggle-btn")) return;
         const target = e.target.dataset.target;
         let input = document.getElementById(target);
-        if (!input) input = document.querySelector(`[name="${target}"]`);
         if (!input) return;
         if (input.type === "password") {
           input.type = "text";
@@ -167,66 +210,70 @@
           e.target.setAttribute("aria-label", "Show mPIN");
         }
       });
+
       const say = (t) => {
         $("#msg").textContent = t || "";
       };
-      document
-        .querySelector("#loginForm")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-          say("");
-          const fd = new FormData(e.target);
-          const phone = (fd.get("phone") || "").trim();
-          const mpin = (fd.get("mpin") || "").trim();
-          if (!/^\d{10}$/.test(phone)) return say("Enter 10-digit phone");
-          if (!/^\d{4,6}$/.test(mpin)) return say("Invalid mPIN");
+
+      $("#loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        say("");
+
+        const phone = ($("#phone").value || "").trim();
+        const mpin = ($("#mpin").value || "").trim();
+
+        if (!/^\d{10}$/.test(phone)) return say("Enter 10-digit phone");
+        if (!/^\d{4,6}$/.test(mpin)) return say("Invalid mPIN");
+
+        try {
+          const r = await fetch("config/login.php", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone, mpin }),
+          });
+
+          const text = await r.text();
+          let d;
           try {
-            const r = await fetch("config/login.php", {
-              method: "POST",
-              credentials: "include",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ phone, mpin }),
-            });
-            const text = await r.text();
-            let d;
-            try {
-              d = JSON.parse(text);
-            } catch {
-              console.error("Non-JSON response:", text);
-              return say("Server error");
-            }
-            if (!r.ok) {
-              console.error("HTTP error", r.status, d);
-              return say(d.error || d.message || "Login failed");
-            }
-            if (
-              d.status === "not_registered" ||
-              (d.success === false &&
-                /not found|agent not found/i.test(d.message || ""))
-            ) {
-              const mob = phone;
-              return window.location.assign(
-                "/signup.html?mobile=" + encodeURIComponent(mob),
-              );
-            }
-            if (!d.success) {
-              console.error("Login error:", d);
-              return say(d.error || d.message || "Invalid MPIN or credentials");
-            }
-            try {
-              window.dispatchEvent(
-                new CustomEvent("app:login", { detail: d.user || null }),
-              );
-            } catch (e) {}
-            const redirectTo = d.partner_required
-              ? "/partner_form.php"
-              : "/dashboard.php";
-            window.location.assign(redirectTo);
-          } catch (err) {
-            console.error(err);
-            say("Network error");
+            d = JSON.parse(text);
+          } catch {
+            return say("Server error");
           }
-        });
+
+          if (!r.ok) {
+            return say(d.error || d.message || "Login failed");
+          }
+
+          if (
+            d.status === "not_registered" ||
+            (d.success === false &&
+              /not found|agent not found/i.test(d.message || ""))
+          ) {
+            return window.location.assign(
+              "/signup.html?mobile=" + encodeURIComponent(phone),
+            );
+          }
+
+          if (!d.success) {
+            return say(d.error || d.message || "Invalid credentials");
+          }
+
+          try {
+            window.dispatchEvent(
+              new CustomEvent("app:login", { detail: d.user || null }),
+            );
+          } catch (e) {}
+
+          const redirectTo = d.partner_required
+            ? "/partner_form.php"
+            : "/dashboard.php";
+          window.location.assign(redirectTo);
+        } catch (err) {
+          console.error(err);
+          say("Network error");
+        }
+      });
     </script>
   </body>
 </html>
