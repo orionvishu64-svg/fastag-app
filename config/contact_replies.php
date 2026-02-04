@@ -139,7 +139,7 @@ try {
 }
 
 try {
-    $helper = '/opt/bitnami/apache/htdocs/fastag_website/config/socket_emit.php';
+    $helper = '/var/www/fastag_website/config/socket_emit.php';
     if (file_exists($helper)) {
         require_once $helper;
         $payload = [

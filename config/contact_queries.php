@@ -1,5 +1,5 @@
 <?php
-// /config/contact_queries.php (socket-free)
+// /config/contact_queries.php
 require_once __DIR__ . '/common_start.php';
 require_once __DIR__ . '/db.php';
 

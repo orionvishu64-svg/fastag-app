@@ -191,5 +191,5 @@ try {
     window.TICKET_STATUS = <?= json_encode($ticket_status) ?>;
     window.CURRENT_USER_ID = <?= json_encode($current_user_id) ?>;
   </script>
-  <script src="/public/js/conversation.js"></script>
   <script src="/socket.io/socket.io.js"></script>
+  <script src="/public/js/conversation.js"></script>

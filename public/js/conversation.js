@@ -82,7 +82,7 @@
 
   function existsSimilarMessage(
     container,
-    { senderLabel, text, tsISO, secondsTol = 3 } = {}
+    { senderLabel, text, tsISO, secondsTol = 3 } = {},
   ) {
     if (!container) return false;
     const normText = normalizeTextForCompare(text);
@@ -157,7 +157,7 @@
 
   function renderMessage(
     msg = {},
-    { containerId = "messages_container", prepend = false } = {}
+    { containerId = "messages_container", prepend = false } = {},
   ) {
     const container = document.getElementById(containerId);
     if (!container) return null;
@@ -213,7 +213,7 @@
     }
 
     div.innerHTML = `<div class="message-header"><strong>${escapeHtml(
-      senderLabel
+      senderLabel,
     )}</strong> <span class="time">${escapeHtml(tsText)}</span></div>
                      <div class="message-body">${escapeHtml(text)}</div>`;
 
@@ -242,7 +242,7 @@
           sender_email: r.sender_email ?? null,
           user_id: r.user_id,
         },
-        { containerId: container.id, prepend: false }
+        { containerId: container.id, prepend: false },
       );
     });
   }
@@ -278,7 +278,7 @@
       const container = document.getElementById("openTicketContainer");
       if (container)
         container.innerHTML = `<div class="ticket"><p>Error loading ticket: ${escapeHtml(
-          err.message || String(err)
+          err.message || String(err),
         )}</p></div>`;
     }
   }
@@ -346,7 +346,7 @@
     });
     if (!res || res.success === false)
       throw new Error(
-        res && res.message ? res.message : "Server rejected reply"
+        res && res.message ? res.message : "Server rejected reply",
       );
     return res;
   }
@@ -359,14 +359,15 @@
     if (!contactQueryId) return;
 
     try {
-      socket = io({ path: "/socket.io", transports: ["polling", "websocket"] });
+      socket = io("https://store.apnapayment.com", {
+        path: "/socket.io",
+        transports: ["websocket"],
+        withCredentials: true,
+      });
 
-      const ROOM = "ticket_" + contactQueryId;
       socket.on("connect", () => {
-        try {
-          socket.emit("join", { room: ROOM });
-        } catch (e) {}
-        console.log("[socket] connected", socket.id, "joining", ROOM);
+        socket.emit("join_ticket", { ticket_id: contactQueryId });
+        console.log("[socket] joined ticket room", contactQueryId);
       });
 
       socket.on("new_reply", (payload) => {
@@ -380,8 +381,8 @@
               typeof payload.is_admin !== "undefined"
                 ? Number(payload.is_admin)
                 : payload.admin_identifier
-                ? 1
-                : 0,
+                  ? 1
+                  : 0,
             created_at:
               payload.replied_at ??
               payload.created_at ??
@@ -401,7 +402,7 @@
               return String(s).replace(/(["\\])/g, "\\$1");
             };
             const selector = `#messages_container [data-local-id="${esc(
-              localId
+              localId,
             )}"]`;
             const existing = document.querySelector(selector);
             if (existing) {
@@ -431,7 +432,7 @@
                   } catch (e) {
                     return (normalized.reply_text || "").toLowerCase();
                   }
-                })()
+                })(),
               );
               return;
             }
@@ -492,7 +493,7 @@
               is_admin: 0,
               created_at: nowIso,
             },
-            { containerId: "messages_container" }
+            { containerId: "messages_container" },
           );
 
           try {
